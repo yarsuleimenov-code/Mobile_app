@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom'
 import { App } from './App'
 import { CargoProvider } from './cargoStore'
 import { InterstateProvider } from './interstateStore'
@@ -10,10 +10,10 @@ import './interstate.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <CargoProvider>
         <InterstateProvider><App /></InterstateProvider>
       </CargoProvider>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 )

@@ -2,6 +2,8 @@
 
 Интерактивный mobile-first прототип фиксации груза менеджерами Pickup/Dropoff. Маршрут на день остаётся в Spoke и не дублируется в Zaberman.
 
+Публичный прототип: https://yarsuleimenov-code.github.io/Mobile_app/
+
 ## Запуск
 
 ```powershell
