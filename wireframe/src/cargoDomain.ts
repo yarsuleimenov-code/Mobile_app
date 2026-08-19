@@ -8,12 +8,15 @@ export interface DimensionGroup {
 
 export type CargoRecordStatus = 'pickup_recorded' | 'dropoff_complete'
 
+export const warehouses = ['NJ1', 'CA1', 'CA2', 'TX1', 'FL1', 'AL1'] as const
+export type Warehouse = typeof warehouses[number]
+
 export interface CargoRecord {
   orderNumber: string
   title: string
   pickupDate: string
-  originBranch: 'NJ1' | 'CA1' | 'CA2'
-  destinationBranch: 'NJ1' | 'CA1' | 'CA2'
+  originBranch: Warehouse
+  destinationBranch: Warehouse
   totalWeight: number
   dimensionGroups: DimensionGroup[]
   packaging: string

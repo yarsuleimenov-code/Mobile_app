@@ -5,13 +5,15 @@
 .bol-body,
 .bols-body { padding: 18px 18px 104px; }
 
-.direction-picker h2,
+.warehouse-route h2,
 .recent-trips h2,
 .manifest-lines h2 { font-size: 17px; }
-.direction-picker h2 span { margin-left: 5px; color: var(--cargo-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; }
-.direction-picker > div { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-.direction-picker button { min-height: 50px; border: 1px solid #c7d0da; border-radius: 8px; background: #fff; font-weight: 850; cursor: pointer; }
-.direction-picker button.is-active { color: var(--cargo-blue); border: 2px solid var(--cargo-blue); background: #f7fbff; }
+.warehouse-route h2 span { margin-left: 5px; color: var(--cargo-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+.warehouse-selectors { margin-top: 10px; display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); align-items: end; gap: 8px; }
+.warehouse-selectors label { min-width: 0; display: flex; flex-direction: column; gap: 6px; color: var(--cargo-muted); font-size: 11px; font-weight: 750; }
+.warehouse-selectors select { width: 100%; min-height: 50px; padding: 0 10px; border: 1px solid #bdc7d2; border-radius: 8px; color: var(--cargo-navy); background: #fff; font: inherit; font-size: 16px; font-weight: 900; }
+.warehouse-selectors > svg { align-self: end; height: 50px; color: var(--cargo-blue); }
+.warehouse-selectors select:focus { border-color: var(--cargo-blue); outline: 2px solid rgba(16, 104, 222, .16); outline-offset: 1px; }
 .truck-picker { margin-top: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 14px; font-weight: 850; }
 .truck-picker select { min-height: 48px; padding: 0 12px; border: 1px solid #bdc7d2; border-radius: 8px; color: var(--cargo-navy); background: #fff; font-weight: 800; }
 
@@ -169,4 +171,6 @@
   .loading-order-head small { display: none; }
   .bol-results > button { grid-template-columns: 26px minmax(0, 1fr) 18px; }
   .bol-result-meta { display: none !important; }
+  .warehouse-selectors { grid-template-columns: 1fr; }
+  .warehouse-selectors > svg { height: 22px; margin: -2px auto; transform: rotate(90deg); }
 }

@@ -1,6 +1,6 @@
-import { calculatePieces, type CargoRecord, type DimensionGroup } from './cargoDomain'
+import { calculatePieces, type CargoRecord, type DimensionGroup, type Warehouse } from './cargoDomain'
 
-export type InterstateDirection = 'NJ1_CA1' | 'NJ1_CA2' | 'CA1_NJ1' | 'CA2_NJ1'
+export type InterstateDirection = `${Warehouse}_${Warehouse}`
 
 export interface InterstatePlace {
   key: string
@@ -31,13 +31,6 @@ export interface InterstateBolRecord extends GeneratedInterstateTrip {
   closedAt?: string
 }
 
-export const interstateDirections: { id: InterstateDirection; label: string; origin: CargoRecord['originBranch']; destination: CargoRecord['destinationBranch'] }[] = [
-  { id: 'NJ1_CA1', label: 'NJ1 → CA1', origin: 'NJ1', destination: 'CA1' },
-  { id: 'NJ1_CA2', label: 'NJ1 → CA2', origin: 'NJ1', destination: 'CA2' },
-  { id: 'CA1_NJ1', label: 'CA1 → NJ1', origin: 'CA1', destination: 'NJ1' },
-  { id: 'CA2_NJ1', label: 'CA2 → NJ1', origin: 'CA2', destination: 'NJ1' },
-]
-
 export const interstateTrucks = ['Truck 1 · 26 ft', 'Truck 2 · 26 ft', 'Truck 3 · 16 ft']
 
 export const interstateBolArchive: InterstateBolRecord[] = [
@@ -48,7 +41,16 @@ export const interstateBolArchive: InterstateBolRecord[] = [
 ]
 
 export function directionLabel(direction: InterstateDirection) {
-  return interstateDirections.find((item) => item.id === direction)?.label ?? direction
+  return direction.replace('_', ' → ')
+}
+
+export function createInterstateDirection(origin: Warehouse, destination: Warehouse): InterstateDirection {
+  return `${origin}_${destination}`
+}
+
+export function directionWarehouses(direction: InterstateDirection) {
+  const [origin, destination] = direction.split('_') as [Warehouse, Warehouse]
+  return { origin, destination }
 }
 
 export function generatedTripToBol(trip: GeneratedInterstateTrip): InterstateBolRecord {
@@ -66,8 +68,7 @@ export function searchInterstateBols(bols: InterstateBolRecord[], query: string,
 }
 
 export function getEligibleRecords(records: CargoRecord[], direction: InterstateDirection) {
-  const selected = interstateDirections.find((item) => item.id === direction)
-  if (!selected) return []
+  const selected = directionWarehouses(direction)
   return records.filter((record) => (
     record.status === 'pickup_recorded'
     && record.originBranch === selected.origin

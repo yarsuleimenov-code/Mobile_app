@@ -1,15 +1,15 @@
-import { ChevronRight, FileCheck2, FileSearch, Truck } from 'lucide-react'
+import { ArrowRight, ChevronRight, FileCheck2, FileSearch, Truck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
-import { calculatePieces } from '../cargoDomain'
+import { warehouses, type Warehouse } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
-import { directionLabel, expandRecordPlaces, getEligibleRecords, interstateBolArchive, interstateDirections, interstateTrucks } from '../interstateDomain'
+import { directionLabel, expandRecordPlaces, getEligibleRecords, interstateBolArchive, interstateTrucks } from '../interstateDomain'
 import { useInterstate } from '../interstateStore'
 
 export function InterstateScreen() {
   const navigate = useNavigate()
   const { records } = useCargo()
-  const { direction, setDirection, truck, setTruck, clearLoading, generatedTrip } = useInterstate()
+  const { direction, originWarehouse, destinationWarehouse, setOriginWarehouse, setDestinationWarehouse, truck, setTruck, clearLoading, generatedTrip } = useInterstate()
   const eligible = getEligibleRecords(records, direction)
   const places = eligible.flatMap(expandRecordPlaces)
   const totalWeight = eligible.reduce((total, record) => total + record.totalWeight, 0)
@@ -18,9 +18,13 @@ export function InterstateScreen() {
     <div className="cargo-flow interstate-home">
       <CargoFlowHeader title="Interstate" showBack={false} />
       <div className="interstate-body">
-        <section className="direction-picker">
-          <h2>Route <span>Select direction</span></h2>
-          <div>{interstateDirections.map((item) => <button type="button" key={item.id} className={direction === item.id ? 'is-active' : ''} onClick={() => setDirection(item.id)}>{item.label}</button>)}</div>
+        <section className="warehouse-route">
+          <h2>Route <span>Select warehouses</span></h2>
+          <div className="warehouse-selectors">
+            <label>Origin warehouse<select aria-label="Origin warehouse" value={originWarehouse} onChange={(event) => setOriginWarehouse(event.target.value as Warehouse)}>{warehouses.map((warehouse) => <option key={warehouse} disabled={warehouse === destinationWarehouse}>{warehouse}</option>)}</select></label>
+            <ArrowRight aria-hidden="true" />
+            <label>Destination warehouse<select aria-label="Destination warehouse" value={destinationWarehouse} onChange={(event) => setDestinationWarehouse(event.target.value as Warehouse)}>{warehouses.map((warehouse) => <option key={warehouse} disabled={warehouse === originWarehouse}>{warehouse}</option>)}</select></label>
+          </div>
         </section>
         <label className="truck-picker">Truck<select value={truck} onChange={(event) => setTruck(event.target.value)}>{interstateTrucks.map((item) => <option key={item}>{item}</option>)}</select></label>
 
