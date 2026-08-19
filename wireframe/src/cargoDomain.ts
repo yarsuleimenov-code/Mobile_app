@@ -58,7 +58,7 @@ export const initialCargoRecords: CargoRecord[] = [
     dimensionGroups: defaultDimensionGroups,
     packaging: 'Customer',
     orderComment: 'commentSize\norderComment',
-    responsible: 'Alex Evdokimov',
+    responsible: 'John Doe',
     photoCount: 4,
     status: 'pickup_recorded',
   },
@@ -77,7 +77,7 @@ export const initialCargoRecords: CargoRecord[] = [
   {
     orderNumber: '11076543', title: 'Teak desk', pickupDate: '07/22/2026', originBranch: 'NJ1', destinationBranch: 'CA1', totalWeight: 110,
     dimensionGroups: [{ id: 'r4-1', quantity: 10, length: 18, width: 24, height: 32 }],
-    packaging: 'Zaberman', orderComment: '', responsible: 'Alex Evdokimov', photoCount: 4,
+    packaging: 'Zaberman', orderComment: '', responsible: 'John Doe', photoCount: 4,
     status: 'pickup_recorded',
   },
   {

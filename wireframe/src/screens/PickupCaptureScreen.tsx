@@ -14,7 +14,7 @@ export function PickupCaptureScreen() {
   const [saved, setSaved] = useState(false)
   const [orderNumber, setOrderNumber] = useState('11155599')
   const [pickupDate, setPickupDate] = useState('2026-07-26')
-  const [responsible, setResponsible] = useState('Alex Evdokimov')
+  const [responsible, setResponsible] = useState('John Doe')
   const [packaging, setPackaging] = useState('Customer')
   const [orderComment, setOrderComment] = useState('commentSize\norderComment')
   const [weight, setWeight] = useState(123)
@@ -54,7 +54,7 @@ export function PickupCaptureScreen() {
           <label>Order #<input inputMode="numeric" value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} /></label>
           <label>Pickup date<input type="date" value={pickupDate} onChange={(event) => setPickupDate(event.target.value)} /></label>
         </div>
-        <label>Responsible manager<select value={responsible} onChange={(event) => setResponsible(event.target.value)}><option>Alex Evdokimov</option><option>Maria Lopez</option><option>Daniel Kim</option></select></label>
+        <label>Responsible manager<select value={responsible} onChange={(event) => setResponsible(event.target.value)}><option>John Doe</option><option>Maria Lopez</option><option>Daniel Kim</option></select></label>
         <label>Packaging<select value={packaging} onChange={(event) => setPackaging(event.target.value)}><option>Customer</option><option>Zaberman</option><option>Mixed</option></select></label>
         <label>Order comment<textarea rows={2} value={orderComment} onChange={(event) => setOrderComment(event.target.value)} /></label>
 
