@@ -113,6 +113,10 @@
 .unloading-place-picker dd { overflow-wrap: anywhere; }
 .load-all:disabled { opacity: .55; cursor: not-allowed; }
 .unloading-empty { padding: 32px 12px; color: var(--cargo-muted); text-align: center; }
+.unloading-flow-action { display: grid; grid-template-columns: 1fr 1.2fr; gap: 8px; }
+.unloading-flow-action .cargo-primary { min-width: 0; font-size: 15px; }
+.mark-all-received { min-width: 0; min-height: 52px; padding: 0 9px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #219866; border-radius: 8px; color: #087649; background: #e8f8f0; font-size: 14px; font-weight: 900; cursor: pointer; }
+.mark-all-received:disabled { color: #4e7564; border-color: #b9d8ca; background: #edf5f1; cursor: default; }
 .unloading-review,
 .unloading-complete { padding-bottom: 112px; }
 .review-ready.has-missing > span { background: #d88700; }

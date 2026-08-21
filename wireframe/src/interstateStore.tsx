@@ -19,6 +19,7 @@ interface InterstateContextValue {
   clearLoading: () => void
   createTrip: (trip: GeneratedInterstateTrip) => void
   receivePlace: (tripId: string, placeKey: string) => void
+  receiveAllPlaces: (tripId: string, placeKeys: string[]) => void
   toggleReceivedPlace: (tripId: string, placeKey: string) => void
   completeUnloading: (tripId: string) => void
 }
@@ -68,6 +69,10 @@ export function InterstateProvider({ children }: { children: ReactNode }) {
     receivePlace: (tripId, placeKey) => setUnloadingDrafts((current) => ({
       ...current,
       [tripId]: current[tripId]?.includes(placeKey) ? current[tripId] : [...(current[tripId] ?? []), placeKey],
+    })),
+    receiveAllPlaces: (tripId, placeKeys) => setUnloadingDrafts((current) => ({
+      ...current,
+      [tripId]: Array.from(new Set([...(current[tripId] ?? []), ...placeKeys])),
     })),
     toggleReceivedPlace: (tripId, placeKey) => setUnloadingDrafts((current) => ({
       ...current,

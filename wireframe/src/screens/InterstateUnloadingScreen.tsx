@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronUp, CircleAlert, FileText, PackageCheck, ScanLine, Truck } from 'lucide-react'
+import { Check, CheckCheck, ChevronDown, ChevronUp, CircleAlert, FileText, PackageCheck, ScanLine, Truck } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
@@ -11,7 +11,7 @@ export function InterstateUnloadingScreen() {
   const navigate = useNavigate()
   const { tripId = '' } = useParams()
   const trip = interstateIncomingTrips.find((item) => item.tripId === tripId)
-  const { completeUnloading, completedUnloadingTripIds, receivePlace, toggleReceivedPlace, unloadingDrafts } = useInterstate()
+  const { completeUnloading, completedUnloadingTripIds, receiveAllPlaces, receivePlace, toggleReceivedPlace, unloadingDrafts } = useInterstate()
   const [expandedOrder, setExpandedOrder] = useState(() => trip?.manifest[0]?.orderNumber ?? '')
   const [selectedPlaceKey, setSelectedPlaceKey] = useState<string>()
   const [query, setQuery] = useState('')
@@ -141,7 +141,10 @@ export function InterstateUnloadingScreen() {
           {!visibleOrders.length ? <div className="unloading-empty">No manifest place matches this search.</div> : null}
         </section>
       </div>
-      <div className="flow-action interstate-flow-action"><button type="button" className="cargo-primary" onClick={() => setReviewing(true)}>Review unloading · {receivedPlaces.length}/{trip.placeCount}</button></div>
+      <div className="flow-action interstate-flow-action unloading-flow-action">
+        <button type="button" className="mark-all-received" disabled={receivedPlaces.length === trip.placeCount} onClick={() => receiveAllPlaces(trip.tripId, trip.manifest.map((place) => place.key))}><CheckCheck size={19} /> {receivedPlaces.length === trip.placeCount ? 'All received' : 'Mark all received'}</button>
+        <button type="button" className="cargo-primary" onClick={() => setReviewing(true)}>Review unloading · {receivedPlaces.length}/{trip.placeCount}</button>
+      </div>
       <CargoBottomNav />
     </div>
   )
