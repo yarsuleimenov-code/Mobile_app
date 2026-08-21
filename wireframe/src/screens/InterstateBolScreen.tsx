@@ -6,17 +6,19 @@ import { useInterstate } from '../interstateStore'
 
 export function InterstateBolScreen() {
   const { bolNumber } = useParams()
-  const { generatedTrip } = useInterstate()
+  const { generatedTrip, completedUnloadingTripIds } = useInterstate()
   const currentBol = generatedTrip ? generatedTripToBol(generatedTrip) : undefined
-  const bol = bolNumber
+  const storedBol = bolNumber
     ? (currentBol?.bolNumber === bolNumber ? currentBol : interstateBolArchive.find((item) => item.bolNumber === bolNumber))
     : currentBol
+  const unloaded = storedBol ? completedUnloadingTripIds.includes(storedBol.tripId) : false
+  const bol = storedBol && unloaded ? { ...storedBol, status: 'closed' as const } : storedBol
   if (!bol) return <Navigate to="/interstate/bols" replace />
   return (
     <div className="cargo-flow interstate-bol">
       <CargoFlowHeader title="Interstate BOL" subtitle={bol.tripId} />
       <div className="bol-body">
-        <div className="bol-document-state"><span className={bol.status}>{bol.status === 'in_transit' ? 'In transit' : 'Closed'}</span><small>{bol.status === 'closed' ? `Closed ${bol.closedAt}` : `Issued ${bol.createdAt}`}</small></div>
+        <div className="bol-document-state"><span className={bol.status}>{unloaded ? 'Unloaded' : bol.status === 'in_transit' ? 'In transit' : 'Closed'}</span><small>{unloaded ? 'Received at destination' : bol.status === 'closed' ? `Closed ${bol.closedAt}` : `Issued ${bol.createdAt}`}</small></div>
         <section className="bol-paper">
           <header><strong>ZABERMAN</strong><span>BILL OF LADING</span></header>
           <dl><div><dt>BOL Number</dt><dd>{bol.bolNumber}</dd></div><div><dt>TripID</dt><dd>{bol.tripId}</dd></div><div><dt>Route</dt><dd>{directionLabel(bol.direction)}</dd></div><div><dt>Truck</dt><dd>{bol.truck}</dd></div></dl>

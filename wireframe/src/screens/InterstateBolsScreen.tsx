@@ -15,12 +15,17 @@ const filters: { id: BolFilter; label: string }[] = [
 
 export function InterstateBolsScreen() {
   const navigate = useNavigate()
-  const { generatedTrip } = useInterstate()
+  const { generatedTrip, completedUnloadingTripIds } = useInterstate()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<BolFilter>('all')
-  const bols = useMemo(() => generatedTrip
-    ? [generatedTripToBol(generatedTrip), ...interstateBolArchive.filter((bol) => bol.bolNumber !== generatedTrip.bolNumber)]
-    : interstateBolArchive, [generatedTrip])
+  const bols = useMemo(() => {
+    const archive = interstateBolArchive.map((bol) => (
+      completedUnloadingTripIds.includes(bol.tripId) ? { ...bol, status: 'closed' as const } : bol
+    ))
+    return generatedTrip
+      ? [generatedTripToBol(generatedTrip), ...archive.filter((bol) => bol.bolNumber !== generatedTrip.bolNumber)]
+      : archive
+  }, [generatedTrip, completedUnloadingTripIds])
   const results = searchInterstateBols(bols, query, filter === 'all' ? undefined : filter)
 
   return (
@@ -36,7 +41,7 @@ export function InterstateBolsScreen() {
             <button type="button" key={bol.bolNumber} onClick={() => navigate(`/interstate/bol/${bol.bolNumber}`)}>
               <FileText />
               <span><strong>{bol.bolNumber}</strong><small>{bol.tripId}</small><small>{directionLabel(bol.direction)} · {bol.truck.split(' · ')[0]}</small></span>
-              <span className="bol-result-meta"><em className={bol.status}>{bol.status === 'in_transit' ? 'In transit' : 'Closed'}</em><small>{bol.createdAt.split(' · ')[0]}</small></span>
+              <span className="bol-result-meta"><em className={bol.status}>{completedUnloadingTripIds.includes(bol.tripId) ? 'Unloaded' : bol.status === 'in_transit' ? 'In transit' : 'Closed'}</em><small>{bol.createdAt.split(' · ')[0]}</small></span>
               <ChevronRight />
             </button>
           ))}

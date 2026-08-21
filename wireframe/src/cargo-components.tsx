@@ -33,11 +33,11 @@ export function CargoShell({ children }: { children: ReactNode }) {
   )
 }
 
-export function CargoFlowHeader({ title, subtitle, showBack = true }: { title: string; subtitle?: string; showBack?: boolean }) {
+export function CargoFlowHeader({ title, subtitle, showBack = true, onBack }: { title: string; subtitle?: string; showBack?: boolean; onBack?: () => void }) {
   const navigate = useNavigate()
   return (
     <header className="cargo-flow-header">
-      {showBack ? <button type="button" onClick={() => navigate(-1)} aria-label="Go back"><ArrowLeft /></button> : <span />}
+      {showBack ? <button type="button" onClick={onBack ?? (() => navigate(-1))} aria-label="Go back"><ArrowLeft /></button> : <span />}
       <div><h1>{title}</h1>{subtitle ? <p>{subtitle}</p> : null}</div>
       <span />
     </header>

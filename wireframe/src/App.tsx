@@ -8,6 +8,7 @@ import { InterstateLoadingScreen } from './screens/InterstateLoadingScreen'
 import { InterstateReviewScreen } from './screens/InterstateReviewScreen'
 import { InterstateScreen } from './screens/InterstateScreen'
 import { InterstateTripScreen } from './screens/InterstateTripScreen'
+import { InterstateUnloadingScreen } from './screens/InterstateUnloadingScreen'
 
 export function App() {
   return (
@@ -19,6 +20,7 @@ export function App() {
       <Route path="interstate/loading" element={<InterstateLoadingScreen />} />
       <Route path="interstate/review" element={<InterstateReviewScreen />} />
       <Route path="interstate/trip" element={<InterstateTripScreen />} />
+      <Route path="interstate/unloading/:tripId" element={<InterstateUnloadingScreen />} />
       <Route path="interstate/bols" element={<InterstateBolsScreen />} />
       <Route path="interstate/bol" element={<InterstateBolScreen />} />
       <Route path="interstate/bol/:bolNumber" element={<InterstateBolScreen />} />

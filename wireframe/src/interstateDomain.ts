@@ -31,9 +31,39 @@ export interface InterstateBolRecord extends GeneratedInterstateTrip {
   closedAt?: string
 }
 
+export interface IncomingInterstateTrip extends InterstateBolRecord {
+  manifest: InterstatePlace[]
+}
+
 export const interstateTrucks = ['Truck 1 · 26 ft', 'Truck 2 · 26 ft', 'Truck 3 · 16 ft']
 
+function createManifestPlaces(orderNumber: string, orderTitle: string, quantity: number, dimensions: string, estimatedWeight: number, volume: number) {
+  return Array.from({ length: quantity }, (_, index): InterstatePlace => ({
+    key: `ZB-${orderNumber}-${String(index + 1).padStart(2, '0')}`,
+    orderNumber,
+    orderTitle,
+    placeNumber: index + 1,
+    dimensions,
+    estimatedWeight,
+    volume,
+  }))
+}
+
+const incomingNjManifest = [
+  ...createManifestPlaces('23354862', 'Console Table', 2, '48 × 24 × 32 in', 65, 21.33),
+  ...createManifestPlaces('23355017', 'Dining Chairs', 4, '24 × 24 × 40 in', 42.5, 13.33),
+  ...createManifestPlaces('11155599', 'Wooden Credenza', 2, '56 × 28 × 34 in', 55, 30.85),
+]
+
+export const interstateIncomingTrips: IncomingInterstateTrip[] = [
+  {
+    tripId: 'CA1-NJ1-260820-005', bolNumber: 'ZB-2026-000185', direction: 'CA1_NJ1', truck: 'Truck 1 · 26 ft',
+    ...summarizeLoadedPlaces(incomingNjManifest), createdAt: '08/20/2026 · 7:15 PM', status: 'in_transit', manifest: incomingNjManifest,
+  },
+]
+
 export const interstateBolArchive: InterstateBolRecord[] = [
+  ...interstateIncomingTrips,
   { tripId: 'NJ1-CA1-260815-004', bolNumber: 'ZB-2026-000183', direction: 'NJ1_CA1', truck: 'Truck 2 · 26 ft', orderCount: 18, placeCount: 64, loadedWeight: 2410, loadedVolume: 1187.4, createdAt: '08/15/2026 · 8:20 PM', status: 'in_transit' },
   { tripId: 'CA1-NJ1-260812-003', bolNumber: 'ZB-2026-000180', direction: 'CA1_NJ1', truck: 'Truck 1 · 26 ft', orderCount: 15, placeCount: 52, loadedWeight: 1985, loadedVolume: 978.2, createdAt: '08/12/2026 · 6:45 PM', status: 'closed', closedAt: '08/15/2026 · 9:10 AM' },
   { tripId: 'NJ1-CA2-260807-002', bolNumber: 'ZB-2026-000176', direction: 'NJ1_CA2', truck: 'Truck 3 · 16 ft', orderCount: 9, placeCount: 31, loadedWeight: 1128, loadedVolume: 542.7, createdAt: '08/07/2026 · 7:30 PM', status: 'closed', closedAt: '08/10/2026 · 11:25 AM' },

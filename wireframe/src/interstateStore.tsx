@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Warehouse } from './cargoDomain'
 import { createInterstateDirection, type GeneratedInterstateTrip, type InterstateDirection, type InterstatePlace } from './interstateDomain'
 
@@ -9,6 +9,8 @@ interface InterstateContextValue {
   truck: string
   loadedPlaceKeys: string[]
   generatedTrip?: GeneratedInterstateTrip
+  unloadingDrafts: Record<string, string[]>
+  completedUnloadingTripIds: string[]
   setOriginWarehouse: (warehouse: Warehouse) => void
   setDestinationWarehouse: (warehouse: Warehouse) => void
   setTruck: (truck: string) => void
@@ -16,9 +18,23 @@ interface InterstateContextValue {
   loadAll: (places: InterstatePlace[]) => void
   clearLoading: () => void
   createTrip: (trip: GeneratedInterstateTrip) => void
+  receivePlace: (tripId: string, placeKey: string) => void
+  toggleReceivedPlace: (tripId: string, placeKey: string) => void
+  completeUnloading: (tripId: string) => void
 }
 
+const UNLOADING_DRAFTS_STORAGE_KEY = 'zaberman-unloading-drafts:v1'
+const COMPLETED_UNLOADING_STORAGE_KEY = 'zaberman-completed-unloading:v1'
 const InterstateContext = createContext<InterstateContextValue | null>(null)
+
+function readStored<T>(key: string, fallback: T): T {
+  try {
+    const stored = localStorage.getItem(key)
+    return stored ? JSON.parse(stored) as T : fallback
+  } catch {
+    return fallback
+  }
+}
 
 export function InterstateProvider({ children }: { children: ReactNode }) {
   const [originWarehouse, setOriginWarehouseState] = useState<Warehouse>('NJ1')
@@ -26,12 +42,22 @@ export function InterstateProvider({ children }: { children: ReactNode }) {
   const [truck, setTruck] = useState('Truck 1 · 26 ft')
   const [loadedPlaceKeys, setLoadedPlaceKeys] = useState<string[]>([])
   const [generatedTrip, setGeneratedTrip] = useState<GeneratedInterstateTrip>()
+  const [unloadingDrafts, setUnloadingDrafts] = useState<Record<string, string[]>>(() => readStored(UNLOADING_DRAFTS_STORAGE_KEY, {}))
+  const [completedUnloadingTripIds, setCompletedUnloadingTripIds] = useState<string[]>(() => readStored(COMPLETED_UNLOADING_STORAGE_KEY, []))
 
   const direction = createInterstateDirection(originWarehouse, destinationWarehouse)
   const resetLoading = () => { setLoadedPlaceKeys([]); setGeneratedTrip(undefined) }
 
+  useEffect(() => {
+    localStorage.setItem(UNLOADING_DRAFTS_STORAGE_KEY, JSON.stringify(unloadingDrafts))
+  }, [unloadingDrafts])
+
+  useEffect(() => {
+    localStorage.setItem(COMPLETED_UNLOADING_STORAGE_KEY, JSON.stringify(completedUnloadingTripIds))
+  }, [completedUnloadingTripIds])
+
   const value = useMemo<InterstateContextValue>(() => ({
-    direction, originWarehouse, destinationWarehouse, truck, loadedPlaceKeys, generatedTrip,
+    direction, originWarehouse, destinationWarehouse, truck, loadedPlaceKeys, generatedTrip, unloadingDrafts, completedUnloadingTripIds,
     setOriginWarehouse: (next) => { if (next !== destinationWarehouse) { setOriginWarehouseState(next); resetLoading() } },
     setDestinationWarehouse: (next) => { if (next !== originWarehouse) { setDestinationWarehouseState(next); resetLoading() } },
     setTruck,
@@ -39,7 +65,18 @@ export function InterstateProvider({ children }: { children: ReactNode }) {
     loadAll: (places) => setLoadedPlaceKeys((current) => Array.from(new Set([...current, ...places.map((place) => place.key)]))),
     clearLoading: () => { setLoadedPlaceKeys([]); setGeneratedTrip(undefined) },
     createTrip: setGeneratedTrip,
-  }), [direction, originWarehouse, destinationWarehouse, truck, loadedPlaceKeys, generatedTrip])
+    receivePlace: (tripId, placeKey) => setUnloadingDrafts((current) => ({
+      ...current,
+      [tripId]: current[tripId]?.includes(placeKey) ? current[tripId] : [...(current[tripId] ?? []), placeKey],
+    })),
+    toggleReceivedPlace: (tripId, placeKey) => setUnloadingDrafts((current) => ({
+      ...current,
+      [tripId]: current[tripId]?.includes(placeKey)
+        ? current[tripId].filter((key) => key !== placeKey)
+        : [...(current[tripId] ?? []), placeKey],
+    })),
+    completeUnloading: (tripId) => setCompletedUnloadingTripIds((current) => current.includes(tripId) ? current : [...current, tripId]),
+  }), [direction, originWarehouse, destinationWarehouse, truck, loadedPlaceKeys, generatedTrip, unloadingDrafts, completedUnloadingTripIds])
 
   return <InterstateContext.Provider value={value}>{children}</InterstateContext.Provider>
 }
