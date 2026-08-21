@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, CheckCircle2, ChevronRight, CloudDownload, LoaderCircle, RefreshCw, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, LoaderCircle, RefreshCw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
@@ -10,6 +10,7 @@ export function CargoHomeScreen() {
   const navigate = useNavigate()
   const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute, clearSpokeRoute } = useCargo()
   const [routeQuery, setRouteQuery] = useState('')
+  const [recentRecordsExpanded, setRecentRecordsExpanded] = useState(false)
   const visibleTasks = useMemo(() => filterSpokeTasks(spokeRoute?.tasks ?? [], routeQuery), [spokeRoute, routeQuery])
   const pickupCount = spokeRoute?.tasks.filter((task) => task.operation === 'pickup').length ?? 0
   const dropoffCount = (spokeRoute?.tasks.length ?? 0) - pickupCount
@@ -56,15 +57,31 @@ export function CargoHomeScreen() {
         )}
 
         <section className="recent-records">
-          <h2>Recent records</h2>
-          {records.slice(0, 5).map((record) => (
-            <button type="button" key={record.orderNumber} onClick={() => navigate(record.status === 'pickup_recorded' ? `/dropoff?order=${record.orderNumber}` : `/dropoff?order=${record.orderNumber}`)}>
-              <span className={`record-direction record-direction--${record.status}`}><ArrowUp size={19} /></span>
-              <span className="record-main"><strong>#{record.orderNumber}</strong><small>{record.pickupDate} · {calculatePieces(record.dimensionGroups)} pcs / {record.totalWeight} lb</small></span>
-              <span className={`record-status record-status--${record.status}`}>{record.status === 'pickup_recorded' ? 'Pickup recorded' : 'Dropoff complete'}</span>
-              <ChevronRight size={20} />
-            </button>
-          ))}
+          <button
+            type="button"
+            className="recent-records-toggle"
+            aria-expanded={recentRecordsExpanded}
+            aria-controls="recent-records-list"
+            onClick={() => setRecentRecordsExpanded((expanded) => !expanded)}
+          >
+            <span>
+              <strong>Recent records</strong>
+              <small>{records.length > 5 ? `Latest 5 of ${records.length}` : `${records.length} records`}</small>
+            </span>
+            <ChevronDown className={recentRecordsExpanded ? 'is-expanded' : ''} size={22} aria-hidden="true" />
+          </button>
+          {recentRecordsExpanded ? (
+            <div className="recent-records-list" id="recent-records-list">
+              {records.slice(0, 5).map((record) => (
+                <button type="button" key={record.orderNumber} onClick={() => navigate(record.status === 'pickup_recorded' ? `/dropoff?order=${record.orderNumber}` : `/dropoff?order=${record.orderNumber}`)}>
+                  <span className={`record-direction record-direction--${record.status}`}><ArrowUp size={19} /></span>
+                  <span className="record-main"><strong>#{record.orderNumber}</strong><small>{record.pickupDate} · {calculatePieces(record.dimensionGroups)} pcs / {record.totalWeight} lb</small></span>
+                  <span className={`record-status record-status--${record.status}`}>{record.status === 'pickup_recorded' ? 'Pickup recorded' : 'Dropoff complete'}</span>
+                  <ChevronRight size={20} />
+                </button>
+              ))}
+            </div>
+          ) : null}
         </section>
       </div>
     </CargoShell>

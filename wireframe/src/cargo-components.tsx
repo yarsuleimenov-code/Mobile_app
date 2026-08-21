@@ -1,13 +1,31 @@
 import type { ReactNode } from 'react'
-import { ArrowDown, ArrowLeft, ArrowUp, Check, Cloud, Home, ImagePlus, Truck } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Cloud, Home, ImagePlus, RefreshCw, Truck, WifiOff } from 'lucide-react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useCargo } from './cargoStore'
 
 export function CargoShell({ children }: { children: ReactNode }) {
+  const { forceSync, pendingChanges, syncStatus } = useCargo()
+  const SyncIcon = syncStatus === 'offline' ? WifiOff : Cloud
+  const syncLabel = syncStatus === 'offline'
+    ? (pendingChanges ? `Offline · ${pendingChanges}` : 'Offline')
+    : syncStatus === 'pending'
+      ? `${pendingChanges} pending`
+      : syncStatus === 'syncing' ? 'Syncing…' : 'Synced'
+  const syncDisabled = syncStatus === 'offline' || syncStatus === 'syncing'
+
   return (
     <div className="cargo-shell">
       <header className="cargo-topbar">
         <Link to="/" className="cargo-brand" aria-label="Zaberman home">ZABERM<span>A</span>N</Link>
-        <div className="cargo-meta"><strong>NJ1</strong><span><Cloud size={14} /> Synced</span></div>
+        <div className="cargo-meta">
+          <strong>NJ1</strong>
+          <div className={`cargo-sync cargo-sync--${syncStatus}`}>
+            <span><SyncIcon size={14} /> {syncLabel}</span>
+            <button type="button" onClick={forceSync} disabled={syncDisabled} aria-label={syncStatus === 'offline' ? 'Connect to the internet to sync data' : 'Sync data now'} title={syncStatus === 'offline' ? 'Connect to the internet to sync data' : 'Sync data now'}>
+              <span className={syncStatus === 'syncing' ? 'is-spinning' : ''}><RefreshCw size={15} /></span>
+            </button>
+          </div>
+        </div>
       </header>
       <main>{children}</main>
       <CargoBottomNav />

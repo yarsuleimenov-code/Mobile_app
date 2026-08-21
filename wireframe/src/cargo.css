@@ -41,7 +41,13 @@ textarea { font: inherit; }
 
 .cargo-brand span { color: var(--cargo-orange); }
 .cargo-meta { display: flex; align-items: center; gap: 12px; font-size: 12px; }
-.cargo-meta > span { display: flex; align-items: center; gap: 5px; color: #4ee19b; }
+.cargo-sync { display: flex; align-items: center; gap: 5px; color: #4ee19b; }
+.cargo-sync > span { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.cargo-sync--pending { color: #ffd166; }
+.cargo-sync--offline { color: #ffb067; }
+.cargo-sync > button { width: 30px; height: 30px; padding: 0; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.3); border-radius: 8px; color: currentColor; background: rgba(255,255,255,.08); cursor: pointer; }
+.cargo-sync > button > span { display: grid; place-items: center; }
+.cargo-sync > button:disabled { opacity: .55; cursor: not-allowed; }
 
 .cargo-home { padding: 24px 20px 112px; }
 .cargo-home > h1 { font-size: 27px; letter-spacing: -.7px; }
@@ -66,8 +72,25 @@ textarea { font: inherit; }
 .cargo-action small { margin-top: 5px; color: rgba(255,255,255,.78); font-size: 12px; }
 
 .recent-records { margin-top: 38px; }
-.recent-records h2 { margin-bottom: 9px; font-size: 20px; }
-.recent-records > button {
+.recent-records-toggle {
+  width: 100%;
+  min-height: 60px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  border-bottom: 1px solid var(--cargo-line);
+  color: var(--cargo-navy);
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.recent-records-toggle > span { display: flex; flex-direction: column; }
+.recent-records-toggle strong { font-size: 20px; }
+.recent-records-toggle small { margin-top: 3px; color: var(--cargo-muted); font-size: 11px; }
+.recent-records-toggle > svg.is-expanded { transform: rotate(180deg); }
+.recent-records-list > button {
   width: 100%;
   min-height: 78px;
   padding: 10px 0;
@@ -287,7 +310,7 @@ textarea { font: inherit; }
   .cargo-action { min-height: 145px; padding-inline: 9px; }
   .cargo-action strong { font-size: 21px; }
   .record-status { display: none; }
-  .recent-records > button { grid-template-columns: 34px minmax(0, 1fr) 18px; }
+  .recent-records-list > button { grid-template-columns: 34px minmax(0, 1fr) 18px; }
   .spoke-task-list > button { grid-template-columns: 34px minmax(0, 1fr) 18px; }
   .spoke-task-side { display: none; }
   .pickup-form, .dropoff-body { padding-inline: 14px; }
