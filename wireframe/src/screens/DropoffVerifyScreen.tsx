@@ -26,7 +26,7 @@ export function DropoffVerifyScreen() {
 
   return (
     <div className="cargo-flow">
-      <CargoFlowHeader title="Dropoff" />
+      <CargoFlowHeader title="Dropoff" subtitle={params.get('order') ? `Spoke order #${params.get('order')}` : undefined} />
       <div className="dropoff-body">
         <form className="order-search" onSubmit={(event) => { event.preventDefault(); search() }}>
           <label htmlFor="order-search">Order number</label>

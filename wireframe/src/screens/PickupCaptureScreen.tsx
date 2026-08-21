@@ -1,6 +1,6 @@
 import { Camera, Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '../cargo-components'
 import {
   calculatePieces, calculateVolume, defaultDimensionGroups, normalizeOrderNumber,
@@ -10,10 +10,16 @@ import { useCargo } from '../cargoStore'
 
 export function PickupCaptureScreen() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const { savePickup } = useCargo()
   const [saved, setSaved] = useState(false)
-  const [orderNumber, setOrderNumber] = useState('11155599')
-  const [pickupDate, setPickupDate] = useState('2026-07-26')
+  const [orderNumber, setOrderNumber] = useState(params.get('order') ?? '11155599')
+  const [pickupDate, setPickupDate] = useState(() => {
+    const routeDate = params.get('date')
+    if (!routeDate) return '2026-07-26'
+    const [month, day, year] = routeDate.split('/')
+    return `${year}-${month}-${day}`
+  })
   const [responsible, setResponsible] = useState('John Doe')
   const [packaging, setPackaging] = useState('Customer')
   const [orderComment, setOrderComment] = useState('commentSize\norderComment')
@@ -48,7 +54,7 @@ export function PickupCaptureScreen() {
 
   return (
     <div className="cargo-flow">
-      <CargoFlowHeader title="Pickup" />
+      <CargoFlowHeader title="Pickup" subtitle={params.get('order') ? `Spoke order #${params.get('order')}` : undefined} />
       <form className="pickup-form" onSubmit={(event) => { event.preventDefault(); submit() }}>
         <div className="two-column-fields">
           <label>Order #<input inputMode="numeric" value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} /></label>
