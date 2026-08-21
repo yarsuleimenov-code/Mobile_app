@@ -8,11 +8,15 @@ import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
 
 export function CargoHomeScreen() {
   const navigate = useNavigate()
-  const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute } = useCargo()
+  const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute, clearSpokeRoute } = useCargo()
   const [routeQuery, setRouteQuery] = useState('')
   const visibleTasks = useMemo(() => filterSpokeTasks(spokeRoute?.tasks ?? [], routeQuery), [spokeRoute, routeQuery])
   const pickupCount = spokeRoute?.tasks.filter((task) => task.operation === 'pickup').length ?? 0
   const dropoffCount = (spokeRoute?.tasks.length ?? 0) - pickupCount
+  const resetSpokeRoute = () => {
+    setRouteQuery('')
+    clearSpokeRoute()
+  }
 
   return (
     <CargoShell>
@@ -34,7 +38,7 @@ export function CargoHomeScreen() {
           </section>
         ) : (
           <section className="spoke-tasks" aria-labelledby="spoke-tasks-title">
-            <header><div><h2 id="spoke-tasks-title">Today’s stops</h2><p>{spokeRoute.name}</p></div><button type="button" aria-label="Refresh today’s Spoke route" onClick={loadTodaySpokeRoute} disabled={isSpokeRouteLoading}>{isSpokeRouteLoading ? <LoaderCircle className="is-spinning" /> : <RefreshCw />}</button></header>
+            <header><div><h2 id="spoke-tasks-title">Today’s stops</h2><p>{spokeRoute.name}</p></div><button type="button" aria-label="Remove today’s stops and return to route loading" title="Return to route loading" onClick={resetSpokeRoute}><RefreshCw /></button></header>
             <div className="spoke-sync-state"><CheckCircle2 size={20} /><span><strong>{spokeRoute.tasks.length} stops loaded</strong><small>{pickupCount} Pickup · {dropoffCount} Dropoff · Updated just now</small></span></div>
             <label className="spoke-task-search"><Search size={19} /><input aria-label="Find stop by External ID" inputMode="numeric" placeholder="Find order by External ID" value={routeQuery} onChange={(event) => setRouteQuery(event.target.value)} /></label>
             <div className="spoke-task-list">

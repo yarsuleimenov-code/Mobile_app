@@ -8,6 +8,7 @@ interface CargoContextValue {
   isSpokeRouteLoading: boolean
   findRecord: (orderNumber: string) => CargoRecord | undefined
   loadTodaySpokeRoute: () => Promise<void>
+  clearSpokeRoute: () => void
   savePickup: (record: CargoRecord) => void
   completeDropoff: (orderNumber: string) => void
 }
@@ -55,6 +56,11 @@ export function CargoProvider({ children }: { children: ReactNode }) {
       await new Promise((resolve) => window.setTimeout(resolve, 650))
       setSpokeRoute({ ...mockTodaySpokeRoute, syncedAt: new Date().toISOString() })
       setIsSpokeRouteLoading(false)
+    },
+    clearSpokeRoute: () => {
+      setSpokeRoute(undefined)
+      setIsSpokeRouteLoading(false)
+      localStorage.removeItem(SPOKE_ROUTE_STORAGE_KEY)
     },
     savePickup: (record) => setRecords((current) => [record, ...current.filter((item) => item.orderNumber !== record.orderNumber)]),
     completeDropoff: (value) => setRecords((current) => current.map((record) => (
