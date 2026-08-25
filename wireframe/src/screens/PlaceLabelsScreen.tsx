@@ -16,8 +16,10 @@ function PlaceBarcode({ value }: { value: string }) {
     JsBarcode(barcodeRef.current, value, {
       format: 'CODE128',
       width: 1.45,
-      height: 48,
+      height: 54,
       margin: 0,
+      marginLeft: 15,
+      marginRight: 15,
       displayValue: false,
     })
   }, [value])
@@ -54,8 +56,7 @@ export function PlaceLabelsScreen() {
         </section>
 
         <div className="place-label-actions">
-          <button type="button" className="cargo-primary" onClick={printLabels}><Printer size={20} /> Print all labels</button>
-          <button type="button" className="ebol-secondary" onClick={printLabels}>Reprint same labels</button>
+          <button type="button" className="cargo-primary" onClick={printLabels}><Printer size={20} /> Print / reprint labels</button>
         </div>
 
         <section className="place-label-sheet" aria-label={`Labels for order ${orderNumber}`}>
@@ -63,10 +64,10 @@ export function PlaceLabelsScreen() {
             <article className="place-label" key={label.placeId}>
               <header><ZabermanLogo className="place-label-brand-logo" /><span>Place {String(label.placeNumber).padStart(2, '0')} of {label.totalPlaces}</span></header>
               <div className="place-label-order"><span>Order</span><strong>#{label.orderNumber}</strong></div>
-              <p>{label.orderTitle}</p>
-              <dl><div><dt>Route</dt><dd>{label.route}</dd></div><div><dt>Dimensions</dt><dd>{label.dimensions}</dd></div></dl>
+              {label.orderTitle ? <p className="place-label-title" title={label.orderTitle}>{label.orderTitle}</p> : null}
+              <dl><div className="place-label-route"><dt>Destination</dt><dd>TO {label.destinationBranch}</dd><small>FROM {label.originBranch}</small></div><div><dt>Dimensions</dt><dd>{label.dimensions}</dd></div></dl>
               <PlaceBarcode value={label.placeId} />
-              <code>{label.placeId}</code>
+              <div className="place-label-id"><span>Place ID</span><code>{label.placeId}</code></div>
             </article>
           ))}
         </section>

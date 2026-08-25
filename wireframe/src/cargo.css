@@ -525,12 +525,16 @@ textarea { font: inherit; }
 .place-label-order span,
 .place-label dt { color: #617084; font-size: 10px; font-weight: 800; text-transform: uppercase; }
 .place-label-order strong { font-size: 19px; }
-.place-label > p { margin-top: 3px; color: #405067; font-size: 12px; }
+.place-label-title { margin-top: 3px; overflow: hidden; color: #405067; font-size: 12px; font-weight: 750; white-space: nowrap; text-overflow: ellipsis; }
 .place-label dl { margin: 8px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .place-label dl > div { min-width: 0; }
 .place-label dd { margin: 2px 0 0; font-size: 11px; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.place-label svg { width: 100%; max-width: 100%; height: 48px; display: block; }
-.place-label code { margin-top: 4px; display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; font-weight: 900; letter-spacing: .7px; text-align: center; }
+.place-label-route dd { font-size: 14px; font-weight: 950; }
+.place-label-route small { display: block; margin-top: 1px; color: #405067; font-size: 9px; font-weight: 800; }
+.place-label svg { width: 100%; max-width: 100%; height: 54px; display: block; }
+.place-label-id { margin-top: 4px; display: flex; align-items: baseline; justify-content: center; gap: 6px; text-align: center; }
+.place-label-id span { color: #617084; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.place-label-id code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; font-weight: 900; letter-spacing: .7px; }
 .place-label-prototype-note { margin-top: 14px; padding: 12px; display: flex; align-items: flex-start; gap: 9px; color: #6b5a32; background: #fff8e8; border-radius: 9px; }
 .place-label-prototype-note svg { flex: 0 0 auto; }
 .place-label-prototype-note p { font-size: 11px; line-height: 1.45; }

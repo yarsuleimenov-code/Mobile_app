@@ -9,11 +9,12 @@ import {
 import { useCargo } from '../cargoStore'
 import { syncPickupOrderEbolDraft } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
+import { mockTodaySpokeRoute } from '../spokeDomain'
 
 export function PickupCaptureScreen() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { savePickup } = useCargo()
+  const { findRecord, savePickup } = useCargo()
   const [saved, setSaved] = useState(false)
   const [orderNumber, setOrderNumber] = useState(params.get('order') ?? '11155599')
   const [pickupDate, setPickupDate] = useState(() => {
@@ -40,8 +41,12 @@ export function PickupCaptureScreen() {
 
   const submit = () => {
     const [year, month, day] = pickupDate.split('-')
+    const normalizedOrderNumber = normalizeOrderNumber(orderNumber)
+    const orderTitle = findRecord(normalizedOrderNumber)?.title
+      ?? mockTodaySpokeRoute.tasks.find((task) => task.externalId === normalizedOrderNumber)?.title
+      ?? ''
     const record: CargoRecord = {
-      orderNumber: normalizeOrderNumber(orderNumber), title: 'Pickup cargo', pickupDate: `${month}/${day}/${year}`,
+      orderNumber: normalizedOrderNumber, title: orderTitle, pickupDate: `${month}/${day}/${year}`,
       originBranch: 'NJ1', destinationBranch: 'CA1',
       totalWeight: weight, dimensionGroups: groups, packaging, orderComment, responsible,
       photoCount, status: 'pickup_recorded',
