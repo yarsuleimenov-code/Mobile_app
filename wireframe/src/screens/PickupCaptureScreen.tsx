@@ -7,6 +7,8 @@ import {
   type CargoRecord, type DimensionGroup,
 } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
+import { syncPickupOrderEbolDraft } from '../orderEbolDomain'
+import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 
 export function PickupCaptureScreen() {
   const navigate = useNavigate()
@@ -45,11 +47,15 @@ export function PickupCaptureScreen() {
       photoCount, status: 'pickup_recorded',
     }
     savePickup(record)
+    const orderEbols = readOrderEbols()
+    const existing = findOrderEbol(orderEbols, record.orderNumber)
+    const draft = syncPickupOrderEbolDraft(existing, record)
+    writeOrderEbols(upsertOrderEbol(orderEbols, draft))
     setSaved(true)
   }
 
   if (saved) return (
-    <div className="cargo-flow"><CargoFlowHeader title="Pickup" /><SuccessState title="Pickup recorded" message={`Order #${normalizeOrderNumber(orderNumber)} and ${photoCount} photos are saved.`} action={<button type="button" className="cargo-primary" onClick={() => navigate('/')}>Back to Home</button>} /><CargoBottomNav /></div>
+    <div className="cargo-flow"><CargoFlowHeader title="Pickup" /><SuccessState title="Pickup recorded" message={`Order #${normalizeOrderNumber(orderNumber)} and ${photoCount} photos are ready for Order eBOL review.`} action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${normalizeOrderNumber(orderNumber)}/ebol/pickup`)}>Open Pickup review</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>} /><CargoBottomNav /></div>
   )
 
   return (

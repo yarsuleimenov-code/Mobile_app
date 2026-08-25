@@ -1,7 +1,12 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { CargoHomeScreen } from './screens/CargoHomeScreen'
 import { DropoffVerifyScreen } from './screens/DropoffVerifyScreen'
+import { DeliveryEbolScreen } from './screens/DeliveryEbolScreen'
+import { DeliverySignatureScreen } from './screens/DeliverySignatureScreen'
 import { PickupCaptureScreen } from './screens/PickupCaptureScreen'
+import { PickupEbolScreen } from './screens/PickupEbolScreen'
+import { OrderPodScreen } from './screens/OrderPodScreen'
+import { PickupSignatureScreen } from './screens/PickupSignatureScreen'
 import { InterstateBolScreen } from './screens/InterstateBolScreen'
 import { InterstateBolsScreen } from './screens/InterstateBolsScreen'
 import { InterstateLoadingScreen } from './screens/InterstateLoadingScreen'
@@ -15,6 +20,11 @@ export function App() {
     <Routes>
       <Route index element={<CargoHomeScreen />} />
       <Route path="pickup" element={<PickupCaptureScreen />} />
+      <Route path="orders/:orderNumber/ebol/pickup" element={<PickupEbolScreen />} />
+      <Route path="orders/:orderNumber/ebol/pickup/sign" element={<PickupSignatureScreen />} />
+      <Route path="orders/:orderNumber/ebol/delivery" element={<DeliveryEbolScreen />} />
+      <Route path="orders/:orderNumber/ebol/delivery/sign" element={<DeliverySignatureScreen />} />
+      <Route path="orders/:orderNumber/ebol/pod" element={<OrderPodScreen />} />
       <Route path="dropoff" element={<DropoffVerifyScreen />} />
       <Route path="interstate" element={<InterstateScreen />} />
       <Route path="interstate/loading" element={<InterstateLoadingScreen />} />

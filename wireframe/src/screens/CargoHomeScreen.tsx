@@ -1,9 +1,11 @@
-import { ArrowDown, ArrowUp, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, LoaderCircle, RefreshCw, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FileText, LoaderCircle, RefreshCw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
 import { calculatePieces } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
+import { getOrderDocumentNavigation } from '../orderEbolNavigation'
+import { readOrderEbols } from '../orderEbolStore'
 import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
 
 export function CargoHomeScreen() {
@@ -11,6 +13,7 @@ export function CargoHomeScreen() {
   const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute, clearSpokeRoute } = useCargo()
   const [routeQuery, setRouteQuery] = useState('')
   const [recentRecordsExpanded, setRecentRecordsExpanded] = useState(false)
+  const [orderEbols] = useState(() => readOrderEbols())
   const visibleTasks = useMemo(() => filterSpokeTasks(spokeRoute?.tasks ?? [], routeQuery), [spokeRoute, routeQuery])
   const pickupCount = spokeRoute?.tasks.filter((task) => task.operation === 'pickup').length ?? 0
   const dropoffCount = (spokeRoute?.tasks.length ?? 0) - pickupCount
@@ -22,13 +25,13 @@ export function CargoHomeScreen() {
   return (
     <CargoShell>
       <div className="cargo-home">
-        <h1>Record cargo</h1>
+        <h1>Cargo operations</h1>
         <section className="cargo-actions" aria-label="Choose an operation">
           <button type="button" className="cargo-action cargo-action--pickup" onClick={() => navigate('/pickup')}>
-            <ArrowUp size={46} /><strong>Pickup</strong><small>Measure and photograph</small>
+            <ArrowUp size={46} /><strong>Pickup</strong><small>Record & start Order eBOL</small>
           </button>
           <button type="button" className="cargo-action cargo-action--dropoff" onClick={() => navigate('/dropoff')}>
-            <ArrowDown size={46} /><strong>Dropoff</strong><small>Find and verify</small>
+            <ArrowDown size={46} /><strong>Dropoff</strong><small>Verify & complete delivery</small>
           </button>
         </section>
 
@@ -56,6 +59,14 @@ export function CargoHomeScreen() {
           </section>
         )}
 
+        <section className="order-documents" aria-labelledby="order-documents-title">
+          <header><div><h2 id="order-documents-title">Order documents</h2><p>Order eBOL → completed POD</p></div><FileText size={24} /></header>
+          {orderEbols.length ? <div className="order-document-list">{orderEbols.slice(0, 3).map((orderEbol) => {
+            const destination = getOrderDocumentNavigation(orderEbol)
+            return <button type="button" key={orderEbol.orderNumber} onClick={() => navigate(destination.path)}><span className="order-document-icon"><FileText size={19} /></span><span className="order-document-main"><strong>Order eBOL · #{orderEbol.orderNumber}</strong><small>{destination.detailLabel}</small></span><span className={`order-document-status order-document-status--${destination.state}`}>{destination.statusLabel}</span><ChevronRight size={19} /></button>
+          })}</div> : <div className="order-documents-empty"><FileText size={21} /><span><strong>No Order eBOL yet</strong><small>Create a Pickup record to start the document.</small></span></div>}
+        </section>
+
         <section className="recent-records">
           <button
             type="button"
@@ -65,15 +76,15 @@ export function CargoHomeScreen() {
             onClick={() => setRecentRecordsExpanded((expanded) => !expanded)}
           >
             <span>
-              <strong>Recent records</strong>
-              <small>{records.length > 5 ? `Latest 5 of ${records.length}` : `${records.length} records`}</small>
+              <strong>Recent operations</strong>
+              <small>{records.length > 5 ? `Latest 5 of ${records.length}` : `${records.length} operations`}</small>
             </span>
             <ChevronDown className={recentRecordsExpanded ? 'is-expanded' : ''} size={22} aria-hidden="true" />
           </button>
           {recentRecordsExpanded ? (
             <div className="recent-records-list" id="recent-records-list">
               {records.slice(0, 5).map((record) => (
-                <button type="button" key={record.orderNumber} onClick={() => navigate(record.status === 'pickup_recorded' ? `/dropoff?order=${record.orderNumber}` : `/dropoff?order=${record.orderNumber}`)}>
+                <button type="button" key={record.orderNumber} onClick={() => navigate(`/dropoff?order=${record.orderNumber}`)}>
                   <span className={`record-direction record-direction--${record.status}`}><ArrowUp size={19} /></span>
                   <span className="record-main"><strong>#{record.orderNumber}</strong><small>{record.pickupDate} · {calculatePieces(record.dimensionGroups)} pcs / {record.totalWeight} lb</small></span>
                   <span className={`record-status record-status--${record.status}`}>{record.status === 'pickup_recorded' ? 'Pickup recorded' : 'Dropoff complete'}</span>

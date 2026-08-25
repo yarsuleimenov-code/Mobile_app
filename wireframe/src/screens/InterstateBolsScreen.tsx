@@ -30,13 +30,13 @@ export function InterstateBolsScreen() {
 
   return (
     <div className="cargo-flow interstate-bols">
-      <CargoFlowHeader title="Find BOL" subtitle="Interstate documents" />
+      <CargoFlowHeader title="Interstate BOLs" subtitle="Find Trip documents" />
       <div className="bols-body">
-        <label className="bol-search"><Search size={20} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="BOL, TripID, route or truck" autoFocus /><span>{results.length}</span></label>
-        <div className="bol-filters" aria-label="BOL status filters">{filters.map((item) => <button type="button" key={item.id} className={filter === item.id ? 'is-active' : ''} onClick={() => setFilter(item.id)}>{item.label}</button>)}</div>
+        <label className="bol-search"><Search size={20} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="BOL number, TripID, route or truck" autoFocus /><span>{results.length}</span></label>
+        <div className="bol-filters" aria-label="Interstate BOL status filters">{filters.map((item) => <button type="button" key={item.id} className={filter === item.id ? 'is-active' : ''} onClick={() => setFilter(item.id)}>{item.label}</button>)}</div>
 
         <section className="bol-results" aria-live="polite">
-          <h2>{query ? 'Search results' : 'Available BOLs'}</h2>
+          <h2>{query ? 'Search results' : 'Available Interstate BOLs'}</h2>
           {results.map((bol) => (
             <button type="button" key={bol.bolNumber} onClick={() => navigate(`/interstate/bol/${bol.bolNumber}`)}>
               <FileText />
@@ -45,7 +45,7 @@ export function InterstateBolsScreen() {
               <ChevronRight />
             </button>
           ))}
-          {!results.length ? <div className="bol-empty"><FileText /><strong>No BOL found</strong><span>Check the number or select another status.</span></div> : null}
+          {!results.length ? <div className="bol-empty"><FileText /><strong>No Interstate BOL found</strong><span>Check the number or select another status.</span></div> : null}
         </section>
       </div>
       <CargoBottomNav />

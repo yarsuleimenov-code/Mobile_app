@@ -748,3 +748,43 @@ Role simulation должна реально скрывать/disable дейст�
 Дополнительный бизнес-контекст этой редакции: филиалы `NJ1`, `CA1`, `CA2`; девять допустимых направлений; Local/Same Day как основной ежедневный контур; CA1 ↔ CA2 как отдельный interbranch transfer с неутвержденными Loading/Unloading/documents.
 
 Фактически подтвержденными считаются только решения, помеченные в audit-пакете как реализованные в deployable Loading Control и BOL Generator. Production deployment, Telegram-бот, live Sheets/Drive, triggers и end-to-end Trip → PDF текущей сессией не подтверждены. Поэтому wireframe использует доказанные бизнес-правила, но не воспроизводит технические ограничения текущего Apps Script/Spreadsheet интерфейса.
+
+## 15. Синхронизация BOL-терминологии и границ прототипа
+
+Этот раздел является авторитетным baseline для последующей разработки Order eBOL. Детальные решения и открытые вопросы ведутся в [`BOL_DECISION_LOG.md`](BOL_DECISION_LOG.md).
+
+### 15.1 Два типа документов
+
+| Документ | Объект | Назначение | Текущее состояние |
+| --- | --- | --- | --- |
+| Order eBOL | Один Order | Подтверждение передачи груза на Pickup и Dropoff с evidence, исключениями и подписями | Реализован в wireframe до итогового POD preview |
+| Interstate BOL | Один Interstate Trip и manifest | Документирование межфилиальной перевозки выбранных мест | Реализован в wireframe; в первом инкременте не изменяется |
+| POD | Завершённый Order eBOL | Итоговое представление результата Delivery | Не отдельная сущность и не отдельный lifecycle |
+
+Order eBOL и Interstate BOL не заменяют друг друга. Заказ может участвовать в Interstate Trip, но оба документа сохраняют собственные статусы и могут только ссылаться друг на друга.
+
+### 15.2 Lifecycle Order eBOL
+
+Основной сценарий:
+
+`Draft → Pickup review → Pickup signed/locked → In transit → Delivery review → Completed / POD available`.
+
+Дополнительные mock-состояния: `Contactless`, `Damage documented`, `Correction requested`.
+
+На каждом этапе передачи предусмотрены две позиции подписи: внешний контакт и водитель Zaberman. При отсутствии внешнего контакта используется contactless fallback с обязательной причиной. Подпись подтверждает ознакомление с evidence и исключениями; наличие damage не блокирует завершение этапа.
+
+После подтверждения Pickup или Delivery соответствующий snapshot блокируется. Исправление уже подтверждённых данных в прототипе показывается отдельным состоянием `Correction requested`, без реализации production versioning.
+
+### 15.3 Scope первого инкремента
+
+Реализуется только интерактивный BA-wireframe:
+
+- переход к Order eBOL из Pickup/Dropoff;
+- review evidence и исключений;
+- четыре mock-позиции подписи;
+- contactless fallback;
+- locked snapshot;
+- документированный damage без блокировки завершения;
+- POD preview и mock-действия View, Print, Download, Share.
+
+Не реализуются юридически значимая электронная подпись, backend, внешние ссылки, настоящий PDF/email, offline signing, audit trail/versioning, интеграции со Spoke/CRM/TMS, payment flow и изменения существующего Interstate BOL.

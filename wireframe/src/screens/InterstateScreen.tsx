@@ -39,17 +39,17 @@ export function InterstateScreen() {
           <div><strong>{totalWeight} lb</strong><span>Total weight</span></div>
         </section>
         <button type="button" className="interstate-primary" disabled={!eligible.length} onClick={() => { clearLoading(); navigate('/interstate/loading') }}><Truck size={21} /> Start loading</button>
-        <button type="button" className="bol-search-entry" onClick={() => navigate('/interstate/bols')}><FileSearch /><span><strong>Find or open BOL</strong><small>In-transit and closed documents</small></span><ChevronRight /></button>
+        <button type="button" className="bol-search-entry" onClick={() => navigate('/interstate/bols')}><FileSearch /><span><strong>Find Interstate BOL</strong><small>Trip documents · in transit and closed</small></span><ChevronRight /></button>
 
         <section className="incoming-trips">
           <h2>Incoming trips <span>Ready to receive</span></h2>
-          {availableIncomingTrips.map((trip) => <button type="button" key={trip.tripId} onClick={() => navigate(`/interstate/unloading/${trip.tripId}`)}><PackageOpen /><span><strong>{trip.tripId}</strong><small>{directionLabel(trip.direction)} · {trip.truck}</small><small>BOL {trip.bolNumber}</small></span><em>{trip.placeCount} places</em><ChevronRight /></button>)}
+          {availableIncomingTrips.map((trip) => <button type="button" key={trip.tripId} onClick={() => navigate(`/interstate/unloading/${trip.tripId}`)}><PackageOpen /><span><strong>{trip.tripId}</strong><small>{directionLabel(trip.direction)} · {trip.truck}</small><small>Interstate BOL {trip.bolNumber}</small></span><em>{trip.placeCount} places</em><ChevronRight /></button>)}
           {!availableIncomingTrips.length ? <div className="incoming-empty"><PackageOpen /><span><strong>No incoming trips</strong><small>All available manifests are unloaded.</small></span></div> : null}
         </section>
 
         <section className="recent-trips">
           <h2>Recent interstate trips</h2>
-          {generatedTrip ? <button type="button" onClick={() => navigate('/interstate/trip')}><Truck /><span><strong>{generatedTrip.tripId}</strong><small>{directionLabel(generatedTrip.direction)} · {generatedTrip.truck}</small></span><em>BOL generated</em><ChevronRight /></button> : null}
+          {generatedTrip ? <button type="button" onClick={() => navigate('/interstate/trip')}><Truck /><span><strong>{generatedTrip.tripId}</strong><small>{directionLabel(generatedTrip.direction)} · {generatedTrip.truck}</small></span><em>Interstate BOL</em><ChevronRight /></button> : null}
           {recentArchive.slice(0, 3).map((bol) => {
             const closed = bol.status === 'closed' || completedUnloadingTripIds.includes(bol.tripId)
             return <button type="button" key={bol.bolNumber} onClick={() => navigate(`/interstate/bol/${bol.bolNumber}`)}><Truck /><span><strong>{bol.tripId}</strong><small>{directionLabel(bol.direction)} · {bol.truck.split(' · ')[0]}</small></span><em className={closed ? 'is-closed' : 'is-generated'}>{closed ? 'Unloaded' : 'In transit'}</em><ChevronRight /></button>

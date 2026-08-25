@@ -75,7 +75,7 @@ export function InterstateUnloadingScreen() {
           <div className="trip-created"><span><Check size={38} /></span><h2>Unloading complete</h2><strong>{trip.tripId}</strong><p>{directionLabel(trip.direction)} · {trip.truck}</p></div>
           <section className="review-stats"><div><strong>{trip.placeCount}</strong><span>Expected</span></div><div><strong>{receivedPlaces.length}</strong><span>Received</span></div><div><strong>{missingPlaces.length}</strong><span>Missing</span></div></section>
           {missingPlaces.length ? <div className="unloading-warning"><CircleAlert /><span><strong>{missingPlaces.length} discrepancies opened</strong><small>Missing places remain attached to this Trip for investigation.</small></span></div> : <div className="unloading-success-note"><PackageCheck /><span><strong>Manifest matched</strong><small>Every loaded place was received at the destination warehouse.</small></span></div>}
-          <button type="button" className="interstate-primary" onClick={() => navigate(`/interstate/bol/${trip.bolNumber}`)}><FileText size={20} /> Open BOL</button>
+          <button type="button" className="interstate-primary" onClick={() => navigate(`/interstate/bol/${trip.bolNumber}`)}><FileText size={20} /> Open Interstate BOL</button>
           <button type="button" className="back-interstate" onClick={() => navigate('/interstate')}><Truck size={20} /> Back to Interstate</button>
         </div>
         <CargoBottomNav />
