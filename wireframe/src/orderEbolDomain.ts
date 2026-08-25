@@ -1,4 +1,4 @@
-import { calculatePieces, calculateVolume, type CargoRecord } from './cargoDomain'
+import { calculatePieces, calculateVolume, expandCargoPlaces, type CargoRecord } from './cargoDomain'
 
 export type OrderEbolStatus =
   | 'draft'
@@ -29,6 +29,7 @@ export interface OrderEbolDriverConfirmation extends OrderEbolConfirmationDetail
 export interface OrderEbolEvidenceSnapshot {
   capturedAt: string
   pieceCount: number
+  placeIds: string[]
   totalWeight: number
   totalVolume: number
   photoCount: number
@@ -76,6 +77,7 @@ export function createOrderEbol(record: CargoRecord, capturedAt = new Date().toI
       evidence: {
         capturedAt,
         pieceCount: calculatePieces(record.dimensionGroups),
+        placeIds: expandCargoPlaces(record).map((place) => place.placeId),
         totalWeight: record.totalWeight,
         totalVolume: calculateVolume(record.dimensionGroups),
         photoCount: record.photoCount,
@@ -177,6 +179,7 @@ export function prepareDeliveryEbol(
       evidence: {
         capturedAt,
         pieceCount: calculatePieces(record.dimensionGroups),
+        placeIds: orderEbol.pickup.evidence?.placeIds ?? expandCargoPlaces(record).map((place) => place.placeId),
         totalWeight: record.totalWeight,
         totalVolume: calculateVolume(record.dimensionGroups),
         photoCount: input.photoCount,

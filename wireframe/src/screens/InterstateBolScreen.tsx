@@ -1,6 +1,7 @@
 import { Download, Printer } from 'lucide-react'
 import { Navigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
+import { ZabermanLogo } from '../brand-logo'
 import { directionLabel, generatedTripToBol, interstateBolArchive } from '../interstateDomain'
 import { useInterstate } from '../interstateStore'
 
@@ -20,7 +21,7 @@ export function InterstateBolScreen() {
       <div className="bol-body">
         <div className="bol-document-state"><span className={bol.status}>{unloaded ? 'Unloaded' : bol.status === 'in_transit' ? 'In transit' : 'Closed'}</span><small>{unloaded ? 'Received at destination' : bol.status === 'closed' ? `Closed ${bol.closedAt}` : `Issued ${bol.createdAt}`}</small></div>
         <section className="bol-paper">
-          <header><strong>ZABERMAN</strong><span>BILL OF LADING</span></header>
+          <header><ZabermanLogo className="document-brand-logo" /><span>BILL OF LADING</span></header>
           <dl><div><dt>BOL Number</dt><dd>{bol.bolNumber}</dd></div><div><dt>TripID</dt><dd>{bol.tripId}</dd></div><div><dt>Route</dt><dd>{directionLabel(bol.direction)}</dd></div><div><dt>Truck</dt><dd>{bol.truck}</dd></div></dl>
           <div className="bol-cargo"><strong>Cargo totals</strong><span>{bol.orderCount} orders</span><span>{bol.placeCount} places</span><span>{bol.loadedWeight} lb</span></div>
           <footer><span>Shipper signature</span><span>Carrier signature</span></footer>

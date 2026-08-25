@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { ArrowDown, ArrowLeft, ArrowUp, Check, Cloud, Home, ImagePlus, RefreshCw, Truck, WifiOff } from 'lucide-react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useCargo } from './cargoStore'
+import { ZabermanLogo } from './brand-logo'
 
 export function CargoShell({ children }: { children: ReactNode }) {
   const { forceSync, pendingChanges, syncStatus } = useCargo()
@@ -16,7 +17,7 @@ export function CargoShell({ children }: { children: ReactNode }) {
   return (
     <div className="cargo-shell">
       <header className="cargo-topbar">
-        <Link to="/" className="cargo-brand" aria-label="Zaberman home">ZABERM<span>A</span>N</Link>
+        <Link to="/" className="cargo-brand" aria-label="Zaberman home"><ZabermanLogo className="cargo-brand-logo" alt="" /></Link>
         <div className="cargo-meta">
           <strong>NJ1</strong>
           <div className={`cargo-sync cargo-sync--${syncStatus}`}>

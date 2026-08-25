@@ -18,6 +18,11 @@ describe('Order eBOL model', () => {
     expect(orderEbol.status).toBe('pickup_review')
     expect(orderEbol.pickup.evidence).toMatchObject({
       pieceCount: 11,
+      placeIds: [
+        'ZB-11155599-01', 'ZB-11155599-02', 'ZB-11155599-03', 'ZB-11155599-04',
+        'ZB-11155599-05', 'ZB-11155599-06', 'ZB-11155599-07', 'ZB-11155599-08',
+        'ZB-11155599-09', 'ZB-11155599-10', 'ZB-11155599-11',
+      ],
       totalWeight: 123,
       totalVolume: 273.44,
       photoCount: 4,

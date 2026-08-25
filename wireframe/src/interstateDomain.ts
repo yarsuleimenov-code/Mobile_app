@@ -1,15 +1,9 @@
-import { calculatePieces, type CargoRecord, type DimensionGroup, type Warehouse } from './cargoDomain'
+import { createCargoPlaceId, expandCargoPlaces, type CargoRecord, type OrderCargoPlace, type Warehouse } from './cargoDomain'
 
 export type InterstateDirection = `${Warehouse}_${Warehouse}`
 
-export interface InterstatePlace {
-  key: string
-  orderNumber: string
+export interface InterstatePlace extends OrderCargoPlace {
   orderTitle: string
-  placeNumber: number
-  dimensions: string
-  estimatedWeight: number
-  volume: number
 }
 
 export interface GeneratedInterstateTrip {
@@ -39,10 +33,12 @@ export const interstateTrucks = ['Truck 1 · 26 ft', 'Truck 2 · 26 ft', 'Truck 
 
 function createManifestPlaces(orderNumber: string, orderTitle: string, quantity: number, dimensions: string, estimatedWeight: number, volume: number) {
   return Array.from({ length: quantity }, (_, index): InterstatePlace => ({
-    key: `ZB-${orderNumber}-${String(index + 1).padStart(2, '0')}`,
+    placeId: createCargoPlaceId(orderNumber, index + 1),
     orderNumber,
     orderTitle,
     placeNumber: index + 1,
+    totalPlaces: quantity,
+    dimensionGroupId: `manifest-${orderNumber}`,
     dimensions,
     estimatedWeight,
     volume,
@@ -106,26 +102,8 @@ export function getEligibleRecords(records: CargoRecord[], direction: Interstate
   ))
 }
 
-function groupDimensions(group: DimensionGroup) {
-  return `${group.length} × ${group.width} × ${group.height} in`
-}
-
 export function expandRecordPlaces(record: CargoRecord): InterstatePlace[] {
-  const pieces = Math.max(1, calculatePieces(record.dimensionGroups))
-  const estimatedWeight = Math.round((record.totalWeight / pieces) * 10) / 10
-  let placeNumber = 0
-  return record.dimensionGroups.flatMap((group) => Array.from({ length: group.quantity }, () => {
-    placeNumber += 1
-    return {
-      key: `${record.orderNumber}:${placeNumber}`,
-      orderNumber: record.orderNumber,
-      orderTitle: record.title,
-      placeNumber,
-      dimensions: groupDimensions(group),
-      estimatedWeight,
-      volume: Math.round(((group.length * group.width * group.height) / 1728) * 100) / 100,
-    }
-  }))
+  return expandCargoPlaces(record).map((place) => ({ ...place, orderTitle: record.title }))
 }
 
 export function summarizeLoadedPlaces(places: InterstatePlace[]) {

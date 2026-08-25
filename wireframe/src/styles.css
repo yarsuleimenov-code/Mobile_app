@@ -47,7 +47,8 @@ h1, h2, h3, p { margin: 0; }
   justify-content: space-between;
   background: #fff;
 }
-.brand { font-size: 28px; font-weight: 950; font-style: italic; letter-spacing: -1.7px; }
+.brand { display: flex; align-items: center; }
+.brand-logo { width: 136px; height: auto; display: block; }
 .topbar-meta { display: flex; align-items: center; gap: 10px; font-weight: 800; }
 .sync-dot { display: flex; align-items: center; gap: 5px; color: var(--green); font-size: 12px; text-transform: capitalize; }
 .sync-dot--offline, .sync-dot--error { color: var(--red); }
@@ -373,7 +374,7 @@ h1, h2, h3, p { margin: 0; }
 @media (max-width: 359px) {
   .app-content { padding-inline: 14px; }
   .topbar { padding-inline: 14px; }
-  .brand { font-size: 24px; }
+  .brand-logo { width: 122px; }
   .quick-action { min-height: 170px; padding-inline: 13px; }
   .quick-action > span { font-size: 19px; }
   .same-day-card { padding: 15px; }

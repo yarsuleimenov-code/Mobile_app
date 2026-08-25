@@ -187,7 +187,7 @@
 .bol-document-state small { color: var(--cargo-muted); font-size: 11px; text-align: right; }
 .bol-paper { padding: 18px; background: #fff; border: 1px solid #cfd7df; box-shadow: 0 8px 22px rgba(7,29,61,.08); }
 .bol-paper header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 2px solid var(--cargo-navy); }
-.bol-paper header strong { font-style: italic; }
+.bol-paper .document-brand-logo { width: 134px; height: auto; display: block; }
 .bol-paper header span { font-size: 12px; font-weight: 900; }
 .bol-paper dl { margin: 15px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .bol-paper dl div { display: flex; flex-direction: column; gap: 4px; }

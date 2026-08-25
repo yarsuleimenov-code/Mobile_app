@@ -788,3 +788,18 @@ Order eBOL и Interstate BOL не заменяют друг друга. Зака
 - POD preview и mock-действия View, Print, Download, Share.
 
 Не реализуются юридически значимая электронная подпись, backend, внешние ссылки, настоящий PDF/email, offline signing, audit trail/versioning, интеграции со Spoke/CRM/TMS, payment flow и изменения существующего Interstate BOL.
+
+## 16. Этап 9 — штрихкодирование грузовых мест
+
+Реализованный prototype scope:
+
+- одна единица `quantity` разворачивается в отдельное грузовое место;
+- канонический Place ID: `ZB-{ORDER_NUMBER}-{NN}`;
+- Pickup с 11 pieces создаёт 11 стабильных идентификаторов и 11 этикеток;
+- этикетка содержит Order, Place N of Total, направление, размеры, Code 128 и читаемый Place ID;
+- после `Save Pickup` и из Home доступен экран `/orders/:orderNumber/labels`;
+- печать и повторная печать используют browser print и не меняют Place ID;
+- Interstate Loading и Unloading используют один Place ID, различают ожидаемый, повторный и неизвестный код;
+- Pickup eBOL snapshot сохраняет список `placeIds`.
+
+Вне scope прототипа остаются printer SDK/Bluetooth pairing, доступ к камере телефона, backend/API, ручное добавление или удаление этикеток и production audit trail.

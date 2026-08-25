@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FileText, LoaderCircle, RefreshCw, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FileText, LoaderCircle, RefreshCw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
@@ -63,7 +63,7 @@ export function CargoHomeScreen() {
           <header><div><h2 id="order-documents-title">Order documents</h2><p>Order eBOL → completed POD</p></div><FileText size={24} /></header>
           {orderEbols.length ? <div className="order-document-list">{orderEbols.slice(0, 3).map((orderEbol) => {
             const destination = getOrderDocumentNavigation(orderEbol)
-            return <button type="button" key={orderEbol.orderNumber} onClick={() => navigate(destination.path)}><span className="order-document-icon"><FileText size={19} /></span><span className="order-document-main"><strong>Order eBOL · #{orderEbol.orderNumber}</strong><small>{destination.detailLabel}</small></span><span className={`order-document-status order-document-status--${destination.state}`}>{destination.statusLabel}</span><ChevronRight size={19} /></button>
+            return <div className="order-document-row" key={orderEbol.orderNumber}><button type="button" className="order-document-open" onClick={() => navigate(destination.path)}><span className="order-document-icon"><FileText size={19} /></span><span className="order-document-main"><strong>Order eBOL · #{orderEbol.orderNumber}</strong><small>{destination.detailLabel}</small></span><span className={`order-document-status order-document-status--${destination.state}`}>{destination.statusLabel}</span><ChevronRight size={19} /></button><button type="button" className="order-document-labels" aria-label={`Open place labels for order ${orderEbol.orderNumber}`} title="Place labels" onClick={() => navigate(`/orders/${orderEbol.orderNumber}/labels`)}><Barcode size={21} /></button></div>
           })}</div> : <div className="order-documents-empty"><FileText size={21} /><span><strong>No Order eBOL yet</strong><small>Create a Pickup record to start the document.</small></span></div>}
         </section>
 

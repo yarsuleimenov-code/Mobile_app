@@ -25,6 +25,17 @@ export interface CargoRecord {
   photoCount: number
   status: CargoRecordStatus
 }
+export interface OrderCargoPlace {
+  placeId: string
+  orderNumber: string
+  placeNumber: number
+  totalPlaces: number
+  dimensionGroupId: string
+  dimensions: string
+  estimatedWeight: number
+  volume: number
+}
+
 
 export const defaultDimensionGroups: DimensionGroup[] = [
   { id: 'group-1', quantity: 3, length: 11, width: 22, height: 33 },
@@ -49,6 +60,30 @@ export function calculateVolume(groups: DimensionGroup[]) {
 export function normalizeOrderNumber(value: string) {
   return value.replace(/[^0-9]/g, '')
 }
+export function createCargoPlaceId(orderNumber: string, placeNumber: number) {
+  return `ZB-${normalizeOrderNumber(orderNumber)}-${String(placeNumber).padStart(2, '0')}`
+}
+
+export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
+  const totalPlaces = Math.max(1, calculatePieces(record.dimensionGroups))
+  const estimatedWeight = Math.round((record.totalWeight / totalPlaces) * 10) / 10
+  let placeNumber = 0
+
+  return record.dimensionGroups.flatMap((group) => Array.from({ length: Math.max(0, group.quantity) }, () => {
+    placeNumber += 1
+    return {
+      placeId: createCargoPlaceId(record.orderNumber, placeNumber),
+      orderNumber: record.orderNumber,
+      placeNumber,
+      totalPlaces,
+      dimensionGroupId: group.id,
+      dimensions: `${group.length} × ${group.width} × ${group.height} in`,
+      estimatedWeight,
+      volume: Math.round(((group.length * group.width * group.height) / 1728) * 100) / 100,
+    }
+  }))
+}
+
 
 export const initialCargoRecords: CargoRecord[] = [
   {

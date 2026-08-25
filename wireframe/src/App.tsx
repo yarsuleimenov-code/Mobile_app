@@ -4,6 +4,7 @@ import { DropoffVerifyScreen } from './screens/DropoffVerifyScreen'
 import { DeliveryEbolScreen } from './screens/DeliveryEbolScreen'
 import { DeliverySignatureScreen } from './screens/DeliverySignatureScreen'
 import { PickupCaptureScreen } from './screens/PickupCaptureScreen'
+import { PlaceLabelsScreen } from './screens/PlaceLabelsScreen'
 import { PickupEbolScreen } from './screens/PickupEbolScreen'
 import { OrderPodScreen } from './screens/OrderPodScreen'
 import { PickupSignatureScreen } from './screens/PickupSignatureScreen'
@@ -20,6 +21,7 @@ export function App() {
     <Routes>
       <Route index element={<CargoHomeScreen />} />
       <Route path="pickup" element={<PickupCaptureScreen />} />
+      <Route path="orders/:orderNumber/labels" element={<PlaceLabelsScreen />} />
       <Route path="orders/:orderNumber/ebol/pickup" element={<PickupEbolScreen />} />
       <Route path="orders/:orderNumber/ebol/pickup/sign" element={<PickupSignatureScreen />} />
       <Route path="orders/:orderNumber/ebol/delivery" element={<DeliveryEbolScreen />} />

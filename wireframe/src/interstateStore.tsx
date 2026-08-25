@@ -63,7 +63,7 @@ export function InterstateProvider({ children }: { children: ReactNode }) {
     setDestinationWarehouse: (next) => { if (next !== originWarehouse) { setDestinationWarehouseState(next); resetLoading() } },
     setTruck,
     togglePlace: (key) => setLoadedPlaceKeys((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key]),
-    loadAll: (places) => setLoadedPlaceKeys((current) => Array.from(new Set([...current, ...places.map((place) => place.key)]))),
+    loadAll: (places) => setLoadedPlaceKeys((current) => Array.from(new Set([...current, ...places.map((place) => place.placeId)]))),
     clearLoading: () => { setLoadedPlaceKeys([]); setGeneratedTrip(undefined) },
     createTrip: setGeneratedTrip,
     receivePlace: (tripId, placeKey) => setUnloadingDrafts((current) => ({

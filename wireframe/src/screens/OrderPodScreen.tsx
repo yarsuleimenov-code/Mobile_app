@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, Download, FileText, Printer, Share2, UserR
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery } from '../cargo-components'
+import { ZabermanLogo } from '../brand-logo'
 import { normalizeOrderNumber } from '../cargoDomain'
 import { isOrderPodAvailable, type OrderEbol, type OrderEbolHandoffSnapshot } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
@@ -62,7 +63,7 @@ export function OrderPodScreen() {
         <div className="pod-completed-state"><CheckCircle2 size={24} /><span><strong>POD available</strong><small>Both handoff snapshots are complete and locked.</small></span></div>
 
         <article className="pod-paper">
-          <header className="pod-paper-header"><strong>ZABERMAN</strong><span>ORDER eBOL<br />PROOF OF DELIVERY</span></header>
+          <header className="pod-paper-header"><ZabermanLogo className="document-brand-logo" /><span>ORDER eBOL<br />PROOF OF DELIVERY</span></header>
           <div className="pod-document-state"><span>COMPLETED</span><small>Final view · not a production PDF</small></div>
           <dl className="pod-meta">
             <div><dt>Order number</dt><dd>#{orderEbol!.orderNumber}</dd></div>

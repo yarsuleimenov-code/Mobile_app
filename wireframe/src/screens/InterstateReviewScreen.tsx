@@ -10,7 +10,7 @@ export function InterstateReviewScreen() {
   const { records } = useCargo()
   const { direction, truck, loadedPlaceKeys, createTrip } = useInterstate()
   const eligible = getEligibleRecords(records, direction)
-  const selected = eligible.flatMap(expandRecordPlaces).filter((place) => loadedPlaceKeys.includes(place.key))
+  const selected = eligible.flatMap(expandRecordPlaces).filter((place) => loadedPlaceKeys.includes(place.placeId))
   const summary = summarizeLoadedPlaces(selected)
   if (!selected.length) return <Navigate to="/interstate/loading" replace />
 

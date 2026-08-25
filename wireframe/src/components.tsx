@@ -5,6 +5,7 @@ import {
   Home, Menu, Package, RefreshCw, ScanLine, Truck, WifiOff,
 } from 'lucide-react'
 import { useDemo } from './store'
+import { ZabermanLogo } from './brand-logo'
 import type { MovementType } from './domain'
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -12,7 +13,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <NavLink to="/" className="brand" aria-label="Zaberman home">ZABERMAN</NavLink>
+        <NavLink to="/" className="brand" aria-label="Zaberman home"><ZabermanLogo className="brand-logo" alt="" /></NavLink>
         <div className="topbar-meta">
           <span>{branch}</span>
           <NavLink className={`sync-dot sync-dot--${network}`} to="/more/sync">

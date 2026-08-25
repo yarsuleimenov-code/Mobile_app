@@ -35,35 +35,35 @@ export function InterstateUnloadingScreen() {
     const normalizedQuery = query.trim().toLowerCase()
     if (!normalizedQuery) return orders
     return orders.filter((order) => (
-      `${order.orderNumber} ${order.title} ${order.places.map((place) => place.key).join(' ')}`
+      `${order.orderNumber} ${order.title} ${order.places.map((place) => place.placeId).join(' ')}`
         .toLowerCase()
         .includes(normalizedQuery)
     ))
   }, [orders, query])
-  const receivedPlaces = trip?.manifest.filter((place) => receivedSet.has(place.key)) ?? []
-  const missingPlaces = trip?.manifest.filter((place) => !receivedSet.has(place.key)) ?? []
+  const receivedPlaces = trip?.manifest.filter((place) => receivedSet.has(place.placeId)) ?? []
+  const missingPlaces = trip?.manifest.filter((place) => !receivedSet.has(place.placeId)) ?? []
   const receivedSummary = summarizeLoadedPlaces(receivedPlaces)
   const completed = completedUnloadingTripIds.includes(tripId)
-  const selectedPlace = trip?.manifest.find((place) => place.key === selectedPlaceKey)
+  const selectedPlace = trip?.manifest.find((place) => place.placeId === selectedPlaceKey)
 
   if (!trip) return <Navigate to="/interstate" replace />
 
   const submitScan = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const normalizedKey = scanValue.trim().toLowerCase()
-    const place = trip.manifest.find((item) => item.key.toLowerCase() === normalizedKey)
+    const place = trip.manifest.find((item) => item.placeId.toLowerCase() === normalizedKey)
     if (!place) {
       setScanFeedback({ type: 'error', message: 'Place ID is not in this Trip manifest.' })
       return
     }
-    if (receivedSet.has(place.key)) {
-      setScanFeedback({ type: 'success', message: `${place.key} was already received.` })
+    if (receivedSet.has(place.placeId)) {
+      setScanFeedback({ type: 'success', message: `${place.placeId} was already received.` })
     } else {
-      receivePlace(trip.tripId, place.key)
-      setScanFeedback({ type: 'success', message: `${place.key} received.` })
+      receivePlace(trip.tripId, place.placeId)
+      setScanFeedback({ type: 'success', message: `${place.placeId} received.` })
     }
     setExpandedOrder(place.orderNumber)
-    setSelectedPlaceKey(place.key)
+    setSelectedPlaceKey(place.placeId)
     setScanValue('')
   }
 
@@ -93,7 +93,7 @@ export function InterstateUnloadingScreen() {
           {missingPlaces.length ? (
             <section className="missing-places">
               <h2>Missing discrepancies</h2>
-              {missingPlaces.map((place) => <div key={place.key}><CircleAlert /><span><strong>{place.key}</strong><small>#{place.orderNumber} · Place {place.placeNumber}</small></span></div>)}
+              {missingPlaces.map((place) => <div key={place.placeId}><CircleAlert /><span><strong>{place.placeId}</strong><small>#{place.orderNumber} · Place {place.placeNumber}</small></span></div>)}
               <label className="confirm-missing"><input type="checkbox" checked={missingConfirmed} onChange={(event) => setMissingConfirmed(event.target.checked)} /><span><strong>Confirm {missingPlaces.length} missing {missingPlaces.length === 1 ? 'place' : 'places'}</strong><small>Open a discrepancy for every unreceived Place ID.</small></span></label>
             </section>
           ) : <div className="unloading-success-note"><PackageCheck /><span><strong>Ready to close</strong><small>All expected Place IDs were received.</small></span></div>}
@@ -126,15 +126,15 @@ export function InterstateUnloadingScreen() {
 
         <section className="loading-orders unloading-orders">
           {visibleOrders.map((order) => {
-            const receivedCount = order.places.filter((place) => receivedSet.has(place.key)).length
+            const receivedCount = order.places.filter((place) => receivedSet.has(place.placeId)).length
             const expanded = expandedOrder === order.orderNumber
             const status = receivedCount === order.places.length ? 'Received' : receivedCount ? 'Partial' : 'Not received'
             return <article key={order.orderNumber} className={expanded ? 'is-expanded' : ''}>
               <button type="button" className="loading-order-head" onClick={() => setExpandedOrder(expanded ? '' : order.orderNumber)}><span><strong>#{order.orderNumber}</strong><small>{order.title}</small></span><em className={`receive-status receive-status--${status.toLowerCase().replace(' ', '-')}`}>{receivedCount} / {order.places.length} · {status}</em>{expanded ? <ChevronUp /> : <ChevronDown />}</button>
               {expanded ? <div className="place-picker unloading-place-picker">
-                <div>{order.places.map((place) => <button type="button" key={place.key} className={receivedSet.has(place.key) ? 'is-received' : ''} aria-pressed={receivedSet.has(place.key)} aria-label={`Place ${place.placeNumber}, ${receivedSet.has(place.key) ? 'received' : 'not received'}`} onClick={() => { toggleReceivedPlace(trip.tripId, place.key); setSelectedPlaceKey(place.key); setScanFeedback(undefined) }}>{place.placeNumber}</button>)}</div>
-                {selectedPlace?.orderNumber === order.orderNumber ? <dl><div><dt>Place ID</dt><dd>{selectedPlace.key}</dd></div><div><dt>Dimensions</dt><dd>{selectedPlace.dimensions}</dd></div><div><dt>Est. weight</dt><dd>{selectedPlace.estimatedWeight} lb</dd></div></dl> : null}
-                <button type="button" className="load-all" disabled={receivedCount === order.places.length} onClick={() => order.places.forEach((place) => receivePlace(trip.tripId, place.key))}>Receive all remaining ({order.places.length - receivedCount})</button>
+                <div>{order.places.map((place) => <button type="button" key={place.placeId} className={receivedSet.has(place.placeId) ? 'is-received' : ''} aria-pressed={receivedSet.has(place.placeId)} aria-label={`Place ${place.placeNumber}, ${receivedSet.has(place.placeId) ? 'received' : 'not received'}`} onClick={() => { toggleReceivedPlace(trip.tripId, place.placeId); setSelectedPlaceKey(place.placeId); setScanFeedback(undefined) }}>{place.placeNumber}</button>)}</div>
+                {selectedPlace?.orderNumber === order.orderNumber ? <dl><div><dt>Place ID</dt><dd>{selectedPlace.placeId}</dd></div><div><dt>Dimensions</dt><dd>{selectedPlace.dimensions}</dd></div><div><dt>Est. weight</dt><dd>{selectedPlace.estimatedWeight} lb</dd></div></dl> : null}
+                <button type="button" className="load-all" disabled={receivedCount === order.places.length} onClick={() => order.places.forEach((place) => receivePlace(trip.tripId, place.placeId))}>Receive all remaining ({order.places.length - receivedCount})</button>
               </div> : null}
             </article>
           })}
@@ -142,7 +142,7 @@ export function InterstateUnloadingScreen() {
         </section>
       </div>
       <div className="flow-action interstate-flow-action unloading-flow-action">
-        <button type="button" className="mark-all-received" disabled={receivedPlaces.length === trip.placeCount} onClick={() => receiveAllPlaces(trip.tripId, trip.manifest.map((place) => place.key))}><CheckCheck size={19} /> {receivedPlaces.length === trip.placeCount ? 'All received' : 'Mark all received'}</button>
+        <button type="button" className="mark-all-received" disabled={receivedPlaces.length === trip.placeCount} onClick={() => receiveAllPlaces(trip.tripId, trip.manifest.map((place) => place.placeId))}><CheckCheck size={19} /> {receivedPlaces.length === trip.placeCount ? 'All received' : 'Mark all received'}</button>
         <button type="button" className="cargo-primary" onClick={() => setReviewing(true)}>Review unloading · {receivedPlaces.length}/{trip.placeCount}</button>
       </div>
       <CargoBottomNav />

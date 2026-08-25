@@ -55,7 +55,7 @@ export function PickupCaptureScreen() {
   }
 
   if (saved) return (
-    <div className="cargo-flow"><CargoFlowHeader title="Pickup" /><SuccessState title="Pickup recorded" message={`Order #${normalizeOrderNumber(orderNumber)} and ${photoCount} photos are ready for Order eBOL review.`} action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${normalizeOrderNumber(orderNumber)}/ebol/pickup`)}>Open Pickup review</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>} /><CargoBottomNav /></div>
+    <div className="cargo-flow"><CargoFlowHeader title="Pickup" /><SuccessState title="Pickup recorded" message={`Order #${normalizeOrderNumber(orderNumber)} and ${photoCount} photos are ready for Order eBOL review.`} action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${normalizeOrderNumber(orderNumber)}/labels`)}>Generate {pieces} place labels</button><button type="button" className="ebol-secondary" onClick={() => navigate(`/orders/${normalizeOrderNumber(orderNumber)}/ebol/pickup`)}>Open Pickup review</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>} /><CargoBottomNav /></div>
   )
 
   return (

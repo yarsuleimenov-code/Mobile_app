@@ -18,6 +18,9 @@ describe('interstate loading rules', () => {
     const places = expandRecordPlaces(initialCargoRecords[0]).slice(0, 4)
     expect(summarizeLoadedPlaces(places).placeCount).toBe(4)
     expect(summarizeLoadedPlaces(places).orderCount).toBe(1)
+    expect(places.map((place) => place.placeId)).toEqual([
+      'ZB-11155599-01', 'ZB-11155599-02', 'ZB-11155599-03', 'ZB-11155599-04',
+    ])
   })
 
   it('unloads against the immutable loaded manifest', () => {
@@ -29,7 +32,7 @@ describe('interstate loading rules', () => {
       loadedWeight: trip.loadedWeight,
       loadedVolume: trip.loadedVolume,
     })
-    expect(new Set(trip.manifest.map((place) => place.key)).size).toBe(trip.placeCount)
+    expect(new Set(trip.manifest.map((place) => place.placeId)).size).toBe(trip.placeCount)
   })
 
   it('finds BOLs by number, TripID and status', () => {
