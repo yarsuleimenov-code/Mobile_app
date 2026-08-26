@@ -18,7 +18,7 @@ pnpm dev
 - Home: быстрый выбор операции, Today’s stops, контекстная навигация `Order documents` и последние операции.
 - Pickup: номер заказа, дата, ответственный, упаковка, комментарий, вес, группы одинаковых мест, автоматический объём и общие фотографии груза.
 - Dropoff: поиск заказа, сравнение Pickup evidence, Delivery-фотографии и фиксация damage/exception без блокировки передачи.
-- Нижнее меню: `Home | Pickup | Dropoff | Interstate`.
+- Нижнее меню: `Home | Tasks | Scan | More`; Pickup и Dropoff открываются из Home/Tasks, Interstate — из More.
 - Interstate: выбор направления и truck, загрузка конкретных мест, review manifest, создание Trip и `Interstate BOL`.
 - Interstate BOL archive: поиск текущих и закрытых Trip-документов по номеру, TripID, направлению или truck.
 - Контрольный пример: заказ `#11155599`, итоговый объём `273.44 cu ft`.

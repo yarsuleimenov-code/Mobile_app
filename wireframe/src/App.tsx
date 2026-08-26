@@ -15,11 +15,17 @@ import { InterstateReviewScreen } from './screens/InterstateReviewScreen'
 import { InterstateScreen } from './screens/InterstateScreen'
 import { InterstateTripScreen } from './screens/InterstateTripScreen'
 import { InterstateUnloadingScreen } from './screens/InterstateUnloadingScreen'
+import { MoreScreen } from './screens/MoreScreen'
+import { ScanScreen } from './screens/ScanScreen'
+import { TasksScreen } from './screens/TasksScreen'
 
 export function App() {
   return (
     <Routes>
       <Route index element={<CargoHomeScreen />} />
+      <Route path="tasks" element={<TasksScreen />} />
+      <Route path="scan" element={<ScanScreen />} />
+      <Route path="more" element={<MoreScreen />} />
       <Route path="pickup" element={<PickupCaptureScreen />} />
       <Route path="orders/:orderNumber/labels" element={<PlaceLabelsScreen />} />
       <Route path="orders/:orderNumber/ebol/pickup" element={<PickupEbolScreen />} />

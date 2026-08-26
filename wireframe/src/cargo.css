@@ -43,6 +43,7 @@ textarea { font: inherit; }
 .cargo-sync > button:disabled { opacity: .55; cursor: not-allowed; }
 
 .cargo-home { padding: 24px 20px 112px; }
+.cargo-nav-screen { padding: 24px 20px 112px; }
 .cargo-home > h1 { font-size: 27px; letter-spacing: -.7px; }
 .cargo-actions { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .cargo-action {

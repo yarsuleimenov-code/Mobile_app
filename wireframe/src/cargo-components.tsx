@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ArrowDown, ArrowLeft, ArrowUp, Check, Cloud, Home, ImagePlus, RefreshCw, Truck, WifiOff } from 'lucide-react'
+import { ArrowLeft, Check, ClipboardCheck, Cloud, Home, ImagePlus, Menu, RefreshCw, ScanLine, WifiOff } from 'lucide-react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useCargo } from './cargoStore'
 import { ZabermanLogo } from './brand-logo'
@@ -48,9 +48,9 @@ export function CargoFlowHeader({ title, subtitle, showBack = true, onBack }: { 
 export function CargoBottomNav() {
   const items = [
     { to: '/', label: 'Home', icon: Home, end: true },
-    { to: '/pickup', label: 'Pickup', icon: ArrowUp },
-    { to: '/dropoff', label: 'Dropoff', icon: ArrowDown },
-    { to: '/interstate', label: 'Interstate', icon: Truck },
+    { to: '/tasks', label: 'Tasks', icon: ClipboardCheck },
+    { to: '/scan', label: 'Scan', icon: ScanLine },
+    { to: '/more', label: 'More', icon: Menu },
   ]
   return (
     <nav className="cargo-bottom-nav" aria-label="Primary navigation">
