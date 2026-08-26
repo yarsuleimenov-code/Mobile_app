@@ -6,11 +6,13 @@ import { calculatePieces, calculateVolume, type CargoRecord } from '../cargoDoma
 import { useCargo } from '../cargoStore'
 import { prepareDeliveryEbol } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
+import { usePrototypeScenario } from '../prototypeScenarioStore'
 
 export function DropoffVerifyScreen() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { findRecord, completeDropoff } = useCargo()
+  const { devices } = usePrototypeScenario()
   const [query, setQuery] = useState(params.get('order') ?? '11155599')
   const [record, setRecord] = useState<CargoRecord | undefined>()
   const [searched, setSearched] = useState(false)
@@ -87,7 +89,7 @@ export function DropoffVerifyScreen() {
             <section className="dropoff-photos delivery-photo-section">
               <div className="form-section-title"><h2>Delivery photos</h2><span>{deliveryPhotoCount} photos</span></div>
               <p>Capture the cargo condition at the Delivery handoff.</p>
-              <EvidenceGallery count={deliveryPhotoCount} editable onAdd={() => setDeliveryPhotoCount((count) => count + 1)} onRemove={() => setDeliveryPhotoCount((count) => Math.max(0, count - 1))} />
+              <EvidenceGallery count={deliveryPhotoCount} editable addDisabled={!devices.camera} onAdd={() => setDeliveryPhotoCount((count) => count + 1)} onRemove={() => setDeliveryPhotoCount((count) => Math.max(0, count - 1))} />
             </section>
 
             <section className="dimension-recap">

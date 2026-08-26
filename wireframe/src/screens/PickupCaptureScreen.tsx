@@ -10,11 +10,13 @@ import { useCargo } from '../cargoStore'
 import { syncPickupOrderEbolDraft } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 import { mockTodaySpokeRoute } from '../spokeDomain'
+import { usePrototypeScenario } from '../prototypeScenarioStore'
 
 export function PickupCaptureScreen() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { findRecord, savePickup } = useCargo()
+  const { branch, devices } = usePrototypeScenario()
   const [saved, setSaved] = useState(false)
   const [orderNumber, setOrderNumber] = useState(params.get('order') ?? '11155599')
   const [pickupDate, setPickupDate] = useState(() => {
@@ -47,7 +49,7 @@ export function PickupCaptureScreen() {
       ?? ''
     const record: CargoRecord = {
       orderNumber: normalizedOrderNumber, title: orderTitle, pickupDate: `${month}/${day}/${year}`,
-      originBranch: 'NJ1', destinationBranch: 'CA1',
+      originBranch: branch, destinationBranch: branch === 'NJ1' ? 'CA1' : 'NJ1',
       totalWeight: weight, dimensionGroups: groups, packaging, orderComment, responsible,
       photoCount, status: 'pickup_recorded',
     }
@@ -96,8 +98,8 @@ export function PickupCaptureScreen() {
         <section className="photo-section">
           <div className="form-section-title"><h2>Cargo photos</h2><span>{photoCount} photos</span></div>
           <p>Photograph the complete shipment and packing condition.</p>
-          <EvidenceGallery count={photoCount} editable onAdd={() => setPhotoCount((count) => count + 1)} onRemove={() => setPhotoCount((count) => Math.max(0, count - 1))} />
-          <button type="button" className="camera-action" onClick={() => setPhotoCount((count) => count + 1)}><Camera size={20} /> Take another photo</button>
+          <EvidenceGallery count={photoCount} editable addDisabled={!devices.camera} onAdd={() => setPhotoCount((count) => count + 1)} onRemove={() => setPhotoCount((count) => Math.max(0, count - 1))} />
+          <button type="button" className="camera-action" disabled={!devices.camera} onClick={() => setPhotoCount((count) => count + 1)}><Camera size={20} /> {devices.camera ? 'Take another photo' : 'Camera unavailable'}</button>
         </section>
 
         <div className="flow-action"><button className="cargo-primary" type="submit" disabled={!normalizeOrderNumber(orderNumber) || !photoCount}>Save Pickup</button></div>

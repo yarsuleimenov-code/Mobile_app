@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { CargoHomeScreen } from './screens/CargoHomeScreen'
+import { CargoPlaceScreen } from './screens/CargoPlaceScreen'
+import { CargoPlacesScreen } from './screens/CargoPlacesScreen'
 import { DropoffVerifyScreen } from './screens/DropoffVerifyScreen'
 import { DeliveryEbolScreen } from './screens/DeliveryEbolScreen'
 import { DeliverySignatureScreen } from './screens/DeliverySignatureScreen'
@@ -16,6 +18,7 @@ import { InterstateScreen } from './screens/InterstateScreen'
 import { InterstateTripScreen } from './screens/InterstateTripScreen'
 import { InterstateUnloadingScreen } from './screens/InterstateUnloadingScreen'
 import { MoreScreen } from './screens/MoreScreen'
+import { PrototypeControlsScreen } from './screens/PrototypeControlsScreen'
 import { ScanScreen } from './screens/ScanScreen'
 import { TasksScreen } from './screens/TasksScreen'
 
@@ -26,6 +29,9 @@ export function App() {
       <Route path="tasks" element={<TasksScreen />} />
       <Route path="scan" element={<ScanScreen />} />
       <Route path="more" element={<MoreScreen />} />
+      <Route path="more/demo" element={<PrototypeControlsScreen />} />
+      <Route path="places" element={<CargoPlacesScreen />} />
+      <Route path="places/:placeId" element={<CargoPlaceScreen />} />
       <Route path="pickup" element={<PickupCaptureScreen />} />
       <Route path="orders/:orderNumber/labels" element={<PlaceLabelsScreen />} />
       <Route path="orders/:orderNumber/ebol/pickup" element={<PickupEbolScreen />} />

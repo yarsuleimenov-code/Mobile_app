@@ -41,14 +41,22 @@ function createManifestPlaces(orderNumber: string, orderTitle: string, quantity:
     dimensionGroupId: `manifest-${orderNumber}`,
     dimensions,
     estimatedWeight,
+    weightSource: 'allocated_from_order_total',
     volume,
+    label: `Place ${index + 1}/${quantity} · Code 128`,
+    currentLocation: 'In transit · Incoming manifest',
+    status: 'in_transit',
+    events: [
+      { id: 'manifest-imported', at: 'Manifest snapshot', title: 'Manifest imported', detail: `Order #${orderNumber}` },
+      { id: 'trip-in-transit', at: 'Current trip', title: 'In transit', detail: 'Incoming Interstate manifest' },
+    ],
   }))
 }
 
 const incomingNjManifest = [
   ...createManifestPlaces('23354862', 'Console Table', 2, '48 × 24 × 32 in', 65, 21.33),
   ...createManifestPlaces('23355017', 'Dining Chairs', 4, '24 × 24 × 40 in', 42.5, 13.33),
-  ...createManifestPlaces('11155599', 'Wooden Credenza', 2, '56 × 28 × 34 in', 55, 30.85),
+  ...createManifestPlaces('23355199', 'Wooden Credenza', 2, '56 × 28 × 34 in', 55, 30.85),
 ]
 
 export const interstateIncomingTrips: IncomingInterstateTrip[] = [

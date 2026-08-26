@@ -35,6 +35,13 @@ describe('interstate loading rules', () => {
     expect(new Set(trip.manifest.map((place) => place.placeId)).size).toBe(trip.placeCount)
   })
 
+  it('keeps incoming manifest Place IDs distinct from active Cargo records', () => {
+    const activeIds = new Set(initialCargoRecords.flatMap(expandRecordPlaces).map((place) => place.placeId))
+    const incomingIds = interstateIncomingTrips.flatMap((trip) => trip.manifest.map((place) => place.placeId))
+
+    expect(incomingIds.filter((placeId) => activeIds.has(placeId))).toEqual([])
+  })
+
   it('finds BOLs by number, TripID and status', () => {
     expect(searchInterstateBols(interstateBolArchive, '000180')).toHaveLength(1)
     expect(searchInterstateBols(interstateBolArchive, 'NJ1-CA2')).toHaveLength(1)

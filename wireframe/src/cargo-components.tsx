@@ -2,16 +2,24 @@ import type { ReactNode } from 'react'
 import { ArrowLeft, Check, ClipboardCheck, Cloud, Home, ImagePlus, Menu, RefreshCw, ScanLine, WifiOff } from 'lucide-react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useCargo } from './cargoStore'
+import { usePrototypeScenario } from './prototypeScenarioStore'
 import { ZabermanLogo } from './brand-logo'
 
 export function CargoShell({ children }: { children: ReactNode }) {
   const { forceSync, pendingChanges, syncStatus } = useCargo()
+  const { branch } = usePrototypeScenario()
   const SyncIcon = syncStatus === 'offline' ? WifiOff : Cloud
   const syncLabel = syncStatus === 'offline'
     ? (pendingChanges ? `Offline · ${pendingChanges}` : 'Offline')
     : syncStatus === 'pending'
       ? `${pendingChanges} pending`
-      : syncStatus === 'syncing' ? 'Syncing…' : 'Synced'
+      : syncStatus === 'syncing'
+        ? 'Syncing…'
+        : syncStatus === 'retry'
+          ? 'Retry needed'
+          : syncStatus === 'conflict'
+            ? 'Conflict'
+            : syncStatus === 'rejected' ? 'Rejected' : 'Synced'
   const syncDisabled = syncStatus === 'offline' || syncStatus === 'syncing'
 
   return (
@@ -19,7 +27,7 @@ export function CargoShell({ children }: { children: ReactNode }) {
       <header className="cargo-topbar">
         <Link to="/" className="cargo-brand" aria-label="Zaberman home"><ZabermanLogo className="cargo-brand-logo" alt="" /></Link>
         <div className="cargo-meta">
-          <strong>NJ1</strong>
+          <strong>{branch}</strong>
           <div className={`cargo-sync cargo-sync--${syncStatus}`}>
             <span><SyncIcon size={14} /> {syncLabel}</span>
             <button type="button" onClick={forceSync} disabled={syncDisabled} aria-label={syncStatus === 'offline' ? 'Connect to the internet to sync data' : 'Sync data now'} title={syncStatus === 'offline' ? 'Connect to the internet to sync data' : 'Sync data now'}>
@@ -59,7 +67,7 @@ export function CargoBottomNav() {
   )
 }
 
-export function EvidenceGallery({ count, editable = false, onAdd, onRemove }: { count: number; editable?: boolean; onAdd?: () => void; onRemove?: () => void }) {
+export function EvidenceGallery({ count, editable = false, addDisabled = false, onAdd, onRemove }: { count: number; editable?: boolean; addDisabled?: boolean; onAdd?: () => void; onRemove?: () => void }) {
   return (
     <div className="evidence-gallery" aria-label={`${count} cargo photos`}>
       {Array.from({ length: count }).map((_, index) => (
@@ -67,7 +75,7 @@ export function EvidenceGallery({ count, editable = false, onAdd, onRemove }: { 
           {editable ? <button type="button" aria-label={`Remove cargo photo ${index + 1}`} onClick={onRemove}>×</button> : null}
         </div>
       ))}
-      {editable ? <button type="button" className="add-photo" onClick={onAdd}><ImagePlus size={24} /><span>Add photo</span></button> : null}
+      {editable ? <button type="button" className="add-photo" onClick={onAdd} disabled={addDisabled}><ImagePlus size={24} /><span>{addDisabled ? 'Camera unavailable' : 'Add photo'}</span></button> : null}
     </div>
   )
 }

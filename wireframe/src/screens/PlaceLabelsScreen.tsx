@@ -1,12 +1,13 @@
 import JsBarcode from 'jsbarcode'
 import { Barcode, FileText, Printer } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { ZabermanLogo } from '../brand-logo'
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import { createPlaceLabels } from '../placeLabelsDomain'
+import { usePrototypeScenario } from '../prototypeScenarioStore'
 
 function PlaceBarcode({ value }: { value: string }) {
   const barcodeRef = useRef<SVGSVGElement>(null)
@@ -32,6 +33,7 @@ export function PlaceLabelsScreen() {
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
   const { findRecord } = useCargo()
+  const { devices } = usePrototypeScenario()
   const record = findRecord(orderNumber)
   const labels = useMemo(() => record ? createPlaceLabels(record) : [], [record])
   const printLabels = () => window.print()
@@ -56,7 +58,7 @@ export function PlaceLabelsScreen() {
         </section>
 
         <div className="place-label-actions">
-          <button type="button" className="cargo-primary" onClick={printLabels}><Printer size={20} /> Print / reprint labels</button>
+          <button type="button" className="cargo-primary" disabled={!devices.printer} onClick={printLabels}><Printer size={20} /> {devices.printer ? 'Print / reprint labels' : 'Printer unavailable'}</button>
         </div>
 
         <section className="place-label-sheet" aria-label={`Labels for order ${orderNumber}`}>
@@ -68,6 +70,7 @@ export function PlaceLabelsScreen() {
               <dl><div className="place-label-route"><dt>Destination</dt><dd>TO {label.destinationBranch}</dd><small>FROM {label.originBranch}</small></div><div><dt>Dimensions</dt><dd>{label.dimensions}</dd></div></dl>
               <PlaceBarcode value={label.placeId} />
               <div className="place-label-id"><span>Place ID</span><code>{label.placeId}</code></div>
+              <Link className="place-label-record-link" to={`/places/${label.placeId}`}>Open place record</Link>
             </article>
           ))}
         </section>

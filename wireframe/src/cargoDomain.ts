@@ -33,7 +33,21 @@ export interface OrderCargoPlace {
   dimensionGroupId: string
   dimensions: string
   estimatedWeight: number
+  weightSource: 'allocated_from_order_total'
   volume: number
+  label: string
+  currentLocation: string
+  status: CargoPlaceStatus
+  events: CargoPlaceEvent[]
+}
+
+export type CargoPlaceStatus = 'ready_for_loading' | 'loaded' | 'in_transit' | 'delivered'
+
+export interface CargoPlaceEvent {
+  id: string
+  at: string
+  title: string
+  detail: string
 }
 
 
@@ -79,7 +93,20 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
       dimensionGroupId: group.id,
       dimensions: `${group.length} × ${group.width} × ${group.height} in`,
       estimatedWeight,
+      weightSource: 'allocated_from_order_total',
       volume: Math.round(((group.length * group.width * group.height) / 1728) * 100) / 100,
+      label: `Place ${placeNumber}/${totalPlaces} · Code 128`,
+      currentLocation: record.status === 'dropoff_complete'
+        ? `${record.destinationBranch} · Delivered`
+        : `${record.originBranch} · Pickup staging`,
+      status: record.status === 'dropoff_complete' ? 'delivered' : 'ready_for_loading',
+      events: [
+        { id: 'place-id-assigned', at: record.pickupDate, title: 'Place ID assigned', detail: `Created from Order #${record.orderNumber}` },
+        { id: 'pickup-recorded', at: record.pickupDate, title: 'Pickup recorded', detail: `${group.length} × ${group.width} × ${group.height} in · ${estimatedWeight} lb allocated` },
+        ...(record.status === 'dropoff_complete'
+          ? [{ id: 'delivery-completed', at: 'Current record', title: 'Delivery completed', detail: `Received at ${record.destinationBranch}` }]
+          : []),
+      ],
     }
   }))
 }

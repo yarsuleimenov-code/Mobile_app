@@ -19,6 +19,8 @@ pnpm dev
 - Pickup: номер заказа, дата, ответственный, упаковка, комментарий, вес, группы одинаковых мест, автоматический объём и общие фотографии груза.
 - Dropoff: поиск заказа, сравнение Pickup evidence, Delivery-фотографии и фиксация damage/exception без блокировки передачи.
 - Нижнее меню: `Home | Tasks | Scan | More`; Pickup и Dropoff открываются из Home/Tasks, Interstate — из More.
+- More → Prototype controls (`DEV ONLY`): роль/филиал, online/offline/slow, результат следующей синхронизации, доступность camera/scanner/printer и полный сброс mock-данных.
+- More → Cargo places: стабильный `PlaceID`, Order и `n/N`, размеры/источник веса, label, current location/status и короткая event history для каждого места.
 - Interstate: выбор направления и truck, загрузка конкретных мест, review manifest, создание Trip и `Interstate BOL`.
 - Interstate BOL archive: поиск текущих и закрытых Trip-документов по номеру, TripID, направлению или truck.
 - Контрольный пример: заказ `#11155599`, итоговый объём `273.44 cu ft`.
