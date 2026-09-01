@@ -1,108 +1,180 @@
-import { Camera, Plus, Trash2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Camera, Clock3, History, LockKeyhole, Plus, Save, Trash2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '../cargo-components'
-import {
-  calculatePieces, calculateVolume, defaultDimensionGroups, normalizeOrderNumber,
-  type CargoRecord, type DimensionGroup,
-} from '../cargoDomain'
+import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
-import { syncPickupOrderEbolDraft } from '../orderEbolDomain'
+import {
+  addPickupDraftPlace, createPickupDraft, pickupDraftToRecord, pickupDraftVolume, pickupDraftWeight,
+  recordPickupDraftPlaceEdit, removePickupDraftPlace, updatePickupDraftPlace,
+  type PickupDraft, type PickupDraftPlace,
+} from '../pickupDraftDomain'
+import { findPickupDraft, readPickupDrafts, upsertPickupDraft, writePickupDrafts } from '../pickupDraftStore'
+import {
+  findDraftSupplementalPickup, prepareSupplementalPickup, syncPickupOrderEbolDraft,
+} from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 import { mockTodaySpokeRoute } from '../spokeDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
+
+const placeFields: Array<{ field: keyof Omit<PickupDraftPlace, 'placeId'>; label: string; suffix: string }> = [
+  { field: 'length', label: 'L', suffix: 'in' },
+  { field: 'width', label: 'W', suffix: 'in' },
+  { field: 'height', label: 'H', suffix: 'in' },
+  { field: 'weight', label: 'Weight', suffix: 'lb' },
+]
+
+function updateDraftMeta<K extends keyof PickupDraft>(draft: PickupDraft, field: K, value: PickupDraft[K]): PickupDraft {
+  return { ...draft, [field]: value, updatedAt: new Date().toISOString() }
+}
 
 export function PickupCaptureScreen() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { findRecord, savePickup } = useCargo()
   const { branch, devices } = usePrototypeScenario()
-  const [saved, setSaved] = useState(false)
-  const [orderNumber, setOrderNumber] = useState(params.get('order') ?? '11155599')
-  const [pickupDate, setPickupDate] = useState(() => {
-    const routeDate = params.get('date')
-    if (!routeDate) return '2026-07-26'
-    const [month, day, year] = routeDate.split('/')
-    return `${year}-${month}-${day}`
+  const requestedOrder = normalizeOrderNumber(params.get('order') ?? '11155599')
+  const currentRecord = findRecord(requestedOrder)
+  const [mode] = useState<'standard' | 'supplemental'>(() => {
+    const persistedEbol = findOrderEbol(readOrderEbols(), requestedOrder)
+    return params.get('supplemental') === '1' || Boolean(persistedEbol?.pickup.lockedAt) ? 'supplemental' : 'standard'
   })
-  const [responsible, setResponsible] = useState('John Doe')
-  const [packaging, setPackaging] = useState('Customer')
-  const [orderComment, setOrderComment] = useState('commentSize\norderComment')
-  const [weight, setWeight] = useState(123)
-  const [photoCount, setPhotoCount] = useState(4)
-  const [groups, setGroups] = useState<DimensionGroup[]>(defaultDimensionGroups.map((group) => ({ ...group })))
-  const pieces = useMemo(() => calculatePieces(groups), [groups])
-  const volume = useMemo(() => calculateVolume(groups), [groups])
+  const [restoredDraft] = useState(() => findPickupDraft(readPickupDrafts(), requestedOrder, mode))
+  const [wasRestored] = useState(Boolean(restoredDraft))
+  const [draft, setDraft] = useState<PickupDraft>(() => restoredDraft ?? createPickupDraft(currentRecord, branch, mode))
+  const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error'>('saving')
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [savedVersion, setSavedVersion] = useState(1)
+  const volume = useMemo(() => pickupDraftVolume(draft), [draft])
+  const addedWeight = useMemo(() => pickupDraftWeight(draft), [draft])
 
-  const updateGroup = (id: string, field: keyof Omit<DimensionGroup, 'id'>, value: string) => {
-    setGroups((current) => current.map((group) => group.id === id ? { ...group, [field]: Number(value) || 0 } : group))
+  useEffect(() => {
+    setSaveState('saving')
+    const timeout = window.setTimeout(() => {
+      const didSave = writePickupDrafts(upsertPickupDraft(readPickupDrafts(), draft))
+      setSaveState(didSave ? 'saved' : 'error')
+    }, 250)
+    return () => window.clearTimeout(timeout)
+  }, [draft])
+
+  const addPlace = () => setDraft((current) => addPickupDraftPlace(current))
+  const removePlace = (placeId: string) => setDraft((current) => removePickupDraftPlace(current, placeId))
+  const updatePlace = (placeId: string, field: keyof Omit<PickupDraftPlace, 'placeId'>, value: string) => {
+    setDraft((current) => updatePickupDraftPlace(current, placeId, field, Number(value) || 0))
   }
-
-  const addGroup = () => setGroups((current) => [...current, { id: `group-${Date.now()}`, quantity: 1, length: 0, width: 0, height: 0 }])
-  const removeGroup = (id: string) => setGroups((current) => current.filter((group) => group.id !== id))
+  const commitPlaceEdit = (placeId: string) => setDraft((current) => recordPickupDraftPlaceEdit(current, placeId))
 
   const submit = () => {
-    const [year, month, day] = pickupDate.split('-')
-    const normalizedOrderNumber = normalizeOrderNumber(orderNumber)
-    const orderTitle = findRecord(normalizedOrderNumber)?.title
-      ?? mockTodaySpokeRoute.tasks.find((task) => task.externalId === normalizedOrderNumber)?.title
-      ?? ''
-    const record: CargoRecord = {
-      orderNumber: normalizedOrderNumber, title: orderTitle, pickupDate: `${month}/${day}/${year}`,
-      originBranch: branch, destinationBranch: branch === 'NJ1' ? 'CA1' : 'NJ1',
-      totalWeight: weight, dimensionGroups: groups, packaging, orderComment, responsible,
-      photoCount, status: 'pickup_recorded',
+    const normalizedOrderNumber = normalizeOrderNumber(draft.orderNumber)
+    const latestRecord = findRecord(normalizedOrderNumber)
+    const title = draft.title
+      || latestRecord?.title
+      || mockTodaySpokeRoute.tasks.find((task) => task.externalId === normalizedOrderNumber)?.title
+      || ''
+    const normalizedDraft = { ...draft, orderNumber: normalizedOrderNumber, title }
+    const record = pickupDraftToRecord(normalizedDraft, latestRecord)
+    const orderEbols = readOrderEbols()
+    const existingEbol = findOrderEbol(orderEbols, record.orderNumber)
+    let nextEbol
+    if (normalizedDraft.mode === 'supplemental') {
+      if (!existingEbol?.pickup.lockedAt) return
+      nextEbol = prepareSupplementalPickup(existingEbol, {
+        addedPlaceIds: normalizedDraft.places.map((place) => place.placeId),
+        totalWeight: addedWeight,
+        totalVolume: volume,
+        photoCount: normalizedDraft.photoCount,
+        changeHistory: normalizedDraft.history,
+      })
+      setSavedVersion(findDraftSupplementalPickup(nextEbol)?.version ?? 2)
+    } else {
+      nextEbol = syncPickupOrderEbolDraft(existingEbol, record)
     }
     savePickup(record)
-    const orderEbols = readOrderEbols()
-    const existing = findOrderEbol(orderEbols, record.orderNumber)
-    const draft = syncPickupOrderEbolDraft(existing, record)
-    writeOrderEbols(upsertOrderEbol(orderEbols, draft))
+    writeOrderEbols(upsertOrderEbol(orderEbols, nextEbol))
     setSaved(true)
   }
 
-  if (saved) return (
-    <div className="cargo-flow"><CargoFlowHeader title="Pickup" /><SuccessState title="Pickup recorded" message={`Order #${normalizeOrderNumber(orderNumber)} and ${photoCount} photos are ready for Order eBOL review.`} action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${normalizeOrderNumber(orderNumber)}/labels`)}>Generate {pieces} place labels</button><button type="button" className="ebol-secondary" onClick={() => navigate(`/orders/${normalizeOrderNumber(orderNumber)}/ebol/pickup`)}>Open Pickup review</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>} /><CargoBottomNav /></div>
-  )
+  if (saved) {
+    const orderNumber = normalizeOrderNumber(draft.orderNumber)
+    const supplemental = draft.mode === 'supplemental'
+    return (
+      <div className="cargo-flow">
+        <CargoFlowHeader title={supplemental ? 'Supplemental Pickup' : 'Pickup'} />
+        <SuccessState
+          title={supplemental ? `Document version ${savedVersion} drafted` : 'Pickup draft ready'}
+          message={supplemental
+            ? `${draft.places.length} added ${draft.places.length === 1 ? 'place requires' : 'places require'} new confirmations. Version 1 remains unchanged.`
+            : `Order #${orderNumber} and ${draft.places.length} places are ready for review.`}
+          action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${orderNumber}/ebol/pickup`)}>Open {supplemental ? `version ${savedVersion}` : 'Pickup'} review</button><button type="button" className="ebol-secondary" onClick={() => navigate(`/orders/${orderNumber}/labels`)}>Open place labels</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>}
+        />
+        <CargoBottomNav />
+      </div>
+    )
+  }
+
+  const canContinue = Boolean(normalizeOrderNumber(draft.orderNumber)) && draft.places.length > 0 && draft.photoCount > 0
+  const title = draft.mode === 'supplemental' ? 'Supplemental Pickup' : 'Pickup draft'
 
   return (
     <div className="cargo-flow">
-      <CargoFlowHeader title="Pickup" subtitle={params.get('order') ? `Spoke order #${params.get('order')}` : undefined} />
-      <form className="pickup-form" onSubmit={(event) => { event.preventDefault(); submit() }}>
-        <div className="two-column-fields">
-          <label>Order #<input inputMode="numeric" value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} /></label>
-          <label>Pickup date<input type="date" value={pickupDate} onChange={(event) => setPickupDate(event.target.value)} /></label>
+      <CargoFlowHeader title={title} subtitle={`Order #${draft.orderNumber || 'new'}`} />
+      <form className="pickup-form pickup-draft-form" onSubmit={(event) => { event.preventDefault(); submit() }}>
+        <div className={`draft-save-state draft-save-state--${saveState}`} role="status">
+          {saveState === 'saving' ? <Clock3 size={17} /> : <Save size={17} />}
+          <span><strong>{saveState === 'saving' ? 'Saving draft…' : saveState === 'saved' ? 'Draft autosaved' : 'Draft could not be saved'}</strong><small>{wasRestored ? 'Restored after reopening this operation' : 'Changes stay on this device in the prototype'}</small></span>
         </div>
-        <label>Responsible manager<select value={responsible} onChange={(event) => setResponsible(event.target.value)}><option>John Doe</option><option>Maria Lopez</option><option>Daniel Kim</option></select></label>
-        <label>Packaging<select value={packaging} onChange={(event) => setPackaging(event.target.value)}><option>Customer</option><option>Zaberman</option><option>Mixed</option></select></label>
-        <label>Order comment<textarea rows={2} value={orderComment} onChange={(event) => setOrderComment(event.target.value)} /></label>
+
+        {draft.mode === 'supplemental' ? (
+          <section className="supplemental-lock-reference">
+            <LockKeyhole size={22} />
+            <span><strong>Version 1 is locked</strong><small>{draft.basePlaceIds.length} signed PlaceID values remain unchanged. Only new places are editable below.</small></span>
+          </section>
+        ) : null}
+
+        <div className="two-column-fields">
+          <label>Order #<input inputMode="numeric" value={draft.orderNumber} disabled={draft.mode === 'supplemental'} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'orderNumber', event.target.value))} /></label>
+          <label>Pickup date<input type="date" value={draft.pickupDate} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'pickupDate', event.target.value))} /></label>
+        </div>
+        <label>Responsible manager<select value={draft.responsible} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'responsible', event.target.value))}><option>John Doe</option><option>Maria Lopez</option><option>Daniel Kim</option></select></label>
+        <label>Packaging<select value={draft.packaging} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'packaging', event.target.value))}><option>Customer</option><option>Zaberman</option><option>Mixed</option></select></label>
+        <label>Order comment<textarea rows={2} value={draft.orderComment} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'orderComment', event.target.value))} /></label>
 
         <section className="cargo-totals">
-          <label><span>Pieces</span><span><input aria-label="Pieces" value={pieces} readOnly /> pcs</span></label>
-          <label><span>Total weight</span><span><input aria-label="Total weight" type="number" value={weight} onChange={(event) => setWeight(Number(event.target.value) || 0)} /> lb</span></label>
+          <label><span>{draft.mode === 'supplemental' ? 'Added places' : 'Places'}</span><span><input aria-label="Places" value={draft.places.length} readOnly /> pcs</span></label>
+          <label><span>{draft.mode === 'supplemental' ? 'Added weight' : 'Total weight'}</span><span><input aria-label="Total weight" value={addedWeight} readOnly /> lb</span></label>
         </section>
 
-        <section className="dimension-section">
-          <div className="form-section-title"><h2>Dimensions</h2><span>inches</span></div>
-          <div className="dimension-head"><span>Qty</span><span>L</span><span>W</span><span>H</span><span /></div>
-          {groups.map((group) => (
-            <div className="dimension-row" key={group.id}>
-              {(['quantity', 'length', 'width', 'height'] as const).map((field) => <input key={field} aria-label={`${field} for ${group.id}`} inputMode="numeric" type="number" min="0" value={group[field]} onChange={(event) => updateGroup(group.id, field, event.target.value)} />)}
-              <button type="button" onClick={() => removeGroup(group.id)} aria-label="Remove dimension group"><Trash2 size={18} /></button>
-            </div>
-          ))}
-          <button type="button" className="add-dimension" onClick={addGroup}><Plus size={18} /> Add dimension group</button>
-          <div className="volume-total"><span>Total volume</span><strong>{volume.toFixed(2)} cu ft</strong></div>
+        <section className="draft-places-section">
+          <div className="form-section-title"><h2>{draft.mode === 'supplemental' ? 'New places' : 'Cargo places'}</h2><span>{draft.places.length}</span></div>
+          <div className="draft-place-list">
+            {draft.places.map((place, index) => (
+              <article className="draft-place-card" key={place.placeId}>
+                <header><span><strong>Place {index + 1}</strong><code>{place.placeId}</code></span><button type="button" onClick={() => removePlace(place.placeId)} aria-label={`Remove ${place.placeId}`}><Trash2 size={18} /></button></header>
+                <div className="draft-place-fields">
+                  {placeFields.map(({ field, label, suffix }) => <label key={field}><span>{label}</span><span><input aria-label={`${label} for ${place.placeId}`} inputMode="decimal" type="number" min="0" value={place[field]} onChange={(event) => updatePlace(place.placeId, field, event.target.value)} onBlur={() => commitPlaceEdit(place.placeId)} /><small>{suffix}</small></span></label>)}
+                </div>
+              </article>
+            ))}
+            {!draft.places.length ? <div className="draft-places-empty">No editable places yet. Add the first place to continue.</div> : null}
+          </div>
+          <button type="button" className="add-dimension" onClick={addPlace}><Plus size={18} /> Add place</button>
+          <div className="volume-total"><span>{draft.mode === 'supplemental' ? 'Added volume' : 'Total volume'}</span><strong>{volume.toFixed(2)} cu ft</strong></div>
         </section>
 
         <section className="photo-section">
-          <div className="form-section-title"><h2>Cargo photos</h2><span>{photoCount} photos</span></div>
-          <p>Photograph the complete shipment and packing condition.</p>
-          <EvidenceGallery count={photoCount} editable addDisabled={!devices.camera} onAdd={() => setPhotoCount((count) => count + 1)} onRemove={() => setPhotoCount((count) => Math.max(0, count - 1))} />
-          <button type="button" className="camera-action" disabled={!devices.camera} onClick={() => setPhotoCount((count) => count + 1)}><Camera size={20} /> {devices.camera ? 'Take another photo' : 'Camera unavailable'}</button>
+          <div className="form-section-title"><h2>{draft.mode === 'supplemental' ? 'New-place photos' : 'Cargo photos'}</h2><span>{draft.photoCount} photos</span></div>
+          <p>Photograph the places and packing condition included in this version.</p>
+          <EvidenceGallery count={draft.photoCount} editable addDisabled={!devices.camera} onAdd={() => setDraft((current) => updateDraftMeta(current, 'photoCount', current.photoCount + 1))} onRemove={() => setDraft((current) => updateDraftMeta(current, 'photoCount', Math.max(0, current.photoCount - 1)))} />
+          <button type="button" className="camera-action" disabled={!devices.camera} onClick={() => setDraft((current) => updateDraftMeta(current, 'photoCount', current.photoCount + 1))}><Camera size={20} /> {devices.camera ? 'Take another photo' : 'Camera unavailable'}</button>
         </section>
 
-        <div className="flow-action"><button className="cargo-primary" type="submit" disabled={!normalizeOrderNumber(orderNumber) || !photoCount}>Save Pickup</button></div>
+        <section className="draft-history">
+          <button type="button" aria-expanded={historyOpen} onClick={() => setHistoryOpen((open) => !open)}><History size={19} /><span><strong>Change history</strong><small>{draft.history.length} recorded changes</small></span><Plus className={historyOpen ? 'is-open' : ''} size={18} /></button>
+          {historyOpen ? <ol>{[...draft.history].reverse().map((entry) => <li key={entry.id}><span>{entry.detail}</span><time>{new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></li>)}</ol> : null}
+        </section>
+
+        <div className="flow-action"><button className="cargo-primary" type="submit" disabled={!canContinue}>{draft.mode === 'supplemental' ? 'Create new document version' : 'Continue to Pickup review'}</button></div>
       </form>
       <CargoBottomNav />
     </div>

@@ -1,5 +1,7 @@
 # План реализации mobile-first wireframe Zaberman
 
+Статус на 2026-09-01: документ сохраняется как Product/UX plan и история реализованных prototype-инкрементов. Фактическое состояние зафиксировано в [`docs/system-report/CURRENT_STATE.md`](docs/system-report/CURRENT_STATE.md), утверждённый TO-BE baseline — в [`docs/system-report/STAGE_0_PRODUCT_DECISIONS.md`](docs/system-report/STAGE_0_PRODUCT_DECISIONS.md). При расхождении AS-IS источником истины является код и тесты; при расхождении TO-BE — принятые product decisions.
+
 ## 1. Цель, scope и минимальный готовый результат
 
 ### Цель
@@ -773,7 +775,7 @@ Order eBOL и Interstate BOL не заменяют друг друга. Зака
 
 На каждом этапе передачи предусмотрены две позиции подписи: внешний контакт и водитель Zaberman. При отсутствии внешнего контакта используется contactless fallback с обязательной причиной. Подпись подтверждает ознакомление с evidence и исключениями; наличие damage не блокирует завершение этапа.
 
-После подтверждения Pickup или Delivery соответствующий snapshot блокируется. Исправление уже подтверждённых данных в прототипе показывается отдельным состоянием `Correction requested`, без реализации production versioning.
+После подтверждения Pickup или Delivery соответствующий snapshot блокируется. Новые места после подтверждённого Pickup оформляются отдельным mock `Supplemental Pickup`: новая document version содержит только добавленные PlaceID и требует новые подтверждения, не меняя исходный snapshot.
 
 ### 15.3 Scope первого инкремента
 
@@ -802,4 +804,18 @@ Order eBOL и Interstate BOL не заменяют друг друга. Зака
 - Interstate Loading и Unloading используют один Place ID, различают ожидаемый, повторный и неизвестный код;
 - Pickup eBOL snapshot сохраняет список `placeIds`.
 
-Вне scope прототипа остаются printer SDK/Bluetooth pairing, доступ к камере телефона, backend/API, ручное добавление или удаление этикеток и production audit trail.
+Вне scope прототипа остаются printer SDK/Bluetooth pairing, доступ к камере телефона, backend/API и production audit trail. Добавление/изменение/удаление мест до подписи и Supplemental Pickup после подписи реализованы как localStorage mock-flow.
+
+## 17. Этап 2 — Pickup draft и Supplemental Pickup
+
+Реализованный prototype scope:
+
+- создание, autosave и восстановление Pickup draft;
+- add/edit/delete отдельных мест со стабильными PlaceID;
+- открытие редактирования из Recent Operations и локальная change history;
+- locked version 1 недоступна для прямого изменения;
+- новые места после подписи создают Supplemental Pickup version 2+;
+- добавленная версия проходит отдельные Pickup review и contact/driver mock-signing;
+- Delivery projection объединяет original PlaceID и все locked supplemental additions.
+
+Это hi-fi бизнес-прототип: сохранение выполняется только в versioned `localStorage`; production versioning, audit, подпись и offline sync не реализованы.

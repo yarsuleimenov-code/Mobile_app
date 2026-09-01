@@ -1,7 +1,12 @@
 # Целевая архитектура и схемы Zaberman Mobile
 
-Статус: рекомендуемая TO-BE схема для согласования.  
+Дата синхронизации: 2026-09-01
+
+Статус: рекомендуемая TO-BE схема; DDL и первый NestJS command slice реализованы, runtime PostgreSQL не подтверждён.
+
 Принцип: local-first mobile client + modular backend + transactional system of record.
+
+Фактическая граница реализации и известные расхождения зафиксированы в [CURRENT_STATE.md](CURRENT_STATE.md). Детальная DDL-модель описана в [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) и migrations в `database/postgres/`.
 
 ## 1. Контекст системы
 
@@ -99,6 +104,8 @@ flowchart TB
 - Redis/BullMQ добавляется только при доказанной необходимости; сначала достаточно PostgreSQL transactional outbox и job table.
 - Object storage хранит binary; PostgreSQL хранит metadata и связи.
 - Mobile никогда не обращается напрямую к Sheets/Drive/CRM.
+
+В текущем репозитории есть минимальный backend slice `Create CargoPlace`; workers, SQLite client и object storage отсутствуют. SQL migrations и source-транзакция не означают, что контейнерная схема уже развёрнута или runtime-проверена.
 
 ## 3. Доменные границы
 
@@ -292,6 +299,7 @@ GET  /tasks/{taskId}
 GET  /orders/{orderId}
 GET  /places/{placeId}
 GET  /places/{placeId}/history
+POST /cargo-places
 
 POST /sync/operations
 GET  /sync/changes?checkpoint=
@@ -319,6 +327,8 @@ GET  /documents/{id}
 POST /documents/{id}/corrections
 POST /documents/{id}/void
 ```
+
+Реализованный контракт первого slice: [`backend/openapi.yaml`](../../backend/openapi.yaml). Остальные endpoints в списке остаются TO-BE boundary.
 
 Каждая mutation принимает `operationId`; entity-changing request — также `expectedVersion`. Bulk sync endpoint возвращает результат по каждой операции, а не один общий success.
 

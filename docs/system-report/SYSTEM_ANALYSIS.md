@@ -1,7 +1,9 @@
 # Системный анализ будущего приложения Zaberman Mobile
 
-Дата: 2026-08-26  
-Статус: baseline для согласования  
+Дата: 2026-09-01
+
+Статус: синхронизирован с wireframe, PostgreSQL DDL и Stage 1 backend slice
+
 Аудитория: Product, Warehouse, Delivery, Dispatching, IT, разработка и QA
 
 ## 1. Вывод
@@ -55,27 +57,34 @@ Production-реализацию не следует строить поверх 
 | `WIREFRAME_IMPLEMENTATION_PLAN.md` | Product/UX baseline | Целевая терминология, процессы, роли, offline и карта экранов |
 | `BOL_DECISION_LOG.md` | Журнал решений | Разделение Order eBOL, Interstate BOL и POD |
 | `wireframe/` | Активный интерактивный web-прототип | Согласование интерфейса и части бизнес-правил |
+| `docs/system-report/CURRENT_STATE.md` | Текущий handoff | Реализованный контекст, проверка, расхождения и следующий vertical slice |
+| `database/postgres/` | DDL baseline в рабочем дереве | Initial schema и optional branch-scoped read RLS; runtime apply ещё не выполнен |
+| `backend/` | Первый server vertical slice | NestJS Create CargoPlace, OpenAPI, unit tests и guarded PostgreSQL integration test |
 
 Важно: исходный production-код Warehouse Apps Script и BOL Generator, описанный audit-пакетом, в текущем checkout отсутствует. Поэтому его текущее production-состояние повторно не подтверждено.
 
 ### 3.2 Что реализовано в активном wireframe
 
 - Home с быстрым входом в Pickup/Dropoff и mock-импортом маршрута Spoke;
-- Pickup capture: заказ, филиалы, вес, группы размеров, упаковка, комментарий и количество фото;
+- Pickup draft: autosave/restore, отдельные места, add/edit/delete, stable prototype PlaceID и change history;
 - автоматический расчёт количества мест и объёма;
 - стабильные prototype Place IDs `ZB-{ORDER_NUMBER}-{NN}`;
 - Code 128 labels и browser print;
-- Order eBOL: Pickup/Delivery evidence, contact/contactless, подпись водителя, locked snapshots;
+- Order eBOL: Pickup/Delivery evidence, contact/contactless, locked snapshots, Supplemental Pickup versions и отдельные повторные mock-подписи;
 - POD как представление завершённого Order eBOL;
 - Interstate: направление, truck, выбор и ввод Place ID, review, Trip, unloading draft и архив Interstate BOL;
 - mock offline/pending через `localStorage` и `navigator.onLine`;
 - GitHub Pages deployment;
-- 11 test-файлов, 28 тестов; на 2026-08-26 все тесты и TypeScript-проверка проходят.
+- управляемые prototype scenarios: роль, филиал, сеть, sync outcome и доступность устройств;
+- PostgreSQL schema/RLS migrations как неподключённый design baseline;
+- NestJS `Create CargoPlace`: validation, branch permission, idempotency, optimistic version check, events и transactional outbox;
+- 10 backend unit-тестов и TypeScript build проходят; PostgreSQL integration-тест подготовлен и skipped без test DB;
+- 13 test-файлов, 35 тестов; на 2026-09-01 тесты, TypeScript project build и Vite production build проходят.
 
 ### 3.3 Что отсутствует или только имитируется
 
 - login, реальная identity и server-side permissions;
-- backend API, централизованная БД и транзакции;
+- развёрнутый backend API, запущенная серверная БД и транзакционная интеграция мобильного приложения; source первого command handler уже реализован;
 - реальная интеграция со Spoke, Kommo, Telegram, Apps Script, Sheets или Drive;
 - камера, физический scanner, printer SDK и сохранение реальных фотографий;
 - SQLite, outbox/inbox, background sync и конфликты между устройствами;
@@ -83,6 +92,8 @@ Production-реализацию не следует строить поверх 
 - production PDF, legally binding signature, BOL correction/void/versioning;
 - server-generated TripID/PlaceID и authoritative manifest;
 - observability, backup, retention, privacy и disaster recovery.
+
+DDL описывает constraints, idempotency, append-only history, manifests, documents и outbox; PD-011/PD-012 реализованы. Первый command handler использует эту модель, но migrations не применялись к чистому PostgreSQL 16. Поэтому source готов, а работающий backend/database контур ещё не подтверждён.
 
 Активная навигация унифицирована как `Home | Tasks | Scan | More`: Tasks использует модель Spoke и ведёт в рабочие Pickup/Dropoff routes, Scan открывает активный Pickup flow, Interstate доступен из More. В `src` всё ещё остаются дублирующие legacy-экраны и `DemoProvider`, не подключённые к активному `App.tsx`; их следует считать prototype debt.
 
@@ -95,7 +106,7 @@ Production-реализацию не следует строить поверх 
 | Domain rules | Средний | Есть тестируемые расчёты и lifecycle guards |
 | Offline-first | Низкий | Только `localStorage` и mock sync |
 | Security | Отсутствует | Нет production identity/authz |
-| Data integrity | Низкий | Нет серверных constraints, versions и idempotency |
+| Data integrity | Низкий/средний по design | DDL содержит constraints, versions и idempotency; runtime и database tests отсутствуют |
 | Integrations | Отсутствуют | Только fixtures и имитация задержек |
 | Operations/monitoring | Отсутствуют | Нет логов, metrics, alerting и support tools |
 | Production readiness | Низкий | Wireframe не предназначен для production |
@@ -273,10 +284,12 @@ Retention для photos, signatures, POD/BOL и audit events должен быт
 
 | Приоритет | Разрыв | Риск | Решение |
 |---|---|---|---|
-| P0 | Не определён master Order/Task/Trip | Dual write и расхождение фактов | Утвердить ownership и direction of exchange |
-| P0 | Нет production identity/permissions | Несанкционированные операции | IdP + server-side scope |
-| P0 | Нет глобального PlaceID policy | Дубли и потеря chain of custody | UUID-based PlaceID, unique constraints, label aliases |
-| P0 | Offline Close/conflict policy не утверждены | Ложный closed, потеря событий | Ready-to-close + server transaction + review |
+| P1 | Ownership boundary принят, конкретный Order/Dispatch vendor не выбран | Нельзя завершить adapter/mapping | Выбрать system code; operational facts остаются в Zaberman DB по PD-014 |
+| P0 | Нет production identity и server-side authorization | Несанкционированные операции | Сопоставить IdP roles с принятой capability matrix |
+| P1 | Target PlaceID/label policy принята, hardware не проверен | Printer/scanner может не поддержать выбранный format | Реализовать PD-009/PD-010 и провести hardware spike |
+| P0 | PostgreSQL migrations не проверены runtime | Синтаксис, порядок FK, triggers и RLS не подтверждены | Ephemeral PostgreSQL 16 + database tests в CI |
+| P1 | Первый API slice использует development identity context | Нельзя безопасно развернуть в production | Подключить verified bearer claims и IdP capability mapping |
+| P0 | Offline Close policy принята, но не реализована | Ложный closed, потеря событий | Реализовать `ready_to_close` + server transaction + review по PD-001 |
 | P0 | Юридические правила подписи/eBOL не утверждены | Недействительный документ | Legal/business decision до production signing |
 | P1 | Вес в prototype равномерно распределяется по places | Неточный partial BOL | Actual/declared place weight или явное allocation rule |
 | P1 | Photos представлены счётчиком | Нет evidence/file lifecycle | Local files + object storage metadata |
@@ -302,7 +315,9 @@ Retention для photos, signatures, POD/BOL и audit events должен быт
 
 ### Этап 0. Решения и technical spikes
 
-- утвердить master systems, роли, PlaceID/label, BOL/signature policy, retention и device list;
+- product decisions PD-001–PD-014 приняты; нормативный baseline — [STAGE_0_PRODUCT_DECISIONS.md](STAGE_0_PRODUCT_DECISIONS.md);
+- архитектурная, технологическая и DDL-модели подготовлены как baseline, но не являются runtime implementation;
+- выбрать конкретные master systems/IdP, legal wording, retention и device list в границах принятого ownership/lifecycle;
 - проверить камеру, Code 128/QR и 1–2 реальных принтера на iOS/Android;
 - доказать offline outbox/idempotency/conflict на одном CargoPlace event;
 - зафиксировать ADR и API/data contracts.
@@ -350,6 +365,8 @@ Retention для photos, signatures, POD/BOL и audit events должен быт
 
 - Прочитаны оба DOCX структурно; визуальный DOCX-render не выполнен, так как LibreOffice отсутствует в локальной среде.
 - Сопоставлены audit-пакет, implementation plan, decision log и активный router/domain/store код.
-- Unit tests: 11 файлов, 28 тестов — passed.
-- TypeScript `--noEmit` — passed.
+- Unit tests: 13 файлов, 35 тестов — passed.
+- TypeScript project build и Vite production build — passed.
+- Backend: 10 unit-тестов и TypeScript build passed; PostgreSQL integration suite подготовлен, 1 test skipped без `DATABASE_URL`.
+- PostgreSQL DDL просмотрен статически; apply/rollback, constraints, triggers и RLS на runtime PostgreSQL не проверены.
 - Production integrations и живые данные не проверялись и не изменялись.

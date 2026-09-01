@@ -6,6 +6,13 @@ export interface DimensionGroup {
   height: number
 }
 
+export interface CargoChangeEntry {
+  id: string
+  at: string
+  action: 'draft_created' | 'place_added' | 'place_edited' | 'place_removed'
+  detail: string
+}
+
 export type CargoRecordStatus = 'pickup_recorded' | 'dropoff_complete'
 
 export const warehouses = ['NJ1', 'CA1', 'CA2', 'TX1', 'FL1', 'AL1'] as const
@@ -24,6 +31,8 @@ export interface CargoRecord {
   responsible: string
   photoCount: number
   status: CargoRecordStatus
+  placeIds?: string[]
+  changeHistory?: CargoChangeEntry[]
 }
 export interface OrderCargoPlace {
   placeId: string
@@ -86,7 +95,7 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
   return record.dimensionGroups.flatMap((group) => Array.from({ length: Math.max(0, group.quantity) }, () => {
     placeNumber += 1
     return {
-      placeId: createCargoPlaceId(record.orderNumber, placeNumber),
+      placeId: record.placeIds?.[placeNumber - 1] ?? createCargoPlaceId(record.orderNumber, placeNumber),
       orderNumber: record.orderNumber,
       placeNumber,
       totalPlaces,

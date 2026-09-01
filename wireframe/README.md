@@ -4,6 +4,8 @@
 
 Публичный прототип: https://yarsuleimenov-code.github.io/Mobile_app/
 
+Актуальная граница реализации и следующий рекомендуемый этап: [`docs/system-report/CURRENT_STATE.md`](../docs/system-report/CURRENT_STATE.md).
+
 ## Запуск
 
 ```powershell
@@ -13,10 +15,13 @@ pnpm dev
 
 Открыть `http://127.0.0.1:5173/`. Production-проверка: `pnpm build`.
 
+Проверено 2026-09-01: 13 test-файлов / 35 тестов, TypeScript project build и Vite production build проходят.
+
 ## Что оценивать
 
 - Home: быстрый выбор операции, Today’s stops, контекстная навигация `Order documents` и последние операции.
-- Pickup: номер заказа, дата, ответственный, упаковка, комментарий, вес, группы одинаковых мест, автоматический объём и общие фотографии груза.
+- Pickup: автосохраняемый draft, восстановление после перезапуска, отдельные места, add/edit/delete, change history, автоматический объём и фотографии.
+- Locked Pickup: исходная версия read-only; новые места оформляются через Supplemental Pickup, новую document version и новые mock-подписи.
 - Dropoff: поиск заказа, сравнение Pickup evidence, Delivery-фотографии и фиксация damage/exception без блокировки передачи.
 - Нижнее меню: `Home | Tasks | Scan | More`; Pickup и Dropoff открываются из Home/Tasks, Interstate — из More.
 - More → Prototype controls (`DEV ONLY`): роль/филиал, online/offline/slow, результат следующей синхронизации, доступность camera/scanner/printer и полный сброс mock-данных.
@@ -33,10 +38,10 @@ pnpm dev
 - `Interstate BOL` относится к одному Interstate Trip и его manifest. Этот сценарий уже представлен в текущем wireframe.
 - `POD` — итоговое представление завершённого `Order eBOL` после Dropoff, а не отдельный Interstate-документ.
 
-Order eBOL draft создаётся при `Save Pickup`, обновляется до подписания и становится read-only после блокировки Pickup snapshot.
+Order eBOL draft создаётся при продолжении из Pickup, обновляется до подписания и становится read-only после блокировки snapshot. Новые места после подписи создают Supplemental Pickup version; исходные evidence и confirmations не изменяются.
 Текущий проект остаётся согласовательным бизнес-прототипом: подписи, блокировка данных, PDF и отправка будут представлены как mock-взаимодействия. Принятые решения, scope и открытые production-вопросы зафиксированы в [`BOL_DECISION_LOG.md`](../BOL_DECISION_LOG.md).
 
-Все данные mock; изменения сохраняются только в `localStorage` браузера. Spoke, Telegram, камера, PDF и производственные API не подключены. Interstate использует нормализованные правила из аудита, но не вызывает существующий Apps Script.
+Все данные mock; изменения сохраняются только в `localStorage` браузера. Spoke, Telegram, камера, PDF и производственные API не подключены. Interstate использует нормализованные правила из аудита, но не вызывает существующий Apps Script. Наличие PostgreSQL DDL в репозитории не меняет эту границу: wireframe не подключён к БД.
 
 ## Place labels
 

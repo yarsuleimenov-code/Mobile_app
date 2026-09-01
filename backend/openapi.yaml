@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: Zaberman Operational API
+  version: 0.1.0
+  description: Minimal Stage 1 contract for creating a physical cargo place.
+servers:
+  - url: http://localhost:3000/api
+paths:
+  /health:
+    get:
+      operationId: health
+      responses:
+        '200':
+          description: Service is running.
+  /cargo-places:
+    post:
+      operationId: createCargoPlace
+      summary: Create a cargo place, its initial measurement and an unprinted label alias
+      description: >-
+        Idempotent by operationId. The barcode is derived by the server as ZB1:{place.id}.
+        The current Stage 1 runtime obtains actor, branch and optional device from DEV_* environment
+        variables. Production must replace this adapter with verified bearer-token claims.
+      security: []
+      x-stage-identity-context: DEV_ACTOR_USER_ID, DEV_BRANCH_ID and optional DEV_DEVICE_ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCargoPlaceRequest'
+      responses:
+        '201':
+          description: Applied or replayed exact result of an already applied operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCargoPlaceResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+components:
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+    CreateCargoPlaceRequest:
+      type: object
+      additionalProperties: false
+      required: [operationId, occurredAt, orderId, place, measurement, label]
+      properties:
+        operationId:
+          $ref: '#/components/schemas/UuidV7'
+        expectedOrderVersion:
+          type: integer
+          minimum: 1
+        occurredAt:
+          type: string
+          format: date-time
+        orderId:
+          $ref: '#/components/schemas/UuidV7'
+        place:
+          type: object
+          additionalProperties: false
+          required: [id, placeNumber, placeCountAtCreation, humanLabel]
+          properties:
+            id:
+              $ref: '#/components/schemas/UuidV7'
+            placeNumber:
+              type: integer
+              minimum: 1
+            placeCountAtCreation:
+              type: integer
+              minimum: 1
+            humanLabel:
+              type: string
+              pattern: '^[A-Z0-9-]{4,64}$'
+        measurement:
+          $ref: '#/components/schemas/Measurement'
+        label:
+          type: object
+          additionalProperties: false
+          required: [id]
+          properties:
+            id:
+              $ref: '#/components/schemas/UuidV7'
+    Measurement:
+      type: object
+      additionalProperties: false
+      required: [id, dimensionState, dimensionUnit, weightUnit, weightSource, measuredAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/UuidV7'
+        dimensionState:
+          type: string
+          enum: [complete, partial, unknown, not_measurable]
+        length:
+          type: number
+          exclusiveMinimum: 0
+        width:
+          type: number
+          exclusiveMinimum: 0
+        height:
+          type: number
+          exclusiveMinimum: 0
+        dimensionUnit:
+          type: string
+          enum: [cm, in]
+        weight:
+          type: number
+          minimum: 0
+        weightUnit:
+          type: string
+          enum: [kg, lb]
+        weightSource:
+          type: string
+          enum: [measured, declared, allocated, estimated, unknown]
+        unknownReason:
+          type: string
+          minLength: 1
+          description: Required when dimensions are not complete or weightSource is unknown.
+        measuredAt:
+          type: string
+          format: date-time
+    CreateCargoPlaceResult:
+      type: object
+      required: [operationId, status, appliedAt, cargoPlace, label]
+      properties:
+        operationId:
+          $ref: '#/components/schemas/UuidV7'
+        status:
+          const: applied
+        appliedAt:
+          type: string
+          format: date-time
+        cargoPlace:
+          type: object
+          required: [id, orderId, placeNumber, placeCountAtCreation, humanLabel, version, currentMeasurement]
+          properties:
+            id:
+              $ref: '#/components/schemas/UuidV7'
+            orderId:
+              $ref: '#/components/schemas/UuidV7'
+            placeNumber:
+              type: integer
+            placeCountAtCreation:
+              type: integer
+            humanLabel:
+              type: string
+            version:
+              const: 3
+            currentMeasurement:
+              $ref: '#/components/schemas/Measurement'
+        label:
+          type: object
+          required: [id, labelCode, barcodePayload, barcodeFormatVersion, status]
+          properties:
+            id:
+              $ref: '#/components/schemas/UuidV7'
+            labelCode:
+              type: string
+            barcodePayload:
+              type: string
+              pattern: '^ZB1:[0-9a-f-]{36}$'
+            barcodeFormatVersion:
+              const: 1
+            status:
+              const: active
+    Error:
+      type: object
+      required: [code, message, retryable]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        retryable:
+          type: boolean
+  responses:
+    BadRequest:
+      description: Request violates the API or measurement-quality rules.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Actor or device is outside the active branch permission scope.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Order does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Version, identifier or idempotency conflict.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unavailable:
+      description: Database or production identity adapter is unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

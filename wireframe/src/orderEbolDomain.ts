@@ -1,4 +1,4 @@
-import { calculatePieces, calculateVolume, expandCargoPlaces, type CargoRecord } from './cargoDomain'
+import { calculatePieces, calculateVolume, expandCargoPlaces, type CargoChangeEntry, type CargoRecord } from './cargoDomain'
 
 export type OrderEbolStatus =
   | 'draft'
@@ -35,6 +35,7 @@ export interface OrderEbolEvidenceSnapshot {
   photoCount: number
   hasDamage: boolean
   exceptionNote: string
+  changeHistory?: CargoChangeEntry[]
 }
 
 export interface OrderEbolHandoffSnapshot {
@@ -44,10 +45,19 @@ export interface OrderEbolHandoffSnapshot {
   lockedAt?: string
 }
 
+export interface SupplementalPickupVersion extends OrderEbolHandoffSnapshot {
+  version: number
+  documentNumber: string
+  status: 'draft' | 'locked'
+  addedPlaceIds: string[]
+  createdAt: string
+}
+
 export interface OrderEbol {
   orderNumber: string
   status: OrderEbolStatus
   pickup: OrderEbolHandoffSnapshot
+  pickupSupplements: SupplementalPickupVersion[]
   delivery: OrderEbolHandoffSnapshot
   createdAt: string
   updatedAt: string
@@ -83,11 +93,13 @@ export function createOrderEbol(record: CargoRecord, capturedAt = new Date().toI
         photoCount: record.photoCount,
         hasDamage: false,
         exceptionNote: '',
+        changeHistory: record.changeHistory ?? [],
       },
       contact: pendingContactConfirmation(),
       driver: pendingDriverConfirmation(),
     },
     delivery: emptyHandoff(),
+    pickupSupplements: [],
     createdAt: capturedAt,
     updatedAt: capturedAt,
   }
@@ -150,6 +162,95 @@ export function lockPickupEbol(
     updatedAt: lockedAt,
   }
 }
+
+export interface SupplementalPickupInput {
+  addedPlaceIds: string[]
+  totalWeight: number
+  totalVolume: number
+  photoCount: number
+  changeHistory: CargoChangeEntry[]
+}
+
+export function prepareSupplementalPickup(
+  orderEbol: OrderEbol,
+  input: SupplementalPickupInput,
+  capturedAt = new Date().toISOString(),
+): OrderEbol {
+  if (!orderEbol.pickup.lockedAt) throw new Error('Original Pickup must be locked before Supplemental Pickup')
+  if (!input.addedPlaceIds.length) throw new Error('Supplemental Pickup requires at least one added place')
+  const supplements = orderEbol.pickupSupplements ?? []
+  const existingDraft = supplements.find((item) => item.status === 'draft')
+  const version = existingDraft?.version
+    ?? Math.max(1, ...supplements.filter((item) => item.status === 'locked').map((item) => item.version)) + 1
+  const supplemental: SupplementalPickupVersion = {
+    version,
+    documentNumber: `${orderEbol.orderNumber}-PU-${version}`,
+    status: 'draft',
+    addedPlaceIds: [...input.addedPlaceIds],
+    evidence: {
+      capturedAt,
+      pieceCount: input.addedPlaceIds.length,
+      placeIds: [...input.addedPlaceIds],
+      totalWeight: input.totalWeight,
+      totalVolume: input.totalVolume,
+      photoCount: input.photoCount,
+      hasDamage: false,
+      exceptionNote: '',
+      changeHistory: input.changeHistory,
+    },
+    contact: pendingContactConfirmation(),
+    driver: pendingDriverConfirmation(),
+    createdAt: existingDraft?.createdAt ?? capturedAt,
+  }
+  return {
+    ...orderEbol,
+    pickupSupplements: [supplemental, ...supplements.filter((item) => item.status !== 'draft')],
+    updatedAt: capturedAt,
+  }
+}
+
+export function findDraftSupplementalPickup(orderEbol: OrderEbol | null | undefined) {
+  return orderEbol?.pickupSupplements?.find((item) => item.status === 'draft')
+}
+
+export function lockSupplementalPickup(
+  orderEbol: OrderEbol,
+  version: number,
+  input: PickupEbolConfirmationInput,
+  lockedAt = new Date().toISOString(),
+): OrderEbol {
+  if (!canLockPickupEbol(input)) throw new Error('Supplemental Pickup confirmation is incomplete')
+  const supplements = orderEbol.pickupSupplements ?? []
+  const target = supplements.find((item) => item.version === version)
+  if (!target || target.status !== 'draft' || !target.evidence) throw new Error('Supplemental Pickup draft is missing')
+  return {
+    ...orderEbol,
+    pickupSupplements: supplements.map((item) => item.version !== version ? item : {
+      ...item,
+      status: 'locked',
+      evidence: {
+        ...item.evidence!,
+        hasDamage: input.hasDamage,
+        exceptionNote: input.hasDamage ? input.exceptionNote.trim() : '',
+      },
+      contact: input.contactMethod === 'contactless'
+        ? { status: 'contactless', contactlessReason: input.contactlessReason.trim(), confirmedAt: lockedAt }
+        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt },
+      driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
+      lockedAt,
+    }),
+    updatedAt: lockedAt,
+  }
+}
+
+export function getEffectivePickupPlaceIds(orderEbol: OrderEbol) {
+  return [
+    ...(orderEbol.pickup.evidence?.placeIds ?? []),
+    ...(orderEbol.pickupSupplements ?? [])
+      .filter((item) => item.status === 'locked')
+      .flatMap((item) => item.addedPlaceIds),
+  ]
+}
 export interface DeliveryEbolEvidenceInput {
   photoCount: number
   hasDamage: boolean
@@ -179,7 +280,9 @@ export function prepareDeliveryEbol(
       evidence: {
         capturedAt,
         pieceCount: calculatePieces(record.dimensionGroups),
-        placeIds: orderEbol.pickup.evidence?.placeIds ?? expandCargoPlaces(record).map((place) => place.placeId),
+        placeIds: getEffectivePickupPlaceIds(orderEbol).length
+          ? getEffectivePickupPlaceIds(orderEbol)
+          : expandCargoPlaces(record).map((place) => place.placeId),
         totalWeight: record.totalWeight,
         totalVolume: calculateVolume(record.dimensionGroups),
         photoCount: input.photoCount,

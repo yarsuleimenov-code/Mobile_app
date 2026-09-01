@@ -5,14 +5,16 @@ import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import {
-  canLockPickupEbol, createOrderEbol, lockPickupEbol,
+  canLockPickupEbol, createOrderEbol, lockPickupEbol, lockSupplementalPickup,
   type OrderEbol, type PickupEbolConfirmationInput,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
+import { readPickupDrafts, removePickupDraft, writePickupDrafts } from '../pickupDraftStore'
 import { SignaturePad } from '../signature-components'
 
 interface PickupSignatureLocationState {
   confirmationInput: PickupEbolConfirmationInput
+  supplementVersion?: number
 }
 
 
@@ -28,13 +30,17 @@ export function PickupSignatureScreen() {
     findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null)
   ))
   const confirmationInput = (location.state as PickupSignatureLocationState | null)?.confirmationInput
+  const supplementVersion = (location.state as PickupSignatureLocationState | null)?.supplementVersion
+  const supplement = supplementVersion === undefined
+    ? undefined
+    : orderEbol?.pickupSupplements?.find((item) => item.version === supplementVersion)
   const startsWithContact = confirmationInput?.contactMethod === 'signed'
   const [step, setStep] = useState<'contact' | 'driver'>(startsWithContact ? 'contact' : 'driver')
   const [contactSigned, setContactSigned] = useState(!startsWithContact)
   const [driverSigned, setDriverSigned] = useState(false)
   const [storageError, setStorageError] = useState(false)
 
-  if (!orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput)) {
+  if (!orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput) || (supplementVersion !== undefined && !supplement?.evidence)) {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL signing" subtitle={`Pickup · Order #${orderNumber || 'unknown'}`} />
@@ -44,11 +50,11 @@ export function PickupSignatureScreen() {
     )
   }
 
-  if (orderEbol.pickup.lockedAt) {
+  if ((supplementVersion === undefined && orderEbol.pickup.lockedAt) || supplement?.lockedAt) {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL signing" subtitle={`Pickup · Order #${orderNumber}`} />
-        <main className="signature-empty"><CheckCircle2 size={48} /><h2>Pickup already signed</h2><p>The Pickup snapshot is locked.</p><button type="button" className="cargo-primary" onClick={() => navigate(reviewPath, { replace: true })}>Open Order eBOL</button></main>
+        <main className="signature-empty"><CheckCircle2 size={48} /><h2>{supplement ? `Version ${supplement.version} already signed` : 'Pickup already signed'}</h2><p>The selected Pickup snapshot is locked.</p><button type="button" className="cargo-primary" onClick={() => navigate(reviewPath, { replace: true })}>Open Order eBOL</button></main>
         <CargoBottomNav />
       </div>
     )
@@ -61,12 +67,19 @@ export function PickupSignatureScreen() {
   }
 
   const finishPickupSigning = () => {
-    const locked = lockPickupEbol(orderEbol, confirmationInput)
+    const locked = supplementVersion === undefined
+      ? lockPickupEbol(orderEbol, confirmationInput)
+      : lockSupplementalPickup(orderEbol, supplementVersion, confirmationInput)
     const saved = writeOrderEbols(upsertOrderEbol(readOrderEbols(), locked))
     if (!saved) {
       setStorageError(true)
       return
     }
+    writePickupDrafts(removePickupDraft(
+      readPickupDrafts(),
+      orderNumber,
+      supplementVersion === undefined ? 'standard' : 'supplemental',
+    ))
     navigate(reviewPath, { replace: true })
   }
 
@@ -75,10 +88,10 @@ export function PickupSignatureScreen() {
 
   return (
     <div className="cargo-flow">
-      <CargoFlowHeader title="Order eBOL signing" subtitle={`Pickup · Order #${orderNumber}`} onBack={() => navigate(reviewPath, { replace: true })} />
+      <CargoFlowHeader title="Order eBOL signing" subtitle={supplement ? `Supplemental Pickup · Version ${supplement.version}` : `Pickup · Order #${orderNumber}`} onBack={() => navigate(reviewPath, { replace: true })} />
       <main className="signature-body">
         <div className="signature-progress"><span>Step {stepNumber} of {stepTotal}</span><div><i style={{ width: `${(stepNumber / stepTotal) * 100}%` }} /></div></div>
-        <div className="signature-disclaimer"><ShieldCheck size={22} /><p>This is a visual prototype. The drawing is not a legally binding electronic signature and is not stored as an image.</p></div>
+        <div className="signature-disclaimer"><ShieldCheck size={22} /><p>{supplement ? `Signatures apply only to ${supplement.addedPlaceIds.length} places in version ${supplement.version}. Version 1 remains unchanged. ` : ''}This is a visual prototype. The drawing is not a legally binding electronic signature and is not stored as an image.</p></div>
 
         {step === 'contact' ? (
           <section className="signature-card">
@@ -98,7 +111,7 @@ export function PickupSignatureScreen() {
             <p>{confirmationInput.contactMethod === 'contactless' ? 'The driver is the only signer and confirms the selected contactless reason, Pickup evidence and exceptions.' : 'By signing, the driver confirms the same Pickup evidence and documented exceptions.'}</p>
             <SignaturePad key="driver" label="Zaberman driver" onSignedChange={setDriverSigned} />
             {storageError ? <p className="ebol-storage-warning">Browser storage is unavailable. The Pickup snapshot was not locked.</p> : null}
-            <button type="button" className="cargo-primary" disabled={!driverSigned} onClick={finishPickupSigning}>Confirm & lock Pickup snapshot</button>
+            <button type="button" className="cargo-primary" disabled={!driverSigned} onClick={finishPickupSigning}>Confirm & lock {supplement ? `version ${supplement.version}` : 'Pickup snapshot'}</button>
           </section>
         )}
       </main>

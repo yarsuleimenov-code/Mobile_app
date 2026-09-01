@@ -1,11 +1,11 @@
-import { AlertTriangle, CheckCircle2, FileText, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, FilePlus2, FileText, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import {
-  canLockPickupEbol, createOrderEbol,
+  canLockPickupEbol, createOrderEbol, findDraftSupplementalPickup,
   type OrderEbol, type OrderEbolEvidenceSnapshot, type PickupEbolConfirmationInput,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
@@ -30,15 +30,17 @@ export function PickupEbolScreen() {
   const [orderEbol] = useState<OrderEbol | null>(() => (
     findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null)
   ))
+  const supplementalDraft = findDraftSupplementalPickup(orderEbol)
+  const confirmationSource = supplementalDraft ?? orderEbol?.pickup
   const [contactMethod, setContactMethod] = useState<PickupEbolConfirmationInput['contactMethod']>(() => (
-    orderEbol?.pickup.contact.status === 'contactless' ? 'contactless' : 'signed'
+    confirmationSource?.contact.status === 'contactless' ? 'contactless' : 'signed'
   ))
-  const [contactName, setContactName] = useState(orderEbol?.pickup.contact.signerName ?? '')
-  const [contactlessReason, setContactlessReason] = useState(orderEbol?.pickup.contact.contactlessReason ?? '')
+  const [contactName, setContactName] = useState(confirmationSource?.contact.signerName ?? '')
+  const [contactlessReason, setContactlessReason] = useState(confirmationSource?.contact.contactlessReason ?? '')
   const [contactlessAcknowledged, setContactlessAcknowledged] = useState(false)
-  const [driverName, setDriverName] = useState(orderEbol?.pickup.driver.signerName ?? '')
-  const [hasDamage, setHasDamage] = useState(orderEbol?.pickup.evidence?.hasDamage ?? false)
-  const [exceptionNote, setExceptionNote] = useState(orderEbol?.pickup.evidence?.exceptionNote ?? '')
+  const [driverName, setDriverName] = useState(confirmationSource?.driver.signerName ?? '')
+  const [hasDamage, setHasDamage] = useState(confirmationSource?.evidence?.hasDamage ?? false)
+  const [exceptionNote, setExceptionNote] = useState(confirmationSource?.evidence?.exceptionNote ?? '')
 
   if (!orderEbol?.pickup.evidence) {
     return (
@@ -51,6 +53,7 @@ export function PickupEbolScreen() {
   }
 
   const evidence = orderEbol.pickup.evidence
+  const reviewEvidence = supplementalDraft?.evidence ?? evidence
   const isLocked = Boolean(orderEbol.pickup.lockedAt)
   const confirmationInput: PickupEbolConfirmationInput = {
     contactMethod, contactName, contactlessReason, contactlessAcknowledged, driverName, hasDamage, exceptionNote,
@@ -58,10 +61,10 @@ export function PickupEbolScreen() {
   const canConfirm = canLockPickupEbol(confirmationInput)
 
   const openSigning = () => navigate(`/orders/${orderNumber}/ebol/pickup/sign`, {
-    state: { confirmationInput },
+    state: { confirmationInput, supplementVersion: supplementalDraft?.version },
   })
 
-  if (isLocked) {
+  if (isLocked && !supplementalDraft) {
     const contactLabel = orderEbol.pickup.contact.status === 'contactless'
       ? `Contactless · ${orderEbol.pickup.contact.contactlessReason}`
       : orderEbol.pickup.contact.signerName
@@ -69,10 +72,12 @@ export function PickupEbolScreen() {
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL" subtitle={`Pickup locked · Order #${orderNumber}`} />
         <main className="pickup-ebol-body">
-          <section className="ebol-locked-state"><span><LockKeyhole size={30} /></span><h2>Pickup snapshot locked</h2><p>Evidence and confirmations are saved for this handoff.</p></section>
+          <section className="ebol-locked-state"><span><LockKeyhole size={30} /></span><h2>Pickup snapshot locked</h2><p>Version 1 and its confirmations cannot be edited.</p></section>
           <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Pickup evidence</h2></div><EvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} />{evidence.hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
           <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'contactless' ? 'Pickup contact · signature skipped' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
-          <p className="ebol-lock-note">Locked data cannot be edited in the prototype. A correction requires a separate request.</p>
+          <section className="ebol-section document-version-history"><div className="ebol-section-heading"><FileText size={20} /><h2>Document versions</h2></div><div><strong>Version 1 · Original Pickup</strong><small>Locked {orderEbol.pickup.lockedAt ? new Date(orderEbol.pickup.lockedAt).toLocaleString() : ''} · {evidence.pieceCount} places</small></div>{(orderEbol.pickupSupplements ?? []).filter((item) => item.status === 'locked').map((item) => <div key={item.version}><strong>Version {item.version} · Supplemental Pickup</strong><small>{item.documentNumber} · {item.addedPlaceIds.length} added places · signed separately</small></div>)}</section>
+          <p className="ebol-lock-note">Previously signed facts stay unchanged. Add physical places through a Supplemental Pickup with a new document version and new confirmations.</p>
+          <button type="button" className="ebol-secondary ebol-add-supplement" onClick={() => navigate(`/pickup?order=${orderNumber}&supplemental=1`)}><FilePlus2 size={19} /> Add places · Supplemental Pickup</button>
           <button type="button" className="cargo-primary" onClick={() => navigate('/')}>Back to Home</button>
         </main>
         <CargoBottomNav />
@@ -82,11 +87,11 @@ export function PickupEbolScreen() {
 
   return (
     <div className="cargo-flow">
-      <CargoFlowHeader title="Order eBOL" subtitle={`Pickup review · Order #${orderNumber}`} />
+      <CargoFlowHeader title="Order eBOL" subtitle={supplementalDraft ? `Supplemental Pickup · Version ${supplementalDraft.version}` : `Pickup review · Order #${orderNumber}`} />
       <main className="pickup-ebol-body pickup-ebol-body--action">
-        <div className="ebol-review-banner"><ShieldCheck size={24} /><span><strong>Review before signing</strong><small>Both parties should review the same Pickup evidence.</small></span></div>
+        <div className="ebol-review-banner"><ShieldCheck size={24} /><span><strong>{supplementalDraft ? `Review ${supplementalDraft.addedPlaceIds.length} added places` : 'Review before signing'}</strong><small>{supplementalDraft ? 'Version 1 remains locked. These additions require fresh confirmations.' : 'Both parties should review the same Pickup evidence.'}</small></span></div>
 
-        <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Pickup evidence</h2></div><EvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} /></section>
+        <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>{supplementalDraft ? `Version ${supplementalDraft.version} evidence` : 'Pickup evidence'}</h2></div><EvidenceSummary evidence={reviewEvidence} /><EvidenceGallery count={reviewEvidence.photoCount} />{supplementalDraft ? <div className="supplemental-place-ids">{supplementalDraft.addedPlaceIds.map((placeId) => <code key={placeId}>{placeId}</code>)}</div> : null}</section>
 
         <section className="ebol-section ebol-exception-editor">
           <label><input type="checkbox" checked={hasDamage} onChange={(event) => setHasDamage(event.target.checked)} /><span><strong>Damage or exception observed</strong><small>Damage does not block handoff when it is documented.</small></span></label>

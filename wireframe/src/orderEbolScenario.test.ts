@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { initialCargoRecords } from './cargoDomain'
 import {
-  isOrderPodAvailable, lockDeliveryEbol, lockPickupEbol, prepareDeliveryEbol, syncPickupOrderEbolDraft,
+  getEffectivePickupPlaceIds, isOrderPodAvailable, lockDeliveryEbol, lockPickupEbol,
+  lockSupplementalPickup, prepareDeliveryEbol, prepareSupplementalPickup, syncPickupOrderEbolDraft,
 } from './orderEbolDomain'
 import { getOrderDocumentNavigation } from './orderEbolNavigation'
 
@@ -94,5 +95,39 @@ describe('Order eBOL end-to-end scenarios', () => {
       driver: { status: 'signed' },
     })
     expect(isOrderPodAvailable(completed)).toBe(true)
+  })
+
+  it('adds places through a separately signed version without mutating version 1', () => {
+    const original = lockPickupEbol(
+      syncPickupOrderEbolDraft(undefined, initialCargoRecords[0], '2026-09-01T10:00:00.000Z'),
+      signedPickup,
+      '2026-09-01T10:05:00.000Z',
+    )
+    const versionOne = structuredClone(original.pickup)
+    const draft = prepareSupplementalPickup(original, {
+      addedPlaceIds: ['ZB-11155599-12'],
+      totalWeight: 18,
+      totalVolume: 4.5,
+      photoCount: 2,
+      changeHistory: [],
+    }, '2026-09-01T10:20:00.000Z')
+
+    expect(getEffectivePickupPlaceIds(draft)).toHaveLength(11)
+    const locked = lockSupplementalPickup(draft, 2, {
+      ...signedPickup,
+      contactName: 'Sam Customer',
+      driverName: 'Maria Driver',
+    }, '2026-09-01T10:25:00.000Z')
+
+    expect(locked.pickup).toEqual(versionOne)
+    expect(getEffectivePickupPlaceIds(locked)).toHaveLength(12)
+    expect(locked.pickupSupplements[0]).toMatchObject({
+      version: 2,
+      documentNumber: '11155599-PU-2',
+      status: 'locked',
+      addedPlaceIds: ['ZB-11155599-12'],
+      contact: { status: 'signed', signerName: 'Sam Customer' },
+      driver: { status: 'signed', signerName: 'Maria Driver' },
+    })
   })
 })

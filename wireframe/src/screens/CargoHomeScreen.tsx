@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FileText, LoaderCircle, RefreshCw, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FilePenLine, FileText, LoaderCircle, RefreshCw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
@@ -6,6 +6,7 @@ import { calculatePieces } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import { getOrderDocumentNavigation } from '../orderEbolNavigation'
 import { readOrderEbols } from '../orderEbolStore'
+import { readPickupDrafts } from '../pickupDraftStore'
 import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
 
 export function CargoHomeScreen() {
@@ -14,6 +15,7 @@ export function CargoHomeScreen() {
   const [routeQuery, setRouteQuery] = useState('')
   const [recentRecordsExpanded, setRecentRecordsExpanded] = useState(false)
   const [orderEbols] = useState(() => readOrderEbols())
+  const [pickupDrafts] = useState(() => readPickupDrafts())
   const visibleTasks = useMemo(() => filterSpokeTasks(spokeRoute?.tasks ?? [], routeQuery), [spokeRoute, routeQuery])
   const pickupCount = spokeRoute?.tasks.filter((task) => task.operation === 'pickup').length ?? 0
   const dropoffCount = (spokeRoute?.tasks.length ?? 0) - pickupCount
@@ -67,6 +69,8 @@ export function CargoHomeScreen() {
           })}</div> : <div className="order-documents-empty"><FileText size={21} /><span><strong>No Order eBOL yet</strong><small>Create a Pickup record to start the document.</small></span></div>}
         </section>
 
+        {pickupDrafts.length ? <section className="pickup-drafts-home" aria-labelledby="pickup-drafts-title"><header><div><h2 id="pickup-drafts-title">Pickup drafts</h2><p>Autosaved on this device</p></div><FilePenLine size={23} /></header><div>{pickupDrafts.slice(0, 3).map((draft) => <button type="button" key={`${draft.orderNumber}-${draft.mode}`} onClick={() => navigate(`/pickup?order=${draft.orderNumber}${draft.mode === 'supplemental' ? '&supplemental=1' : ''}`)}><span><strong>#{draft.orderNumber} · {draft.mode === 'supplemental' ? 'Supplemental Pickup' : 'Pickup'}</strong><small>{draft.places.length} editable places · restored automatically</small></span><ChevronRight size={19} /></button>)}</div></section> : null}
+
         <section className="recent-records">
           <button
             type="button"
@@ -83,14 +87,17 @@ export function CargoHomeScreen() {
           </button>
           {recentRecordsExpanded ? (
             <div className="recent-records-list" id="recent-records-list">
-              {records.slice(0, 5).map((record) => (
-                <button type="button" key={record.orderNumber} onClick={() => navigate(`/dropoff?order=${record.orderNumber}`)}>
+              {records.slice(0, 5).map((record) => {
+                const isLocked = Boolean(orderEbols.find((item) => item.orderNumber === record.orderNumber)?.pickup.lockedAt)
+                const target = record.status === 'dropoff_complete' ? `/dropoff?order=${record.orderNumber}` : `/pickup?order=${record.orderNumber}${isLocked ? '&supplemental=1' : ''}`
+                return (
+                <button type="button" key={record.orderNumber} onClick={() => navigate(target)}>
                   <span className={`record-direction record-direction--${record.status}`}><ArrowUp size={19} /></span>
                   <span className="record-main"><strong>#{record.orderNumber}</strong><small>{record.pickupDate} · {calculatePieces(record.dimensionGroups)} pcs / {record.totalWeight} lb</small></span>
-                  <span className={`record-status record-status--${record.status}`}>{record.status === 'pickup_recorded' ? 'Pickup recorded' : 'Dropoff complete'}</span>
+                  <span className={`record-status record-status--${record.status}`}>{record.status === 'pickup_recorded' ? (isLocked ? 'Add places' : 'Edit Pickup') : 'Dropoff complete'}</span>
                   <ChevronRight size={20} />
                 </button>
-              ))}
+              )})}
             </div>
           ) : null}
         </section>

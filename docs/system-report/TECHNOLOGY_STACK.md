@@ -1,6 +1,7 @@
 # Технологический стек Zaberman Mobile
 
-Дата: 2026-08-26  
+Дата: 2026-09-01
+
 Статус: рекомендуемый вариант; версии production dependencies фиксируются при старте реализации.
 
 ## 1. Решение
@@ -25,16 +26,18 @@
 
 | Область | Фактическая технология | Оценка |
 |---|---|---|
-| UI | React `19.1.1`, React DOM `19.1.1` | Подходит для web-прототипа |
-| Routing | React Router DOM `7.8.2`, `HashRouter` | Подходит для GitHub Pages |
-| Language | TypeScript `5.9.2`, strict | Доменные правила можно частично переиспользовать |
-| Build | Vite `7.1.3` | Только web wireframe |
-| Tests | Vitest `3.2.x` | 28 текущих тестов проходят |
+| UI | React/React DOM `19.2.8` в lockfile (specifier `^19.1.1`) | Подходит для web-прототипа |
+| Routing | React Router DOM `7.18.2` в lockfile, `HashRouter` | Подходит для GitHub Pages |
+| Language | TypeScript `5.9.3` в lockfile, strict | Доменные правила можно частично переиспользовать |
+| Build | Vite `7.3.6` в lockfile | Только web wireframe |
+| Tests | Vitest `3.2.7` в lockfile | 13 файлов / 35 тестов проходят |
 | Barcode | JsBarcode `3.12.3` | Prototype Code 128 labels |
 | Icons | Lucide React | Только presentation dependency |
 | State | React Context/useState + `localStorage` | Mock; не production offline store |
-| Integrations | Static fixtures + artificial delays | Реальных API нет |
+| Backend | NestJS `12.0.1`, Node.js/TypeScript, `pg` | Первый `Create CargoPlace` slice; без deploy и production auth |
+| Integrations | Static fixtures + artificial delays | Внешних API нет |
 | Deploy | GitHub Actions → GitHub Pages | Только публичный prototype hosting |
+| Database design | PostgreSQL 16+ SQL migrations | PD-011/PD-012 реализованы; runtime apply не проверен |
 
 Можно переиспользовать: TypeScript domain calculations, terminology, test cases, visual references и часть React-компонентной логики. Нельзя переносить как production foundation: DOM/CSS layout, `HashRouter`, browser `localStorage`, mock sync, in-memory Trip state и GitHub Pages deployment.
 
