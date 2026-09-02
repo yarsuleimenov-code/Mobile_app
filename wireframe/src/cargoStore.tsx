@@ -3,11 +3,19 @@ import { initialCargoRecords, normalizeOrderNumber, type CargoRecord } from './c
 import { usePrototypeScenario } from './prototypeScenarioStore'
 import { mockTodaySpokeRoute, type SpokeRoute } from './spokeDomain'
 import { useEvidenceSync } from './useEvidenceSync'
+import { editOrderDetails, initialOrderDetails, ORDER_DETAILS_STORAGE_KEY, readOrderDetails, type OrderDetails, type OrderDetailsEdit } from './orderDetailsDomain'
+import { findPickupDemoRecord } from './pickupDemoData'
+import { findPickupDraft, readPickupDrafts } from './pickupDraftStore'
+import { pickupDraftToRecord } from './pickupDraftDomain'
+import { findOrderEbol, readOrderEbols } from './orderEbolStore'
 
 export type CargoSyncStatus = 'synced' | 'offline' | 'pending' | 'syncing' | 'retry' | 'conflict' | 'rejected'
 
 interface CargoContextValue extends ReturnType<typeof useEvidenceSync> {
   records: CargoRecord[]
+  getOrderDetails: (order: string) => OrderDetails
+  saveOrderDetails: (order: string, edit: OrderDetailsEdit) => void
+  getOrderCargo: (order: string) => CargoRecord | undefined
   spokeRoute?: SpokeRoute
   isSpokeRouteLoading: boolean
   syncStatus: CargoSyncStatus
@@ -53,9 +61,10 @@ function readPendingChanges() {
 }
 
 export function CargoProvider({ children }: { children: ReactNode }) {
-  const { network, syncOutcome } = usePrototypeScenario()
+  const { network, syncOutcome, role } = usePrototypeScenario()
   const evidenceSync = useEvidenceSync(network, syncOutcome)
   const { evidenceQueue, syncEvidence } = evidenceSync
+  const [orderDetails, setOrderDetails] = useState(readOrderDetails)
   const [records, setRecords] = useState<CargoRecord[]>(readRecords)
   const [spokeRoute, setSpokeRoute] = useState<SpokeRoute | undefined>(readSpokeRoute)
   const [isSpokeRouteLoading, setIsSpokeRouteLoading] = useState(false)
@@ -110,6 +119,25 @@ export function CargoProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CargoContextValue>(() => ({
     ...evidenceSync,
     records, spokeRoute, isSpokeRouteLoading,
+    getOrderDetails: (value) => {
+      const order = normalizeOrderNumber(value)
+      return orderDetails[order] ?? initialOrderDetails(order, records.find((item) => item.orderNumber === order)?.title ?? '')
+    },
+    saveOrderDetails: (value, edit) => {
+      const order = normalizeOrderNumber(value)
+      const current = orderDetails[order] ?? initialOrderDetails(order, records.find((item) => item.orderNumber === order)?.title ?? '')
+      const next = { ...orderDetails, [order]: editOrderDetails(current, edit, role) }
+      // Persist first: a failed save must not masquerade as a saved rename.
+      localStorage.setItem(ORDER_DETAILS_STORAGE_KEY, JSON.stringify(next))
+      setOrderDetails(next)
+    },
+    getOrderCargo: (value) => {
+      const order = normalizeOrderNumber(value)
+      const record = records.find((item) => item.orderNumber === order) ?? findPickupDemoRecord(order)
+      const locked = Boolean(findOrderEbol(readOrderEbols(), order)?.pickup.lockedAt)
+      const draft = findPickupDraft(readPickupDrafts(), order, locked ? 'supplemental' : 'standard')
+      return draft ? pickupDraftToRecord(draft, record) : record
+    },
     syncStatus: syncStatus === 'offline' || syncStatus === 'syncing' ? syncStatus
       : evidenceQueue.some((item) => item.status === 'syncing') ? 'syncing'
       : evidenceQueue.some((item) => item.status === 'conflict') ? 'conflict'
@@ -158,7 +186,7 @@ export function CargoProvider({ children }: { children: ReactNode }) {
       )))
       queueChange()
     },
-  }), [records, spokeRoute, isSpokeRouteLoading, syncStatus, pendingChanges, network, syncOutcome, queueChange, isOffline, evidenceSync, evidenceQueue, syncEvidence])
+  }), [orderDetails, role, records, spokeRoute, isSpokeRouteLoading, syncStatus, pendingChanges, network, syncOutcome, queueChange, isOffline, evidenceSync, evidenceQueue, syncEvidence])
 
   return <CargoContext.Provider value={value}>{children}</CargoContext.Provider>
 }

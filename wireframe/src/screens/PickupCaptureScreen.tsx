@@ -4,11 +4,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, SuccessState } from '../cargo-components'
 import { EvidenceEditor } from '../PhotoEvidence'
 import { evidencePhotos } from '../photoEvidenceDomain'
+import { dimensionState, measurementIssues, summarizeMeasurements, unknownWeight, weightText, volumeText } from '../measurementDomain'
+import { operationalName, orderDetailsIssues } from '../orderDetailsDomain'
+import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import {
   addPickupDraftGroup, createPickupDraft, pickupDraftGroups, pickupDraftToRecord, pickupDraftVolume, pickupDraftWeight,
-  recordPickupDraftGroupEdit, removePickupDraftGroup, updatePickupDraftGroup,
+  recordPickupDraftGroupEdit, removePickupDraftGroup, updatePickupDraftGroup, updatePickupMeasurementNote,
   type PickupDraft,
 } from '../pickupDraftDomain'
 import { findPickupDemoRecord } from '../pickupDemoData'
@@ -17,7 +20,6 @@ import {
   findDraftSupplementalPickup, prepareSupplementalPickup, syncPickupOrderEbolDraft,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
-import { mockTodaySpokeRoute } from '../spokeDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 
 const groupFields: Array<{ field: 'quantity' | 'length' | 'width' | 'height' | 'weight'; label: string; suffix: string }> = [
@@ -40,7 +42,7 @@ export function PickupCaptureScreen() {
 function PickupCaptureForm() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { findRecord, savePickup, trackEvidenceOperation } = useCargo()
+  const { findRecord, savePickup, trackEvidenceOperation, getOrderDetails } = useCargo()
   const { branch } = usePrototypeScenario()
   const requestedOrder = normalizeOrderNumber(params.get('order') ?? '11155599')
   const currentRecord = findRecord(requestedOrder)
@@ -61,6 +63,9 @@ function PickupCaptureForm() {
   const volume = useMemo(() => pickupDraftVolume(draft), [draft])
   const addedWeight = useMemo(() => pickupDraftWeight(draft), [draft])
   const groups = pickupDraftGroups(draft)
+  const details = getOrderDetails(draft.orderNumber)
+  const measurements = summarizeMeasurements(groups)
+  const issues = [...orderDetailsIssues(details), ...measurementIssues(groups)]
   const photos = evidencePhotos(draft, normalizeOrderNumber(draft.orderNumber), 'pickup', draft.createdAt)
   const operationId = `pickup:${draft.orderNumber}:${draft.mode}:${draft.createdAt}`
 
@@ -81,15 +86,14 @@ function PickupCaptureForm() {
   }
   const commitGroupEdit = (groupId: string) => setDraft((current) => recordPickupDraftGroupEdit(current, groupId))
 
+  const canContinue = Boolean(normalizeOrderNumber(draft.orderNumber)) && draft.places.length > 0 && photos.length > 0 && saveState === 'saved' && !issues.length
   const submit = () => {
+    if (!canContinue) return
     const normalizedOrderNumber = normalizeOrderNumber(draft.orderNumber)
     const latestRecord = findRecord(normalizedOrderNumber)
-    const title = draft.title
-      || latestRecord?.title
-      || mockTodaySpokeRoute.tasks.find((task) => task.externalId === normalizedOrderNumber)?.title
-      || ''
+    const title = operationalName(details, normalizedOrderNumber)
     const normalizedDraft = { ...draft, orderNumber: normalizedOrderNumber, title, photos, photoCount: photos.length }
-    const record = pickupDraftToRecord(normalizedDraft, latestRecord)
+    const record = { ...pickupDraftToRecord(normalizedDraft, latestRecord), orderDetails: structuredClone(details) }
     const orderEbols = readOrderEbols()
     const existingEbol = findOrderEbol(orderEbols, record.orderNumber)
     if (normalizedDraft.mode === 'standard' && existingEbol?.pickup.lockedAt) {
@@ -100,6 +104,7 @@ function PickupCaptureForm() {
     if (normalizedDraft.mode === 'supplemental') {
       if (!existingEbol?.pickup.lockedAt) return
       nextEbol = prepareSupplementalPickup(existingEbol, {
+        orderDetails: details, measurements,
         addedPlaceIds: normalizedDraft.places.map((place) => place.placeId),
         totalWeight: addedWeight,
         totalVolume: volume,
@@ -111,8 +116,8 @@ function PickupCaptureForm() {
     } else {
       nextEbol = syncPickupOrderEbolDraft(existingEbol, record)
     }
+    if (!writeOrderEbols(upsertOrderEbol(orderEbols, nextEbol))) { setSaveState('error'); return }
     savePickup(record)
-    writeOrderEbols(upsertOrderEbol(orderEbols, nextEbol))
     setSaved(true)
   }
 
@@ -134,7 +139,6 @@ function PickupCaptureForm() {
     )
   }
 
-  const canContinue = Boolean(normalizeOrderNumber(draft.orderNumber)) && draft.places.length > 0 && photos.length > 0 && saveState === 'saved'
   const title = draft.mode === 'supplemental' ? 'Supplemental Pickup' : 'Pickup draft'
 
   return (
@@ -157,13 +161,14 @@ function PickupCaptureForm() {
           <label>Order #<input inputMode="numeric" value={draft.orderNumber} disabled={draft.mode === 'supplemental'} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'orderNumber', event.target.value))} /></label>
           <label>Pickup date<input type="date" value={draft.pickupDate} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'pickupDate', event.target.value))} /></label>
         </div>
+        <section className="order-name-summary"><span><strong>{operationalName(details, draft.orderNumber)}</strong><small>{details.special_cargo_type ? 'Special Cargo · see handling details' : 'Operational name'}</small></span><button type="button" onClick={() => navigate(`/orders/${normalizeOrderNumber(draft.orderNumber)}/details`)}>Order details</button></section>
         <label>Responsible manager<select value={draft.responsible} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'responsible', event.target.value))}><option>John Doe</option><option>Maria Lopez</option><option>Daniel Kim</option></select></label>
         <label>Packaging<select value={draft.packaging} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'packaging', event.target.value))}><option>Customer</option><option>Zaberman</option><option>Mixed</option></select></label>
         <label>Order comment<textarea rows={2} value={draft.orderComment} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'orderComment', event.target.value))} /></label>
 
         <section className="cargo-totals">
           <label><span>{draft.mode === 'supplemental' ? 'Added places' : 'Places'}</span><span><input aria-label="Places" value={draft.places.length} readOnly /> pcs</span></label>
-          <label><span>{draft.mode === 'supplemental' ? 'Added weight' : 'Total weight'}</span><span><input aria-label="Total weight" value={addedWeight} readOnly /> lb</span></label>
+          <label><span>{measurements.unknownWeightPlaces ? 'Known weight' : draft.mode === 'supplemental' ? 'Added weight' : 'Total weight'}</span><strong>{weightText(addedWeight, measurements)}</strong></label>
         </section>
 
         <section className="draft-places-section">
@@ -174,14 +179,17 @@ function PickupCaptureForm() {
               <article className="draft-place-card" key={group.id}>
                 <header><span><strong>Group {index + 1}</strong><code>{group.quantity} {group.quantity === 1 ? 'place' : 'places'} · individual PlaceIDs preserved</code></span><button type="button" onClick={() => removeGroup(group.id)} aria-label={`Remove group ${index + 1}`}><Trash2 size={18} /></button></header>
                 <div className="draft-place-fields draft-group-fields">
-                  {groupFields.map(({ field, label, suffix }) => <label key={field}><span className="draft-group-field-label">{field === 'weight' ? 'Weight' : label}<small>{field === 'weight' ? 'lb/pc' : suffix}</small></span><span><input aria-label={`${label} for group ${index + 1}`} inputMode={field === 'quantity' ? 'numeric' : 'decimal'} type="number" min={field === 'quantity' ? 1 : 0} max={field === 'quantity' ? 999 : undefined} step={field === 'quantity' ? 1 : 'any'} value={group[field]} onChange={(event) => updateGroup(group.id, field, event.target.value)} onBlur={() => commitGroupEdit(group.id)} /></span></label>)}
+                  {groupFields.map(({ field, label, suffix }) => <label key={field}><span className="draft-group-field-label">{field === 'weight' ? 'Weight' : label}<small>{field === 'weight' ? 'lb/pc' : suffix}</small></span><span><input aria-label={`${label} for group ${index + 1}`} inputMode={field === 'quantity' ? 'numeric' : 'decimal'} type="number" min={field === 'quantity' ? 1 : 0} max={field === 'quantity' ? 999 : undefined} step={field === 'quantity' ? 1 : 'any'} placeholder="—" disabled={field !== 'quantity' && field !== 'weight' && group.notMeasurable} value={group[field] ?? ''} onChange={(event) => updateGroup(group.id, field, event.target.value)} onBlur={() => commitGroupEdit(group.id)} /></span></label>)}
                 </div>
+                <label className="measurement-toggle"><input type="checkbox" checked={Boolean(group.notMeasurable)} onChange={(event) => setDraft((current) => updatePickupMeasurementNote(current, group.id, { notMeasurable: event.target.checked }))} />Dimensions cannot be measured</label>
+                {dimensionState(group) !== 'complete' || unknownWeight(group) ? <label className="measurement-reason">Reason for unmeasured values<textarea aria-label={`Measurement reason for group ${index + 1}`} rows={2} maxLength={300} value={group.unknownReason ?? ''} onChange={(event) => setDraft((current) => updatePickupMeasurementNote(current, group.id, { unknownReason: event.target.value }))} onBlur={() => commitGroupEdit(group.id)} placeholder="For example: packed crate; scale unavailable" /></label> : null}
               </article>
             ))}
             {!draft.places.length ? <div className="draft-places-empty">No editable groups yet. Add a dimension group and enter its quantity.</div> : null}
           </div>
           <button type="button" className="add-dimension" onClick={addGroup}><Plus size={18} /> Add dimension group</button>
-          <div className="volume-total"><span>{draft.mode === 'supplemental' ? 'Added volume' : 'Total volume'}</span><strong>{volume.toFixed(2)} cu ft</strong></div>
+          <div className="volume-total"><span>{measurements.incompletePlaces ? 'Known volume' : draft.mode === 'supplemental' ? 'Added volume' : 'Total volume'}</span><strong>{volumeText(volume, measurements)}</strong></div>
+          <MeasurementNotice summary={measurements} />
         </section>
 
         <section className="photo-section">
@@ -198,6 +206,7 @@ function PickupCaptureForm() {
           {historyOpen ? <ol>{[...draft.history].reverse().map((entry) => <li key={entry.id}><span>{entry.detail}</span><time>{new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></li>)}</ol> : null}
         </section>
 
+        {issues.length ? <div className="measurement-warning" role="status"><strong>Before continuing</strong>{issues.map((issue) => <p key={issue}>{issue}</p>)}<p>Your draft remains saved.</p></div> : null}
         <div className="flow-action"><button className="cargo-primary" type="submit" disabled={!canContinue}>{draft.mode === 'supplemental' ? 'Create new document version' : 'Continue to Pickup review'}</button></div>
       </form>
       <CargoBottomNav />

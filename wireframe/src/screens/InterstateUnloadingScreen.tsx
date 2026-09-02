@@ -1,6 +1,7 @@
 import { Check, CheckCheck, ChevronDown, ChevronUp, CircleAlert, FileText, PackageCheck, ScanLine, Truck } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { weightText } from '../measurementDomain'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { directionLabel, interstateIncomingTrips, summarizeLoadedPlaces } from '../interstateDomain'
 import { useInterstate } from '../interstateStore'
@@ -112,7 +113,7 @@ export function InterstateUnloadingScreen() {
         <section className="loading-progress unloading-progress">
           <strong>{receivedPlaces.length} of {trip.placeCount} places received</strong>
           <div><span style={{ width: `${trip.placeCount ? (receivedPlaces.length / trip.placeCount) * 100 : 0}%` }} /></div>
-          <dl><div><dt>Received weight</dt><dd>{receivedSummary.loadedWeight} lb</dd></div><div><dt>Not received</dt><dd>{missingPlaces.length} places</dd></div></dl>
+          <dl><div><dt>Received weight</dt><dd>{weightText(receivedSummary.loadedWeight, { unknownWeightPlaces: receivedSummary.unknownWeightPlaces ?? 0 })}</dd></div><div><dt>Not received</dt><dd>{missingPlaces.length} places</dd></div></dl>
         </section>
 
         <form className="unloading-scan" onSubmit={submitScan}>
@@ -133,7 +134,7 @@ export function InterstateUnloadingScreen() {
               <button type="button" className="loading-order-head" onClick={() => setExpandedOrder(expanded ? '' : order.orderNumber)}><span><strong>#{order.orderNumber}</strong><small>{order.title}</small></span><em className={`receive-status receive-status--${status.toLowerCase().replace(' ', '-')}`}>{receivedCount} / {order.places.length} · {status}</em>{expanded ? <ChevronUp /> : <ChevronDown />}</button>
               {expanded ? <div className="place-picker unloading-place-picker">
                 <div>{order.places.map((place) => <button type="button" key={place.placeId} className={receivedSet.has(place.placeId) ? 'is-received' : ''} aria-pressed={receivedSet.has(place.placeId)} aria-label={`Place ${place.placeNumber}, ${receivedSet.has(place.placeId) ? 'received' : 'not received'}`} onClick={() => { toggleReceivedPlace(trip.tripId, place.placeId); setSelectedPlaceKey(place.placeId); setScanFeedback(undefined) }}>{place.placeNumber}</button>)}</div>
-                {selectedPlace?.orderNumber === order.orderNumber ? <dl><div><dt>Place ID</dt><dd>{selectedPlace.placeId}</dd></div><div><dt>Dimensions</dt><dd>{selectedPlace.dimensions}</dd></div><div><dt>Est. weight</dt><dd>{selectedPlace.estimatedWeight} lb</dd></div></dl> : null}
+                {selectedPlace?.orderNumber === order.orderNumber ? <dl><div><dt>Place ID</dt><dd>{selectedPlace.placeId}</dd></div><div><dt>Dimensions</dt><dd>{selectedPlace.dimensions}</dd></div><div><dt>Est. weight</dt><dd>{selectedPlace.estimatedWeight === null ? 'Not measured' : `${selectedPlace.estimatedWeight} lb`}</dd></div></dl> : null}
                 <button type="button" className="load-all" disabled={receivedCount === order.places.length} onClick={() => order.places.forEach((place) => receivePlace(trip.tripId, place.placeId))}>Receive all remaining ({order.places.length - receivedCount})</button>
               </div> : null}
             </article>

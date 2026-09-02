@@ -8,7 +8,9 @@ import { DeliverySignatureScreen } from './screens/DeliverySignatureScreen'
 import { PickupCaptureScreen } from './screens/PickupCaptureScreen'
 import { PlaceLabelsScreen } from './screens/PlaceLabelsScreen'
 import { PickupEbolScreen } from './screens/PickupEbolScreen'
+import { OrderDetailsScreen } from './screens/OrderDetailsScreen'
 import { OrderPodScreen } from './screens/OrderPodScreen'
+import { OrderDocumentScreen } from './screens/OrderDocumentScreen'
 import { PickupSignatureScreen } from './screens/PickupSignatureScreen'
 import { InterstateBolScreen } from './screens/InterstateBolScreen'
 import { InterstateBolsScreen } from './screens/InterstateBolsScreen'
@@ -33,12 +35,14 @@ export function App() {
       <Route path="places" element={<CargoPlacesScreen />} />
       <Route path="places/:placeId" element={<CargoPlaceScreen />} />
       <Route path="pickup" element={<PickupCaptureScreen />} />
+      <Route path="orders/:orderNumber/details" element={<OrderDetailsScreen />} />
       <Route path="orders/:orderNumber/labels" element={<PlaceLabelsScreen />} />
       <Route path="orders/:orderNumber/ebol/pickup" element={<PickupEbolScreen />} />
       <Route path="orders/:orderNumber/ebol/pickup/sign" element={<PickupSignatureScreen />} />
       <Route path="orders/:orderNumber/ebol/delivery" element={<DeliveryEbolScreen />} />
       <Route path="orders/:orderNumber/ebol/delivery/sign" element={<DeliverySignatureScreen />} />
       <Route path="orders/:orderNumber/ebol/pod" element={<OrderPodScreen />} />
+      <Route path="orders/:orderNumber/ebol/documents/:documentKey" element={<OrderDocumentScreen />} />
       <Route path="dropoff" element={<DropoffVerifyScreen />} />
       <Route path="interstate" element={<InterstateScreen />} />
       <Route path="interstate/loading" element={<InterstateLoadingScreen />} />

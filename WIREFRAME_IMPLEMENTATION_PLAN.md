@@ -397,18 +397,23 @@ Pickup и Dropoff не объединяются в один статус: меж
 - Этап 0: продуктовые решения приняты; сохраняем бизнес-правила, не требуем production-инфраструктуру для demo.
 - Этап 1: Data/API — отдельный POC, PostgreSQL runtime gate не закрыт; не является зависимостью wireframe.
 - Этап 2: Pickup draft/restore, compact dimension groups, история, Recent Operations, locked snapshot и Supplemental Pickup реализованы. Заполненные mock-заявки сохранены; demo-блок в форме скрыт.
-- Этап 3: отдельные mock-фото/категории/preview, восстановление Pickup/Delivery, очередь/retry/conflict и 40/100-photo presets реализованы локально. Signed evidence проверены; результат принят owner, push не выполнен. [Детали](docs/system-report/STAGE_3_PHOTO_OFFLINE_DEMO.md).
-- Этап 4: labels all/selected/one, version filter, preview/mock print/reprint, unavailable printer и корректный контрольный Scan реализованы локально. Результат проверен, ожидает приёмки owner. [Детали](docs/system-report/STAGE_4_LABEL_PRINT_DEMO.md).
+- Этап 3: отдельные mock-фото/категории/preview, восстановление Pickup/Delivery, очередь/retry/conflict и 40/100-photo presets реализованы локально. Signed evidence проверены; результат принят owner и опубликован в `1d2a2d2`. [Детали](docs/system-report/STAGE_3_PHOTO_OFFLINE_DEMO.md).
+- Этап 4: labels all/selected/one, version filter, preview/mock print/reprint, unavailable printer и корректный контрольный Scan реализованы локально. Результат принят owner и опубликован в `1d2a2d2`. [Детали](docs/system-report/STAGE_4_LABEL_PRINT_DEMO.md).
 
-### Следующие этапы — только hi-fi wireframe
+- Этап 5: комментарии обеих сторон, версии и mock Download/Print/Email/Share реализованы и проверены локально. Этап принят owner; включён в разрешённую публикацию Этапов 5–6 в main. [Детали](docs/system-report/STAGE_5_EBOL_POD_DEMO.md).
+- Этап 6: trade/internal names, Qty, локальные роли и audit, Special Cargo, unknown measurements и Spoke preview реализованы и проверены. Принят owner; публикация в main разрешена. [Детали](docs/system-report/STAGE_6_ORDER_DATA_DEMO.md).
+
+### Оставшийся план — только hi-fi wireframe
+
+Этап 6 ниже сохранён как исходный scope; он реализован локально. Этап принят owner; следующий — Этап 7.
 
 | Этап | Минимальная работа | Критерий демонстрации |
 |---|---|---|
-| 5. eBOL/POD: комментарии и preview | Комментарии обеих сторон, версии, mock Download/Print/Email/Share; переиспользовать готовые подписи | Original неизменён, добавления подписаны отдельно, в итоговом документе понятны авторы и исключения |
+
 | 6. Данные заказа и Spoke preview | Trade/internal names, отдельное Qty, минимальный Special Cargo пример и неизвестные измерения, read-only mock-контекст Spoke | Owner понимает назначение и источник полей; внешние системы не изменяются |
 | 7. Репетиция owner-demo и UX-полировка | Presets, demo-script, семь сквозных проверок, back/resume и мобильная вёрстка | Две репетиции без помощи разработчика, нет блокирующих UX-дефектов, решения owner зафиксированы после показа |
 
-Оставшийся порядок: 5 → 6 → 7. Во всех этапах сначала используем готовые экраны; реализуем только недостающую часть. Нельзя считать запланированные возможности уже готовыми.
+Оставшийся порядок: 6 → 7. Во всех этапах сначала используем готовые экраны; реализуем только недостающую часть. Нельзя считать запланированные возможности уже готовыми.
 
 Backend, PostgreSQL, SQLite/outbox, реальная камера/печать, PDF/email services, integrations, field pilot и production hardening вынесены в будущий production-backlog. Их готовность не блокирует owner-demo.
 

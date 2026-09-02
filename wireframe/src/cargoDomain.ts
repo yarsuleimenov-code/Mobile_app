@@ -1,13 +1,17 @@
+import type { OrderDetails } from './orderDetailsDomain'
+import { dimensionText, dimensionState, unknownWeight } from './measurementDomain'
 import type { EvidencePhoto } from './photoEvidenceDomain'
 
 export interface DimensionGroup {
   id: string
   quantity: number
-  length: number
-  width: number
-  height: number
+  length: number | null
+  width: number | null
+  height: number | null
+  unknownReason?: string
+  notMeasurable?: boolean
   /** Weight of one place in lb; legacy records allocate the order total. */
-  weight?: number
+  weight?: number | null
 }
 
 export interface CargoChangeEntry {
@@ -25,6 +29,7 @@ export type Warehouse = typeof warehouses[number]
 export interface CargoRecord {
   orderNumber: string
   title: string
+  orderDetails?: OrderDetails
   pickupDate: string
   originBranch: Warehouse
   destinationBranch: Warehouse
@@ -46,9 +51,11 @@ export interface OrderCargoPlace {
   totalPlaces: number
   dimensionGroupId: string
   dimensions: string
-  estimatedWeight: number
-  weightSource: 'allocated_from_order_total' | 'dimension_group'
+  estimatedWeight: number | null
+  unknownReason?: string
+  weightSource: 'allocated_from_order_total' | 'dimension_group' | 'unknown'
   volume: number
+  volumeKnown?: boolean
   label: string
   currentLocation: string
   status: CargoPlaceStatus
@@ -77,7 +84,7 @@ export function calculatePieces(groups: DimensionGroup[]) {
 
 export function calculateVolume(groups: DimensionGroup[]) {
   const cubicInches = groups.reduce((total, group) => (
-    total + Math.max(0, group.quantity || 0)
+    total + (dimensionState(group) === 'complete' ? 1 : 0) * Math.max(0, group.quantity || 0)
       * Math.max(0, group.length || 0)
       * Math.max(0, group.width || 0)
       * Math.max(0, group.height || 0)
@@ -99,17 +106,20 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
 
   return record.dimensionGroups.flatMap((group) => Array.from({ length: Math.max(0, group.quantity) }, () => {
     placeNumber += 1
-    const placeWeight = group.weight ?? estimatedWeight
+    const placeWeight = unknownWeight(group) ? null : group.weight === undefined ? estimatedWeight : group.weight
+    const dimensions = dimensionText(group)
     return {
       placeId: record.placeIds?.[placeNumber - 1] ?? createCargoPlaceId(record.orderNumber, placeNumber),
       orderNumber: record.orderNumber,
       placeNumber,
       totalPlaces,
       dimensionGroupId: group.id,
-      dimensions: `${group.length} × ${group.width} × ${group.height} in`,
+      dimensions,
+      unknownReason: group.unknownReason,
       estimatedWeight: placeWeight,
-      weightSource: group.weight === undefined ? 'allocated_from_order_total' : 'dimension_group',
-      volume: Math.round(((group.length * group.width * group.height) / 1728) * 100) / 100,
+      weightSource: placeWeight === null ? 'unknown' : group.weight === undefined ? 'allocated_from_order_total' : 'dimension_group',
+      volume: calculateVolume([{ ...group, quantity: 1 }]),
+      volumeKnown: dimensionState(group) === 'complete',
       label: `Place ${placeNumber}/${totalPlaces} · Code 128`,
       currentLocation: record.status === 'dropoff_complete'
         ? `${record.destinationBranch} · Delivered`
@@ -117,7 +127,7 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
       status: record.status === 'dropoff_complete' ? 'delivered' : 'ready_for_loading',
       events: [
         { id: 'place-id-assigned', at: record.pickupDate, title: 'Place ID assigned', detail: `Created from Order #${record.orderNumber}` },
-        { id: 'pickup-recorded', at: record.pickupDate, title: 'Pickup recorded', detail: `${group.length} × ${group.width} × ${group.height} in · ${placeWeight} lb ${group.weight === undefined ? 'allocated' : 'per place'}` },
+        { id: 'pickup-recorded', at: record.pickupDate, title: 'Pickup recorded', detail: `${dimensions} · ${placeWeight === null ? 'Weight not measured' : `${placeWeight} lb ${group.weight === undefined ? 'allocated' : 'per place'}`}${group.unknownReason ? ` · ${group.unknownReason}` : ''}` },
         ...(record.status === 'dropoff_complete'
           ? [{ id: 'delivery-completed', at: 'Current record', title: 'Delivery completed', detail: `Received at ${record.destinationBranch}` }]
           : []),

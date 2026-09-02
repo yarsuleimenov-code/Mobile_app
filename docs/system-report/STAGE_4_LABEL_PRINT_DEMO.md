@@ -1,6 +1,6 @@
 # Этап 4. Labels и выборочная mock-печать
 
-Дата: 2026-09-02. Статус: реализовано и проверено локально, готово к приёмке owner. Commit/push не выполнялись.
+Дата: 2026-09-02. Статус: принято owner и опубликовано в `1d2a2d2`.
 
 Scope — Этап 4 [принятого OWNER_DEMO_PLAN](OWNER_DEMO_PLAN.md). Реальные принтеры и аппаратный scan не подключаются.
 
@@ -55,4 +55,4 @@ Scope — Этап 4 [принятого OWNER_DEMO_PLAN](OWNER_DEMO_PLAN.md). �
 - In-app Browser: invocation failed (`trusted Node process exited unexpectedly`); использован ранее разрешённый Chrome fallback. Физическая печать/реальные сканеры не тестировались.
 - Регрессия Этапа 3: Pickup → Supplemental → Delivery → POD, photos/restore и demo presets проходит.
 
-Следующий этап — **5. eBOL/POD: комментарии сторон и представление документа**. Его реализация в этот этап не входит.
+Последующая работа: [Этап 5](STAGE_5_EBOL_POD_DEMO.md) принят owner; [Этап 6](STAGE_6_ORDER_DATA_DEMO.md) реализован отдельно, включая неизменность имени в reprint подписанной версии. Следующий этап — 7.

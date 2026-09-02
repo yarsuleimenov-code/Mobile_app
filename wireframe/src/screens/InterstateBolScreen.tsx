@@ -1,5 +1,6 @@
 import { Download, Printer } from 'lucide-react'
 import { Navigate, useParams } from 'react-router-dom'
+import { weightText } from '../measurementDomain'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { ZabermanLogo } from '../brand-logo'
 import { directionLabel, generatedTripToBol, interstateBolArchive } from '../interstateDomain'
@@ -23,7 +24,7 @@ export function InterstateBolScreen() {
         <section className="bol-paper">
           <header><ZabermanLogo className="document-brand-logo" /><span>BILL OF LADING</span></header>
           <dl><div><dt>BOL Number</dt><dd>{bol.bolNumber}</dd></div><div><dt>TripID</dt><dd>{bol.tripId}</dd></div><div><dt>Route</dt><dd>{directionLabel(bol.direction)}</dd></div><div><dt>Truck</dt><dd>{bol.truck}</dd></div></dl>
-          <div className="bol-cargo"><strong>Cargo totals</strong><span>{bol.orderCount} orders</span><span>{bol.placeCount} places</span><span>{bol.loadedWeight} lb</span></div>
+          <div className="bol-cargo"><strong>Cargo totals</strong><span>{bol.orderCount} orders</span><span>{bol.placeCount} places</span><span>{weightText(bol.loadedWeight, { unknownWeightPlaces: bol.unknownWeightPlaces ?? 0 })}</span></div>
           <footer><span>Shipper signature</span><span>Carrier signature</span></footer>
         </section>
         <div className="bol-actions"><button type="button" onClick={() => window.print()}><Download /> Save as PDF</button><button type="button" onClick={() => window.print()}><Printer /> Print</button></div>

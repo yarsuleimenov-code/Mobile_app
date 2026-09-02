@@ -1,6 +1,7 @@
 import { Check, ChevronDown, ChevronUp, CircleAlert, ScanLine, Search } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { weightText, volumeText } from '../measurementDomain'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { useCargo } from '../cargoStore'
 import { directionLabel, expandRecordPlaces, getEligibleRecords, summarizeLoadedPlaces } from '../interstateDomain'
@@ -50,7 +51,7 @@ export function InterstateLoadingScreen() {
         <section className="loading-progress">
           <strong>{summary.placeCount} of {allPlaces.length} places loaded</strong>
           <div><span style={{ width: `${allPlaces.length ? (summary.placeCount / allPlaces.length) * 100 : 0}%` }} /></div>
-          <dl><div><dt>Loaded weight</dt><dd>{summary.loadedWeight} lb</dd></div><div><dt>Loaded volume</dt><dd>{summary.loadedVolume.toFixed(2)} cu ft</dd></div></dl>
+          <dl><div><dt>Loaded weight</dt><dd>{weightText(summary.loadedWeight, { unknownWeightPlaces: summary.unknownWeightPlaces ?? 0 })}</dd></div><div><dt>Loaded volume</dt><dd>{volumeText(summary.loadedVolume, { incompletePlaces: summary.incompletePlaces ?? 0 })}</dd></div></dl>
         </section>
         <form className="unloading-scan" onSubmit={submitScan}>
           <ScanLine size={21} />
@@ -70,7 +71,7 @@ export function InterstateLoadingScreen() {
               <button type="button" className="loading-order-head" onClick={() => setExpandedOrder(expanded ? '' : record.orderNumber)}><span><strong>#{record.orderNumber}</strong><small>{record.title}</small></span><em>{loadedCount} / {places.length} places</em>{expanded ? <ChevronUp /> : <ChevronDown />}</button>
               {expanded ? <div className="place-picker">
                 <div>{places.map((place) => <button type="button" key={place.placeId} className={loadedSet.has(place.placeId) ? 'is-loaded' : ''} onClick={() => { togglePlace(place.placeId); setSelectedPlaceKey(place.placeId) }}>{place.placeNumber}</button>)}</div>
-                {selectedPlace?.orderNumber === record.orderNumber ? <dl><div><dt>Selected place</dt><dd>{selectedPlace.placeNumber}</dd></div><div><dt>Dimensions</dt><dd>{selectedPlace.dimensions}</dd></div><div><dt>Est. weight</dt><dd>{selectedPlace.estimatedWeight} lb</dd></div></dl> : null}
+                {selectedPlace?.orderNumber === record.orderNumber ? <dl><div><dt>Selected place</dt><dd>{selectedPlace.placeNumber}</dd></div><div><dt>Dimensions</dt><dd>{selectedPlace.dimensions}</dd></div><div><dt>Est. weight</dt><dd>{selectedPlace.estimatedWeight === null ? 'Not measured' : `${selectedPlace.estimatedWeight} lb`}</dd></div></dl> : null}
                 <button type="button" className="load-all" onClick={() => loadAll(places)}>Load all remaining ({places.length - loadedCount})</button>
               </div> : null}
             </article>

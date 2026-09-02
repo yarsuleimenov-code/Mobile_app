@@ -4,11 +4,14 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
 import {
-  canLockDeliveryEbol, lockDeliveryEbol,
+  canReviewOrderEvidence, withCurrentOrderDetails, canLockDeliveryEbol, lockDeliveryEbol,
   type DeliveryEbolConfirmationInput, type OrderEbol,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 import { SignaturePad } from '../signature-components'
+import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
+import { useCargo } from '../cargoStore'
+import { HandoffCommentsView } from '../orderReviewComments'
 
 interface DeliverySignatureLocationState {
   confirmationInput: DeliveryEbolConfirmationInput
@@ -20,7 +23,8 @@ export function DeliverySignatureScreen() {
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
   const reviewPath = `/orders/${orderNumber}/ebol/delivery`
-  const [orderEbol] = useState<OrderEbol | null>(() => findOrderEbol(readOrderEbols(), orderNumber) ?? null)
+  const { getOrderDetails } = useCargo()
+  const [orderEbol] = useState<OrderEbol | null>(() => withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? null, 'delivery', getOrderDetails(orderNumber)))
   const confirmationInput = (location.state as DeliverySignatureLocationState | null)?.confirmationInput
   const startsWithContact = confirmationInput?.contactMethod === 'signed'
   const [step, setStep] = useState<'contact' | 'driver'>(startsWithContact ? 'contact' : 'driver')
@@ -28,7 +32,7 @@ export function DeliverySignatureScreen() {
   const [driverSigned, setDriverSigned] = useState(false)
   const [storageError, setStorageError] = useState(false)
 
-  if (!orderEbol?.pickup.lockedAt || !orderEbol.delivery.evidence || !confirmationInput || !canLockDeliveryEbol(confirmationInput)) {
+  if (!canReviewOrderEvidence(orderEbol?.delivery.evidence) || !orderEbol?.pickup.lockedAt || !orderEbol.delivery.evidence || !confirmationInput || !canLockDeliveryEbol(confirmationInput)) {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL signing" subtitle={`Delivery · Order #${orderNumber || 'unknown'}`} />
@@ -74,6 +78,9 @@ export function DeliverySignatureScreen() {
         <div className="signature-progress"><span>Step {stepNumber} of {stepTotal}</span><div><i style={{ width: `${(stepNumber / stepTotal) * 100}%` }} /></div></div>
         <div className="signature-disclaimer"><ShieldCheck size={22} /><p>Confirm the recorded delivery details and any exceptions before signing.</p></div>
 
+        <OrderEvidenceDetails evidence={orderEbol.delivery.evidence} />
+        <HandoffCommentsView comments={{ contact: confirmationInput.contactComment, driver: confirmationInput.driverComment }} />
+        {confirmationInput.hasDamage ? <div className="ebol-exception" role="note"><strong>Exception documented</strong><p>{confirmationInput.exceptionNote}</p></div> : null}
         {step === 'contact' ? (
           <section className="signature-card">
             <div className="signature-role"><UserRound size={25} /><span><strong>Delivery contact</strong><small>{confirmationInput.contactName}</small></span></div>

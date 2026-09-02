@@ -41,11 +41,12 @@ export function PlaceLabelsScreen() {
 function PlaceLabelsContent({ orderNumber, requestedVersion }: { orderNumber: string; requestedVersion: string | null }) {
   const navigate = useNavigate()
   const [, setSearchParams] = useSearchParams()
-  const { findRecord } = useCargo()
+  const { getOrderCargo, getOrderDetails } = useCargo()
   const { devices, printOutcome } = usePrototypeScenario()
-  const record = findRecord(orderNumber)
+  const record = getOrderCargo(orderNumber)
+  const details = getOrderDetails(orderNumber)
   const [orderEbol] = useState(() => findOrderEbol(readOrderEbols(), orderNumber))
-  const labels = useMemo(() => record ? createPlaceLabels(record, orderEbol) : [], [record, orderEbol])
+  const labels = useMemo(() => record ? createPlaceLabels(record, orderEbol, details) : [], [record, orderEbol, details])
   const versions = [...new Set(labels.map((label) => label.pickupVersion))].sort((a, b) => a - b)
   const [state, setState] = useState<LabelPrintState>(() => {
     const saved = readLabelPrintState(orderNumber)
@@ -64,7 +65,7 @@ function PlaceLabelsContent({ orderNumber, requestedVersion }: { orderNumber: st
   const scanCode = (previewIds ? previewLabels : selected)[0]?.placeId ?? visibleLabels[0]?.placeId ?? ''
   useEffect(() => {
     if (record) setStorageError(!writeLabelPrintState(orderNumber, state))
-  }, [record, orderNumber, state])
+  }, [Boolean(record), orderNumber, state])
 
   const openPreview = (ids: string[], fromHistory = false) => {
     const validIds = selectPlaceLabels(labels, ids).map((label) => label.placeId)

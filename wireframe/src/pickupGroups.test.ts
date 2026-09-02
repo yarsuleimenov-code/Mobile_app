@@ -17,7 +17,7 @@ describe('Pickup dimension groups and demo orders', () => {
       expect(record?.title).toBe(task.title)
       expect(record?.totalWeight).toBeGreaterThan(0)
       expect(record?.photoCount).toBeGreaterThan(0)
-      expect(record?.dimensionGroups.every((group) => group.quantity > 0 && group.length > 0 && group.width > 0 && group.height > 0)).toBe(true)
+      expect(record?.dimensionGroups.every((group) => group.quantity > 0 && (group.length ?? 0) > 0 && (group.width ?? 0) > 0 && (group.height ?? 0) > 0)).toBe(true)
       if (task.operation === 'pickup') {
         expect(record?.orderComment).not.toBe('')
         expect(record?.pickupDate).toBe(mockTodaySpokeRoute.workDate)

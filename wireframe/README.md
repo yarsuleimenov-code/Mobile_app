@@ -19,7 +19,7 @@ pnpm dev
 
 Открыть `http://127.0.0.1:5173/`. Production-проверка: `pnpm build`.
 
-Проверено 2026-09-02: 16 test-файлов / 67 тестов, TypeScript project build и Vite production build проходят. Локальная production-сборка проверена в Chrome через Playwright на ширинах 320, 390 и 1440 px. Реализации Этапов 3–4 локальные, ещё не опубликованы.
+Проверено 2026-09-02: 18 test-файлов / 86 тестов, TypeScript project build и Vite production build проходят. Локальная production-сборка проверена в Chrome через Playwright на ширинах 320, 390 и 1440 px. Этапы 3–4 опубликованы в `1d2a2d2`; Этапы 5–6 приняты owner; их публикация в main разрешена перед Этапом 7.
 
 ## Что оценивать
 
@@ -58,6 +58,18 @@ Order eBOL draft создаётся при продолжении из Pickup, �
 Текущий проект остаётся согласовательным бизнес-прототипом: подписи, блокировка данных, PDF и отправка будут представлены как mock-взаимодействия. Принятые решения, scope и открытые production-вопросы зафиксированы в [`BOL_DECISION_LOG.md`](../BOL_DECISION_LOG.md).
 
 Все данные mock; изменения сохраняются только в `localStorage` браузера. Spoke, Telegram, камера, PDF и производственные API не подключены. Interstate использует нормализованные правила из аудита, но не вызывает существующий Apps Script. Наличие PostgreSQL DDL в репозитории не меняет эту границу: wireframe не подключён к БД.
+
+## Этап 5: комментарии и документы
+
+Pickup/Delivery review содержит отдельные Contact comment / Driver comment с автосохранением. Оба комментария видны перед подписью, в locked snapshot и POD; Supplemental хранит собственные комментарии. Отказ от подписи требует причины, acknowledgment и отдельного exception note.
+
+Из Document versions доступны read-only original, Supplemental и Delivery с номером, PlaceID, signer, временем и комментариями. Download/Print/Email/Share открывают диалог с выбранным документом, параметрами/адресатом и результатом. Реальной внешней отправки или PDF-файла нет. Продуктовые подписи в UI сохранены; ограничения раскрываются устно и в документации. [Реализация и проверки](../docs/system-report/STAGE_5_EBOL_POD_DEMO.md).
+
+## Этап 6: данные заказа
+
+Tasks → Order details показывает external/internal names, источник, отдельный Qty, Special Cargo и Spoke preview. Dispatcher редактирует имя и обработку; Supervisor заполняет отсутствующее имя один раз. Fragile/Oversized и mapping Supervisor → crew lead — demo-допущения. Данные и audit сохраняются локально.
+
+В dimension groups неизвестные величины показаны пустыми, требуется причина перед review. Неполный объём исключён из известных итогов. Подписанные документы и reprint сохраняют имя/измерения своей версии; новые дополнения получают текущие данные. [Границы, сценарий и проверки](../docs/system-report/STAGE_6_ORDER_DATA_DEMO.md). Следующий этап — 7, репетиция owner-demo.
 
 ## Place labels
 

@@ -30,7 +30,7 @@ export const mockTodaySpokeRoute: SpokeRoute = {
     { stopId: 'spoke-02', sequence: 2, externalId: '11155599', operation: 'dropoff', scheduledTime: '9:42 AM', title: 'Wooden credenza', address: 'Woburn, MA 01801' },
     { stopId: 'spoke-03', sequence: 3, externalId: '23343778', operation: 'pickup', scheduledTime: '12:09 PM', title: 'Sofa / Side Table', address: 'Holden, MA 01520' },
     { stopId: 'spoke-04', sequence: 4, externalId: '11098765', operation: 'dropoff', scheduledTime: '2:32 PM', title: 'Crate-Mitchell', address: 'West Hartford, CT 06110' },
-    { stopId: 'spoke-05', sequence: 5, externalId: '23343780', operation: 'pickup', scheduledTime: '5:00 PM', title: '4× Chair + Ottoman', address: 'Bedford Hills, NY 10507' },
+    { stopId: 'spoke-05', sequence: 5, externalId: '23343780', operation: 'pickup', scheduledTime: '5:00 PM', title: 'Chair + Ottoman', address: 'Bedford Hills, NY 10507' },
     { stopId: 'spoke-06', sequence: 6, externalId: '23343782', operation: 'pickup', scheduledTime: '6:27 PM', title: 'Console Table', address: 'Greenwich, CT 06830' },
     { stopId: 'spoke-07', sequence: 7, externalId: '11076543', operation: 'dropoff', scheduledTime: '7:34 PM', title: 'Teak desk', address: 'Cos Cob, CT 06807' },
   ],

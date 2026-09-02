@@ -2,6 +2,8 @@ import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, C
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
+import { operationalName } from '../orderDetailsDomain'
+import { summarizeMeasurements, weightText } from '../measurementDomain'
 import { calculatePieces } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import { getOrderDocumentNavigation } from '../orderEbolNavigation'
@@ -11,7 +13,7 @@ import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
 
 export function CargoHomeScreen() {
   const navigate = useNavigate()
-  const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute, clearSpokeRoute } = useCargo()
+  const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute, clearSpokeRoute, getOrderDetails, getOrderCargo } = useCargo()
   const [routeQuery, setRouteQuery] = useState('')
   const [recentRecordsExpanded, setRecentRecordsExpanded] = useState(false)
   const [orderEbols] = useState(() => readOrderEbols())
@@ -51,7 +53,7 @@ export function CargoHomeScreen() {
               {visibleTasks.map((task) => (
                 <button type="button" key={task.stopId} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
                   <span className={`spoke-task-icon spoke-task-icon--${task.operation}`}>{task.operation === 'pickup' ? <ArrowUp size={19} /> : <ArrowDown size={19} />}</span>
-                  <span className="spoke-task-main"><strong>#{task.externalId}</strong><small>{String(task.sequence).padStart(2, '0')} · {task.title}</small><small>{task.address}</small></span>
+                  <span className="spoke-task-main"><strong>#{task.externalId}</strong><small>{String(task.sequence).padStart(2, '0')} · {operationalName(getOrderDetails(task.externalId), task.externalId)}</small><small>Qty {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs · {task.address}</small></span>
                   <span className={`spoke-task-side spoke-task-side--${task.operation}`}><strong>{task.scheduledTime}</strong><small>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</small></span>
                   <ChevronRight size={19} />
                 </button>
@@ -93,7 +95,7 @@ export function CargoHomeScreen() {
                 return (
                 <button type="button" key={record.orderNumber} onClick={() => navigate(target)}>
                   <span className={`record-direction record-direction--${record.status}`}><ArrowUp size={19} /></span>
-                  <span className="record-main"><strong>#{record.orderNumber}</strong><small>{record.pickupDate} · {calculatePieces(record.dimensionGroups)} pcs / {record.totalWeight} lb</small></span>
+                  <span className="record-main"><strong>#{record.orderNumber}</strong><small>{operationalName(getOrderDetails(record.orderNumber), record.orderNumber)}</small><small>{record.pickupDate} · Qty {calculatePieces(record.dimensionGroups)} pcs / {weightText(record.totalWeight, summarizeMeasurements(record.dimensionGroups))}</small></span>
                   <span className={`record-status record-status--${record.status}`}>{record.status === 'pickup_recorded' ? (isLocked ? 'Add places' : 'Edit Pickup') : 'Dropoff complete'}</span>
                   <ChevronRight size={20} />
                 </button>

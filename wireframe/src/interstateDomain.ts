@@ -15,6 +15,8 @@ export interface GeneratedInterstateTrip {
   placeCount: number
   loadedWeight: number
   loadedVolume: number
+  unknownWeightPlaces?: number
+  incompletePlaces?: number
   createdAt: string
 }
 
@@ -115,10 +117,14 @@ export function expandRecordPlaces(record: CargoRecord): InterstatePlace[] {
 }
 
 export function summarizeLoadedPlaces(places: InterstatePlace[]) {
+  const unknownWeightPlaces = places.filter((place) => place.estimatedWeight === null).length
+  const incompletePlaces = places.filter((place) => place.volumeKnown === false).length
   return {
+    ...(unknownWeightPlaces ? { unknownWeightPlaces } : {}),
+    ...(incompletePlaces ? { incompletePlaces } : {}),
     orderCount: new Set(places.map((place) => place.orderNumber)).size,
     placeCount: places.length,
-    loadedWeight: Math.round(places.reduce((total, place) => total + place.estimatedWeight, 0)),
+    loadedWeight: Math.round(places.reduce((total, place) => total + (place.estimatedWeight ?? 0), 0)),
     loadedVolume: Math.round(places.reduce((total, place) => total + place.volume, 0) * 100) / 100,
   }
 }

@@ -108,12 +108,12 @@ export function PrototypeControlsScreen() {
         </section>
 
         <section className="scenario-section">
-          <h2>Next label print result</h2>
+          <h2>Next print result</h2>
           <div className="scenario-options scenario-options--two">
             <button type="button" className={printOutcome === 'success' ? 'is-active' : ''} aria-pressed={printOutcome === 'success'} onClick={() => setPrintOutcome('success')}>Print success</button>
             <button type="button" className={printOutcome === 'error' ? 'is-active' : ''} aria-pressed={printOutcome === 'error'} onClick={() => setPrintOutcome('error')}>Print error</button>
           </div>
-          <p>Applies to Print in label preview. No physical print job is sent.</p>
+          <p>Applies to Print in labels and Order eBOL/POD previews. No physical print job is sent.</p>
         </section>
 
         <section className="scenario-section">

@@ -5,12 +5,14 @@ import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import {
-  canLockPickupEbol, createOrderEbol, lockPickupEbol, lockSupplementalPickup,
+  canReviewOrderEvidence, withCurrentOrderDetails, canLockPickupEbol, createOrderEbol, lockPickupEbol, lockSupplementalPickup,
   type OrderEbol, type PickupEbolConfirmationInput,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts, removePickupDraft, writePickupDrafts } from '../pickupDraftStore'
 import { SignaturePad } from '../signature-components'
+import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
+import { HandoffCommentsView } from '../orderReviewComments'
 
 interface PickupSignatureLocationState {
   confirmationInput: PickupEbolConfirmationInput
@@ -24,10 +26,11 @@ export function PickupSignatureScreen() {
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
   const reviewPath = `/orders/${orderNumber}/ebol/pickup`
-  const { findRecord } = useCargo()
+  const { findRecord, getOrderDetails } = useCargo()
   const record = findRecord(orderNumber)
-  const [orderEbol] = useState<OrderEbol | null>(() => (
-    findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null)
+  const [orderEbol] = useState<OrderEbol | null>(() => withCurrentOrderDetails(
+    findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null),
+    (location.state as PickupSignatureLocationState | null)?.supplementVersion ?? 'pickup', getOrderDetails(orderNumber),
   ))
   const confirmationInput = (location.state as PickupSignatureLocationState | null)?.confirmationInput
   const supplementVersion = (location.state as PickupSignatureLocationState | null)?.supplementVersion
@@ -40,7 +43,7 @@ export function PickupSignatureScreen() {
   const [driverSigned, setDriverSigned] = useState(false)
   const [storageError, setStorageError] = useState(false)
 
-  if (!orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput) || (supplementVersion !== undefined && !supplement?.evidence)) {
+  if (!canReviewOrderEvidence(supplement?.evidence ?? orderEbol?.pickup.evidence) || !orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput) || (supplementVersion !== undefined && !supplement?.evidence)) {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL signing" subtitle={`Pickup · Order #${orderNumber || 'unknown'}`} />
@@ -93,6 +96,9 @@ export function PickupSignatureScreen() {
         <div className="signature-progress"><span>Step {stepNumber} of {stepTotal}</span><div><i style={{ width: `${(stepNumber / stepTotal) * 100}%` }} /></div></div>
         <div className="signature-disclaimer"><ShieldCheck size={22} /><p>{supplement ? `Signatures apply only to ${supplement.addedPlaceIds.length} places in version ${supplement.version}. Version 1 remains unchanged. ` : ''}Confirm the recorded cargo details and any exceptions before signing.</p></div>
 
+        <OrderEvidenceDetails evidence={supplement?.evidence ?? orderEbol.pickup.evidence} />
+        <HandoffCommentsView comments={{ contact: confirmationInput.contactComment, driver: confirmationInput.driverComment }} />
+        {confirmationInput.hasDamage ? <div className="ebol-exception" role="note"><strong>Exception documented</strong><p>{confirmationInput.exceptionNote}</p></div> : null}
         {step === 'contact' ? (
           <section className="signature-card">
             <div className="signature-role"><UserRound size={25} /><span><strong>Pickup contact</strong><small>{confirmationInput.contactName}</small></span></div>

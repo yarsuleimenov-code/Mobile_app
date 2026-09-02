@@ -1,4 +1,5 @@
 import { expandCargoPlaces, type CargoRecord } from './cargoDomain'
+import { operationalName, type OrderDetails } from './orderDetailsDomain'
 import type { OrderEbol } from './orderEbolDomain'
 
 export interface PlaceLabel {
@@ -17,17 +18,23 @@ export interface PlaceLabel {
   versionLocked: boolean
 }
 
-export function createPlaceLabels(record: CargoRecord, orderEbol?: OrderEbol): PlaceLabel[] {
+export function createPlaceLabels(record: CargoRecord, orderEbol?: OrderEbol, currentDetails?: OrderDetails): PlaceLabel[] {
   const route = `${record.originBranch} → ${record.destinationBranch}`
   const versions = new Map<string, { pickupVersion: number; versionLocked: boolean }>()
   for (const id of orderEbol?.pickup.evidence?.placeIds ?? []) versions.set(id, { pickupVersion: 1, versionLocked: Boolean(orderEbol?.pickup.lockedAt) })
   for (const version of orderEbol?.pickupSupplements ?? []) {
     for (const id of version.addedPlaceIds) versions.set(id, { pickupVersion: version.version, versionLocked: version.status === 'locked' })
   }
+  const frozenNames = new Map<string, string>()
+  const snapshots = [orderEbol?.pickup, ...(orderEbol?.pickupSupplements ?? [])]
+  for (const snapshot of snapshots) {
+    if (!snapshot?.lockedAt || !snapshot.evidence?.orderDetails) continue
+    for (const id of snapshot.evidence.placeIds) frozenNames.set(id, operationalName(snapshot.evidence.orderDetails, record.orderNumber))
+  }
   return expandCargoPlaces(record).map((place) => ({
     placeId: place.placeId,
     orderNumber: place.orderNumber,
-    orderTitle: record.title,
+    orderTitle: frozenNames.get(place.placeId) ?? (currentDetails ? operationalName(currentDetails, record.orderNumber) : record.title),
     placeNumber: place.placeNumber,
     totalPlaces: place.totalPlaces,
     route,

@@ -5,31 +5,41 @@ import { CargoBottomNav, CargoFlowHeader, EvidenceGallery } from '../cargo-compo
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import {
-  canLockPickupEbol, createOrderEbol, findDraftSupplementalPickup,
+  canReviewOrderEvidence, withCurrentOrderDetails, canLockPickupEbol, createOrderEbol, findDraftSupplementalPickup,
   type OrderEbol, type OrderEbolEvidenceSnapshot, type PickupEbolConfirmationInput,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
+import { HandoffCommentsEditor, HandoffCommentsView, useHandoffComments } from '../orderReviewComments'
+import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
+import { weightText, volumeText } from '../measurementDomain'
+import { OrderDocumentHistory } from '../OrderDocumentHistory'
 
 function EvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) {
   return (
-    <dl className="ebol-evidence-summary">
+    <><OrderEvidenceDetails evidence={evidence} /><dl className="ebol-evidence-summary">
       <div><dt>Pieces</dt><dd>{evidence.pieceCount}</dd></div>
-      <div><dt>Weight</dt><dd>{evidence.totalWeight} lb</dd></div>
-      <div><dt>Volume</dt><dd>{evidence.totalVolume.toFixed(2)} cu ft</dd></div>
+      <div><dt>Weight</dt><dd>{weightText(evidence.totalWeight, evidence.measurements)}</dd></div>
+      <div><dt>Volume</dt><dd>{volumeText(evidence.totalVolume, evidence.measurements)}</dd></div>
       <div><dt>Photos</dt><dd>{evidence.photoCount}</dd></div>
-    </dl>
+    </dl></>
   )
 }
 
 export function PickupEbolScreen() {
+  const { orderNumber } = useParams()
+  return <PickupEbolContent key={orderNumber} />
+}
+
+function PickupEbolContent() {
   const navigate = useNavigate()
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
-  const { findRecord } = useCargo()
+  const { findRecord, getOrderDetails } = useCargo()
   const record = findRecord(orderNumber)
-  const [orderEbol] = useState<OrderEbol | null>(() => (
-    findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null)
-  ))
+  const [orderEbol] = useState<OrderEbol | null>(() => {
+    const current = findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null)
+    return withCurrentOrderDetails(current, findDraftSupplementalPickup(current)?.version ?? 'pickup', getOrderDetails(orderNumber))
+  })
   const supplementalDraft = findDraftSupplementalPickup(orderEbol)
   const confirmationSource = supplementalDraft ?? orderEbol?.pickup
   const [contactMethod, setContactMethod] = useState<PickupEbolConfirmationInput['contactMethod']>(() => (
@@ -41,6 +51,7 @@ export function PickupEbolScreen() {
   const [driverName, setDriverName] = useState(confirmationSource?.driver.signerName ?? '')
   const [hasDamage, setHasDamage] = useState(confirmationSource?.evidence?.hasDamage ?? false)
   const [exceptionNote, setExceptionNote] = useState(confirmationSource?.evidence?.exceptionNote ?? '')
+  const { comments, changeComments, saveError } = useHandoffComments(orderEbol, supplementalDraft?.version ?? 'pickup')
 
   if (!orderEbol?.pickup.evidence) {
     return (
@@ -57,8 +68,9 @@ export function PickupEbolScreen() {
   const isLocked = Boolean(orderEbol.pickup.lockedAt)
   const confirmationInput: PickupEbolConfirmationInput = {
     contactMethod, contactName, contactlessReason, contactlessAcknowledged, driverName, hasDamage, exceptionNote,
+    contactComment: comments.contact, driverComment: comments.driver,
   }
-  const canConfirm = canLockPickupEbol(confirmationInput)
+  const canConfirm = canLockPickupEbol(confirmationInput) && canReviewOrderEvidence(reviewEvidence)
 
   const openSigning = () => navigate(`/orders/${orderNumber}/ebol/pickup/sign`, {
     state: { confirmationInput, supplementVersion: supplementalDraft?.version },
@@ -75,11 +87,13 @@ export function PickupEbolScreen() {
           <section className="ebol-locked-state"><span><LockKeyhole size={30} /></span><h2>Pickup snapshot locked</h2><p>Version 1 and its confirmations cannot be edited.</p></section>
           <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Pickup evidence</h2></div><EvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />{evidence.hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
           <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'contactless' ? 'Pickup contact · signature skipped' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
-          <section className="ebol-section document-version-history"><div className="ebol-section-heading"><FileText size={20} /><h2>Document versions</h2></div><div><strong>Version 1 · Original Pickup</strong><small>Locked {orderEbol.pickup.lockedAt ? new Date(orderEbol.pickup.lockedAt).toLocaleString() : ''} · {evidence.pieceCount} places</small></div>{(orderEbol.pickupSupplements ?? []).filter((item) => item.status === 'locked').map((item) => <div key={item.version}><strong>Version {item.version} · Supplemental Pickup</strong><small>{item.documentNumber} · {item.addedPlaceIds.length} added places · signed separately</small></div>)}</section>
+          <HandoffCommentsView comments={orderEbol.pickup.comments} />
+          <OrderDocumentHistory order={orderEbol} />
           {(orderEbol.pickupSupplements ?? []).filter((item) => item.status === 'locked' && item.evidence).map((item) => (
             <section className="ebol-section" key={item.version}><h2>Version {item.version} · Supplemental photos</h2>
               <p>{item.documentNumber} · locked evidence</p>
               <EvidenceGallery count={item.evidence!.photoCount} photos={item.evidence!.photos} />
+              <HandoffCommentsView comments={item.comments} />
             </section>
           ))}
           <p className="ebol-lock-note">Previously signed facts stay unchanged. Add physical places through a Supplemental Pickup with a new document version and new confirmations.</p>
@@ -95,12 +109,13 @@ export function PickupEbolScreen() {
     <div className="cargo-flow">
       <CargoFlowHeader title="Order eBOL" subtitle={supplementalDraft ? `Supplemental Pickup · Version ${supplementalDraft.version}` : `Pickup review · Order #${orderNumber}`} />
       <main className="pickup-ebol-body pickup-ebol-body--action">
+        {!canReviewOrderEvidence(reviewEvidence) ? <p className="measurement-warning">Complete the internal name, handling details and measurement reasons before signing. <button type="button" onClick={() => navigate(`/orders/${orderNumber}/details`)}>Open order details</button></p> : null}
         <div className="ebol-review-banner"><ShieldCheck size={24} /><span><strong>{supplementalDraft ? `Review ${supplementalDraft.addedPlaceIds.length} added places` : 'Review before signing'}</strong><small>{supplementalDraft ? 'Version 1 remains locked. These additions require fresh confirmations.' : 'Both parties should review the same Pickup evidence.'}</small></span></div>
 
         <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>{supplementalDraft ? `Version ${supplementalDraft.version} evidence` : 'Pickup evidence'}</h2></div><EvidenceSummary evidence={reviewEvidence} /><EvidenceGallery count={reviewEvidence.photoCount} photos={reviewEvidence.photos} />{supplementalDraft ? <div className="supplemental-place-ids">{supplementalDraft.addedPlaceIds.map((placeId) => <code key={placeId}>{placeId}</code>)}</div> : null}</section>
 
         <section className="ebol-section ebol-exception-editor">
-          <label><input type="checkbox" checked={hasDamage} onChange={(event) => setHasDamage(event.target.checked)} /><span><strong>Damage or exception observed</strong><small>Damage does not block handoff when it is documented.</small></span></label>
+          <label><input type="checkbox" checked={hasDamage} onChange={(event) => setHasDamage(event.target.checked)} /><span><strong>Damage, disagreement or other exception</strong><small>Damage does not block handoff when it is documented.</small></span></label>
           {hasDamage ? <textarea aria-label="Damage or exception details" rows={3} value={exceptionNote} onChange={(event) => setExceptionNote(event.target.value)} placeholder="Describe damage, packaging issue or other exception" /> : null}
         </section>
 
@@ -111,8 +126,9 @@ export function PickupEbolScreen() {
           <div className="ebol-method" aria-label="Pickup contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => setContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'contactless'} className={contactMethod === 'contactless' ? 'is-active' : ''} onClick={() => setContactMethod('contactless')}>Contactless</button></div>
           {contactMethod === 'signed' ? <label className="ebol-field">Contact name<input value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Full name" /></label> : (
             <div className="contactless-review">
-              <label className="ebol-field">Contactless reason<select value={contactlessReason} onChange={(event) => setContactlessReason(event.target.value)}><option value="">Select reason</option><option>Contact unavailable</option><option>Contact refused to sign</option><option>Remote or unattended pickup</option></select></label>
+              <label className="ebol-field">Contactless reason<select value={contactlessReason} onChange={(event) => { setContactlessReason(event.target.value); if (event.target.value === 'Contact refused to sign') setHasDamage(true) }}><option value="">Select reason</option><option>Contact unavailable</option><option>Contact refused to sign</option><option>Remote or unattended pickup</option></select></label>
               <div className="contactless-guidance"><AlertTriangle size={20} /><span><strong>Contact signature will be skipped</strong><small>The Zaberman driver must still sign the reviewed Pickup evidence.</small></span></div>
+              {contactlessReason === 'Contact refused to sign' ? <p className="ebol-storage-warning">Describe the refusal in the exception details above before continuing.</p> : null}
               <label className="contactless-attestation"><input type="checkbox" checked={contactlessAcknowledged} onChange={(event) => setContactlessAcknowledged(event.target.checked)} /><span>I confirm the selected reason is accurate and the contact signature cannot be collected.</span></label>
             </div>
           )}
@@ -123,6 +139,8 @@ export function PickupEbolScreen() {
           <label className="ebol-field">Driver name<input value={driverName} onChange={(event) => setDriverName(event.target.value)} placeholder="Full name" /></label>
         </section>
 
+        <HandoffCommentsEditor comments={comments} onChange={changeComments} saveError={saveError} />
+        {supplementalDraft ? <OrderDocumentHistory order={orderEbol} /> : null}
         <div className="flow-action"><button type="button" className="cargo-primary" disabled={!canConfirm} onClick={openSigning}><FileText size={19} /> Continue to signing</button></div>
       </main>
       <CargoBottomNav />

@@ -1,5 +1,6 @@
 import { Check, FileText, Truck } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { weightText } from '../measurementDomain'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { useCargo } from '../cargoStore'
 import { directionLabel, expandRecordPlaces, getEligibleRecords, summarizeLoadedPlaces, type GeneratedInterstateTrip } from '../interstateDomain'
@@ -29,7 +30,7 @@ export function InterstateReviewScreen() {
       <CargoFlowHeader title="Review loading" subtitle={`${directionLabel(direction)} · ${truck}`} />
       <div className="review-body">
         <div className="review-ready"><span><Check /></span><h2>Manifest ready</h2><p>Only confirmed places below will be fixed in this Trip.</p></div>
-        <section className="review-stats"><div><strong>{summary.orderCount}</strong><span>Orders</span></div><div><strong>{summary.placeCount}</strong><span>Places</span></div><div><strong>{summary.loadedWeight} lb</strong><span>Weight</span></div></section>
+        <section className="review-stats"><div><strong>{summary.orderCount}</strong><span>Orders</span></div><div><strong>{summary.placeCount}</strong><span>Places</span></div><div><strong>{weightText(summary.loadedWeight, { unknownWeightPlaces: summary.unknownWeightPlaces ?? 0 })}</strong><span>Weight</span></div></section>
         <section className="manifest-lines"><h2>Manifest lines</h2>{orderNumbers.map((orderNumber) => { const places = selected.filter((place) => place.orderNumber === orderNumber); return <div key={orderNumber}><Truck /><span><strong>#{orderNumber}</strong><small>{places[0].orderTitle}</small></span><em>{places.length} places</em></div> })}</section>
         <div className="bol-note"><FileText /><span><strong>BOL follows the Trip manifest</strong><small>A document error will not roll back the confirmed loading fact.</small></span></div>
       </div>

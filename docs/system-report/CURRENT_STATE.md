@@ -12,7 +12,7 @@
 2. подготовленный, но ещё не применённый PostgreSQL DDL baseline;
 3. собранный NestJS vertical slice `Create CargoPlace` с OpenAPI, unit-тестами и условным PostgreSQL integration-тестом.
 
-Текущая цель — демонстрация owner, не создание рабочего приложения. Этапы 3–4 (mock-фото/offline и выборочная печать labels) реализованы локально; следующий этап — комментарии сторон и представление eBOL/POD по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md). Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному будущему production-backlog и не блокирует demo-этапы.
+Текущая цель — демонстрация owner, не создание рабочего приложения. Этапы 3–4 (mock-фото/offline и выборочная печать labels) приняты и опубликованы. Этап 5 (комментарии сторон и документы eBOL/POD) принят owner. Этап 6 (имена, Special Cargo, неизвестные измерения и Spoke preview) реализован и проверен локально; следующий этап — репетиция owner-demo по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md). Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному будущему production-backlog и не блокирует demo-этапы.
 
 Правило показа от 2026-09-02: рабочие экраны выглядят как будущий продукт, без Simulate/demo/mock/prototype-пояснений; о природе wireframe ведущий предупреждает устно. Print и Print history, фото/sync, Scan, подписание и документы приведены к этому правилу. Служебная панель остаётся по `#/more/demo`, её ссылки из обычного UI скрыты. Реальные интеграции не добавлены.
 
@@ -27,7 +27,7 @@
 5. [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md) — текущий scope, нумерация и критерии demo-этапов 3–7; [WIREFRAME_IMPLEMENTATION_PLAN.md](../../WIREFRAME_IMPLEMENTATION_PLAN.md) — сводка плана и исторический каталог;
 6. исходные ТЗ и audit-пакет как исторические источники требований.
 
-Опубликованный Git baseline: `main`, commit `298ff87` (`fix: compact pickup dimension groups and remove demo banner`). Принятый пересмотр плана и реализации Этапов 3–4 находятся в локальной рабочей копии, ещё без commit/push. Этап 3 принят owner; этапы 5–7 не реализованы.
+Предыдущий опубликованный Git baseline этапов 3–4: `main`, commit `1d2a2d2` (`feat: add photo sync and label printing owner demo flows`). Этапы 3–4 и правило продуктового UI приняты owner. Локально реализованы [Этап 5](STAGE_5_EBOL_POD_DEMO.md) (принят owner) и [Этап 6](STAGE_6_ORDER_DATA_DEMO.md) (принят owner); owner разрешил общий commit/push в main. Этап 7 не реализован.
 
 ## 3. Что фактически реализовано
 
@@ -35,9 +35,10 @@
 |---|---|---|
 | Навигация | `Home | Tasks | Scan | More`, Cargo places и secondary Interstate | Часть legacy-экранов в `src` не подключена к `App.tsx` |
 | Pickup/Dropoff | Autosaved/restored Pickup draft, dimension group CRUD с индивидуальными PlaceID, заполненные route mock-заявки, history, Recent Operations edit и mock Dropoff reconcile | Только `localStorage`; нет реальных задач, камеры, файлов и server confirmation |
+| Данные заказа | Trade/internal names, отдельный Qty, source, role-gated edit/audit, Special Cargo, read-only Spoke preview; известные итоги и причины неполных измерений | Локальные fixtures и permissions; Fragile/Oversized и role mapping — demo-допущения |
 | CargoPlace | Prototype PlaceID, `n/N`, labels, current status/location и короткая история | Проекция вычисляется из mock/local state |
 | Labels / Scan | All/selected/one, preview выбранных Code 128, version filter, mock print/reprint history, printer unavailable, valid/duplicate/unknown и manual lookup | Нет printer SDK или аппаратного scan; Print моделирует результат локально |
-| Order eBOL/POD | Pickup/Delivery review, locked original snapshot, Supplemental Pickup versions, повторные mock-подписи и POD preview | Подписи и PDF не production/legal artifacts |
+| Order eBOL/POD | Pickup/Delivery review, отдельные comments сторон, locked snapshots, Supplemental versions, read-only история документов, POD и Download/Print/Email/Share dialogs | Подписи и PDF не production/legal artifacts |
 | Фото | Отдельные mock-фото, категории, preview/filter/remove, восстановление Pickup/Delivery, фото своих версий в review/POD | Только metadata и существующие demo-assets; без файлов и upload |
 | Interstate | Loading review, Trip, immutable loaded manifest в domain model, Unloading draft, BOL archive | Нет authoritative Trip service и atomic server Close |
 | Scenario controls | Роль, филиал, сеть, sync и print outcomes, camera/scanner/printer, normal/offline/conflict/40/100-photo presets, reset | Только управляемая демонстрация |
@@ -84,7 +85,7 @@
 
 Frontend перепроверен 2026-09-02; backend-результаты остаются от 2026-09-01:
 
-- Vitest: 16 файлов, 67 тестов — passed;
+- Vitest: 18 файлов, 86 тестов — passed;
 - TypeScript project build — passed;
 - Vite production build — passed;
 - Backend Vitest: 2 файла, 10 unit-тестов — passed; PostgreSQL suite: 1 test skipped без `DATABASE_URL`;
@@ -94,13 +95,14 @@ Frontend перепроверен 2026-09-02; backend-результаты ос�
 - production integrations и живые данные не проверялись и не изменялись;
 - rendered QA Этапа 2: Chrome/Playwright fallback на локальном production preview, ширины 320/390/1440 px; group CRUD, restore, review, original + supplemental signing пройдены. In-app Browser по-прежнему блокируется Windows sandbox `setup refresh`; необязательный favicon возвращает 404.
 - rendered QA Этапа 3: photo CRUD/filter/preview, offline/reload/retry/conflict, immutable original/supplemental/Delivery evidence, POD, presets и camera fallback — passed. Детали: [STAGE_3_PHOTO_OFFLINE_DEMO.md](STAGE_3_PHOTO_OFFLINE_DEMO.md). Результат принят owner.
-- rendered QA Этапа 4: выбор/reload, выбранные Code 128 и print media, mock success/error/reprint, unavailable printer, точный Scan и отдельные Supplemental labels — passed. [Детали](STAGE_4_LABEL_PRINT_DEMO.md). Приёмка Этапа 4 owner ещё не проведена.
+- rendered QA Этапа 4: выбор/reload, выбранные Code 128 и print media, mock success/error/reprint, unavailable printer, точный Scan и отдельные Supplemental labels — passed. [Детали](STAGE_4_LABEL_PRINT_DEMO.md). Этап 4 принят owner и опубликован.
+
+- rendered QA Этапа 5: comments/reload/storage-error recovery, разные подписанные версии, refusal gate, POD и document actions — passed на 320/390/1440 px. [Детали](STAGE_5_EBOL_POD_DEMO.md). Этап принят owner.
+- rendered QA Этапа 6: roles/names/audit/reload, Spoke preview, empty-name draft, nullable measurements/reason, согласованный Qty, frozen original/reprint, Supplemental — passed на 320/390/1440 px. [Детали](STAGE_6_ORDER_DATA_DEMO.md). Регрессии этапов 4–5 проходят; Этап 6 принят owner.
 
 ## 8. Следующий этап wireframe
 
-Следующий — Этап 5 «eBOL/POD: комментарии сторон и представление документа» по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md): отдельные комментарии контакта и водителя, сохранение в своей версии, document preview и честные mock Download/Print/Email/Share. Существующие signing и snapshots повторно не строить.
-
-Затем: 6 — данные заказа и mock Spoke preview; 7 — репетиция owner-demo и UX-полировка. Готовые части текущего wireframe повторно не строить.
+Следующий после принятого Этапа 6 — Этап 7 «Репетиция owner-demo и UX-полировка» по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md): пресеты, короткий demo-script, семь обязательных сценариев и устранение UX-тупиков. Production integrations и полевой пилот не добавлять; готовые части wireframe повторно не строить. Push — по отдельному разрешению.
 
 ## 9. Отложенный production gate
 

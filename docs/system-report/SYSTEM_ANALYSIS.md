@@ -6,7 +6,7 @@
 
 Уточнение цели 2026-09-02: текущая работа — owner-demo hi-fi wireframe по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md). Production-требования, последовательность раздела 14 и gates раздела 15 ниже сохранены как будущий backlog, а не условия demo-приёмки.
 
-Локально реализованы [Этап 3: mock-фото и offline-состояния](STAGE_3_PHOTO_OFFLINE_DEMO.md) и [Этап 4: выборочные labels и demo-печать](STAGE_4_LABEL_PRINT_DEMO.md). Сохраняются signed evidence и PlaceID; следующий demo-этап — комментарии сторон и представление eBOL/POD. Production sync и printer integration по-прежнему не реализованы.
+Приняты и опубликованы [Этап 3: mock-фото и offline-состояния](STAGE_3_PHOTO_OFFLINE_DEMO.md) и [Этап 4: выборочные labels и demo-печать](STAGE_4_LABEL_PRINT_DEMO.md). Локально выполнен [Этап 5: комментарии сторон и eBOL/POD](STAGE_5_EBOL_POD_DEMO.md): read-only версии и интерактивные document actions. Этап 5 принят owner. Локально реализован [Этап 6: данные заказа и Spoke preview](STAGE_6_ORDER_DATA_DEMO.md), принятый owner. Signed evidence и PlaceID сохраняются; следующий этап — 7, репетиция owner-demo. Реальные sync, printer, PDF/email integrations не реализованы.
 
 Аудитория: Product, Warehouse, Delivery, Dispatching, IT, разработка и QA
 

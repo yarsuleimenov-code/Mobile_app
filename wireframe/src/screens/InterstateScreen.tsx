@@ -1,6 +1,7 @@
 import { ArrowRight, ChevronRight, FileCheck2, FileSearch, PackageOpen, Truck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
+import { weightText } from '../measurementDomain'
 import { warehouses, type Warehouse } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import { directionLabel, expandRecordPlaces, getEligibleRecords, interstateBolArchive, interstateIncomingTrips, interstateTrucks } from '../interstateDomain'
@@ -36,7 +37,7 @@ export function InterstateScreen() {
         <section className="eligible-summary">
           <div><strong>{eligible.length}</strong><span>Eligible pickups</span></div>
           <div><strong>{places.length}</strong><span>Places</span></div>
-          <div><strong>{totalWeight} lb</strong><span>Total weight</span></div>
+          <div><strong>{weightText(totalWeight, { unknownWeightPlaces: places.filter((place) => place.estimatedWeight === null).length })}</strong><span>{places.some((place) => place.estimatedWeight === null) ? 'Known weight only' : 'Total weight'}</span></div>
         </section>
         <button type="button" className="interstate-primary" disabled={!eligible.length} onClick={() => { clearLoading(); navigate('/interstate/loading') }}><Truck size={21} /> Start loading</button>
         <button type="button" className="bol-search-entry" onClick={() => navigate('/interstate/bols')}><FileSearch /><span><strong>Find Interstate BOL</strong><small>Trip documents · in transit and closed</small></span><ChevronRight /></button>

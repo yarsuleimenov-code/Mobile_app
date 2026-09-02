@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '../cargo-components'
 import { calculatePieces, calculateVolume, type CargoRecord } from '../cargoDomain'
+import { dimensionText, summarizeMeasurements, weightText, volumeText } from '../measurementDomain'
+import { operationalName } from '../orderDetailsDomain'
+import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { useCargo } from '../cargoStore'
 import { prepareDeliveryEbol } from '../orderEbolDomain'
 import { EvidenceEditor } from '../PhotoEvidence'
@@ -13,7 +16,7 @@ import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from 
 export function DropoffVerifyScreen() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { findRecord, completeDropoff, trackEvidenceOperation } = useCargo()
+  const { findRecord, completeDropoff, trackEvidenceOperation, getOrderDetails } = useCargo()
   const [query, setQuery] = useState(params.get('order') ?? '11155599')
   const [record, setRecord] = useState<CargoRecord | undefined>()
   const [searched, setSearched] = useState(false)
@@ -72,7 +75,7 @@ export function DropoffVerifyScreen() {
     if (existing?.delivery.lockedAt) {
       setDeliveryEbolReady(true)
     } else if (existing?.pickup.lockedAt) {
-      const delivery = prepareDeliveryEbol(existing, record!, {
+      const delivery = prepareDeliveryEbol(existing, { ...record!, orderDetails: getOrderDetails(record!.orderNumber) }, {
         photoCount: deliveryPhotoCount,
         photos: deliveryPhotos,
         hasDamage: damageReported,
@@ -100,10 +103,11 @@ export function DropoffVerifyScreen() {
 
         {record ? (
           <>
+            <section className="order-name-summary"><strong>{operationalName(getOrderDetails(record.orderNumber), record.orderNumber)}</strong><button type="button" onClick={() => navigate(`/orders/${record.orderNumber}/details`)}>Order details</button></section>
             <section className="found-summary">
               <div><Box size={22} /><strong>{calculatePieces(record.dimensionGroups)} pcs</strong></div>
-              <div><Weight size={22} /><strong>{record.totalWeight} lb</strong></div>
-              <div><Box size={22} /><strong>{calculateVolume(record.dimensionGroups).toFixed(2)} cu ft</strong></div>
+              <div><Weight size={22} /><strong>{weightText(record.totalWeight, summarizeMeasurements(record.dimensionGroups))}</strong></div>
+              <div><Box size={22} /><strong>{volumeText(calculateVolume(record.dimensionGroups), summarizeMeasurements(record.dimensionGroups))}</strong></div>
               <dl><div><dt>Pickup date</dt><dd>{record.pickupDate}</dd></div><div><dt>Responsible manager</dt><dd>{record.responsible}</dd></div></dl>
             </section>
 
@@ -123,9 +127,10 @@ export function DropoffVerifyScreen() {
 
             <section className="dimension-recap">
               <h2>Dimensions recap</h2>
-              {record.dimensionGroups.map((group) => <p key={group.id}>{group.quantity} × {group.length} × {group.width} × {group.height} in</p>)}
+              {record.dimensionGroups.map((group) => <p key={group.id}>Qty {group.quantity} pcs · {dimensionText(group)}</p>)}
             </section>
 
+            <MeasurementNotice summary={summarizeMeasurements(record.dimensionGroups)} />
             <section className="dropoff-checks" hidden={deliveryLocked}>
               <label><input type="checkbox" checked={matches} onChange={(event) => setMatches(event.target.checked)} /><span><strong>Cargo matches pickup photos</strong><small>All pieces and packing look consistent.</small></span></label>
               <label><input type="checkbox" checked={noDamage} onChange={(event) => { setNoDamage(event.target.checked); if (event.target.checked) { setDamageReported(false); setDamageNote('') } }} /><span><strong>No visible damage</strong><small>No new damage found during visual check.</small></span></label>
