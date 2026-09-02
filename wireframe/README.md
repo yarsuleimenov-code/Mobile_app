@@ -19,7 +19,7 @@ pnpm dev
 
 Открыть `http://127.0.0.1:5173/`. Production-проверка: `pnpm build`.
 
-Проверено 2026-09-02: 18 test-файлов / 86 тестов, TypeScript project build и Vite production build проходят. Локальная production-сборка проверена в Chrome через Playwright на ширинах 320, 390 и 1440 px. Этапы 3–4 опубликованы в `1d2a2d2`; Этапы 5–6 приняты owner; их публикация в main разрешена перед Этапом 7.
+Проверено 2026-09-02: 19 test-файлов / 102 теста, TypeScript и Vite build проходят. Окончательная сборка прошла два последовательных прогона семи сценариев в Chrome/Playwright на 320/390/1440 px и регрессии этапов 5–6. Этапы 3–6 приняты и опубликованы; текущий baseline — `8756a6f`. Этап 7 готов к демонстрации локально; приёмка owner и push отдельно.
 
 ## Что оценивать
 
@@ -44,7 +44,7 @@ Home → Load today’s route → Pickup: заявки `23343775`, `23343778`, `
 
 Сохранённые правки имеют приоритет перед шаблоном. Служебный блок с `Load demo data` не отображается в форме; автоматическое заполнение новых черновиков сохранено. Для повторной демонстрации с чистыми данными доступен полный reset через Prototype controls (удаляет текущие локальные изменения). Подписи не проставляются автоматически; после подписания доступны только новые группы через Supplemental Pickup. Фото используют общий mock-набор и не являются реальным evidence конкретной заявки.
 
-Prototype controls (`#/more/demo`) содержит Normal Pickup, Offline + photo error, Draft conflict и 40/100 mock photos. Пресеты переоткрывают сохранённые демо-черновики без потери правок. Для retry: Online → Retry → Sync now → Success → Retry sync. Для конфликта: Sync now → Keep local changes → Sync now. Offline моделирует состояние уже загруженного приложения, не запуск без сети. [Этап 3: реализация и проверки](../docs/system-report/STAGE_3_PHOTO_OFFLINE_DEMO.md).
+Prototype controls (`#/more/demo`) содержит семь отдельных сценариев: Normal Pickup, Multiple dimension groups, Offline + photo error, Printer unavailable, Damage + contactless, Locked Pickup + Supplemental, Draft conflict. 40/100 mock photos — в Optional photo volume checks. Пресеты переоткрывают сохранённые демо-черновики без потери правок. Для retry: Online → Retry → Sync now → Success → Retry sync. Для конфликта: Sync now → Keep local changes → Sync now. Offline моделирует состояние уже загруженного приложения, не запуск без сети. [Этап 3: реализация и проверки](../docs/system-report/STAGE_3_PHOTO_OFFLINE_DEMO.md).
 
 ## Документы BOL
 
@@ -69,7 +69,13 @@ Pickup/Delivery review содержит отдельные Contact comment / Dri
 
 Tasks → Order details показывает external/internal names, источник, отдельный Qty, Special Cargo и Spoke preview. Dispatcher редактирует имя и обработку; Supervisor заполняет отсутствующее имя один раз. Fragile/Oversized и mapping Supervisor → crew lead — demo-допущения. Данные и audit сохраняются локально.
 
-В dimension groups неизвестные величины показаны пустыми, требуется причина перед review. Неполный объём исключён из известных итогов. Подписанные документы и reprint сохраняют имя/измерения своей версии; новые дополнения получают текущие данные. [Границы, сценарий и проверки](../docs/system-report/STAGE_6_ORDER_DATA_DEMO.md). Следующий этап — 7, репетиция owner-demo.
+В dimension groups неизвестные величины показаны пустыми, требуется причина перед review. Неполный объём исключён из известных итогов. Подписанные документы и reprint сохраняют имя/измерения своей версии; новые дополнения получают текущие данные. [Границы, сценарий и проверки](../docs/system-report/STAGE_6_ORDER_DATA_DEMO.md). Этап 7 реализован; следующий шаг — просмотр owner по инструкции ниже.
+
+## Этап 7: готовность к показу
+
+[Инструкция ведущему и семь сценариев](../docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md). Чистый старт: `#/more/demo` → Reset all mock data → подтверждение удаления локальных данных → preset. Cancel сохраняет данные; повторное открытие preset без Reset продолжает сохранённую работу. Перед owner-показом скрыть служебную панель.
+
+Исправлены смешивание заказов в Pickup/Dropoff, рассинхронизация номера в URL, переход locked Pickup → Dropoff, direct Back и сообщения пустого/несохранённого draft. Изменённый draft требует актуального review; unsigned Supplemental не попадает в Delivery, а ошибка сохранения документа не завершает Dropoff. Две репетиции 7/7 пройдены; это техническая готовность wireframe, не production и не подтверждение приёмки owner.
 
 ## Place labels
 

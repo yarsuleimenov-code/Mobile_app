@@ -48,7 +48,7 @@ export function CargoFlowHeader({ title, subtitle, showBack = true, onBack }: { 
   const navigate = useNavigate()
   return (
     <header className="cargo-flow-header">
-      {showBack ? <button type="button" onClick={onBack ?? (() => navigate(-1))} aria-label="Go back"><ArrowLeft /></button> : <span />}
+      {showBack ? <button type="button" onClick={onBack ?? (() => window.history.state?.idx > 0 ? navigate(-1) : navigate('/'))} aria-label="Go back"><ArrowLeft /></button> : <span />}
       <div><h1>{title}</h1>{subtitle ? <p>{subtitle}</p> : null}</div>
       <span />
     </header>

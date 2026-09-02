@@ -2,18 +2,24 @@ import { AlertTriangle, Box, Search, Weight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '../cargo-components'
-import { calculatePieces, calculateVolume, type CargoRecord } from '../cargoDomain'
+import { calculatePieces, calculateVolume, normalizeOrderNumber, type CargoRecord } from '../cargoDomain'
 import { dimensionText, summarizeMeasurements, weightText, volumeText } from '../measurementDomain'
 import { operationalName } from '../orderDetailsDomain'
 import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { useCargo } from '../cargoStore'
-import { prepareDeliveryEbol } from '../orderEbolDomain'
+import { findDraftSupplementalPickup, prepareDeliveryEbol } from '../orderEbolDomain'
 import { EvidenceEditor } from '../PhotoEvidence'
 import { evidencePhotos, type EvidencePhoto } from '../photoEvidenceDomain'
+import { findPickupDraft, readPickupDrafts } from '../pickupDraftStore'
 import { readDeliveryDraft, writeDeliveryDraft } from '../deliveryDraftStore'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 
 export function DropoffVerifyScreen() {
+  const [params] = useSearchParams()
+  return <DropoffVerifyForm key={params.toString()} />
+}
+
+function DropoffVerifyForm() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { findRecord, completeDropoff, trackEvidenceOperation, getOrderDetails } = useCargo()
@@ -31,9 +37,14 @@ export function DropoffVerifyScreen() {
   const deliveryPhotoCount = deliveryPhotos.length
   const [damageNote, setDamageNote] = useState('')
   const [deliveryEbolReady, setDeliveryEbolReady] = useState(false)
+  const [documentSaveError, setDocumentSaveError] = useState('')
+  const changingOrder = Boolean(record && normalizeOrderNumber(query) !== record.orderNumber)
+  const pendingSupplement = Boolean(record && (findPickupDraft(readPickupDrafts(), record.orderNumber, 'supplemental')?.places.length
+    || findDraftSupplementalPickup(findOrderEbol(readOrderEbols(), record.orderNumber))))
 
   const search = () => {
     const found = findRecord(query)
+    setDocumentSaveError('')
     setRecord(found)
     setSearched(true)
     const draft = readDeliveryDraft(found?.orderNumber ?? query)
@@ -65,24 +76,35 @@ export function DropoffVerifyScreen() {
   }, [record, deliveryLocked, deliveryPhotos, matches, noDamage, damageReported, damageNote, trackEvidenceOperation])
 
   const canConfirm = matches
-    && !deliveryLocked && !storageError
+    && !deliveryLocked && !storageError && !changingOrder && !pendingSupplement
     && deliveryPhotoCount > 0
     && (noDamage || (damageReported && Boolean(damageNote.trim())))
 
   const confirmDropoff = () => {
-    completeDropoff(record!.orderNumber)
-    const existing = findOrderEbol(readOrderEbols(), record!.orderNumber)
+    if (!canConfirm || !record) return
+    setDocumentSaveError('')
+    const existing = findOrderEbol(readOrderEbols(), record.orderNumber)
     if (existing?.delivery.lockedAt) {
       setDeliveryEbolReady(true)
     } else if (existing?.pickup.lockedAt) {
-      const delivery = prepareDeliveryEbol(existing, { ...record!, orderDetails: getOrderDetails(record!.orderNumber) }, {
-        photoCount: deliveryPhotoCount,
-        photos: deliveryPhotos,
-        hasDamage: damageReported,
-        exceptionNote: damageNote,
-      })
-      setDeliveryEbolReady(writeOrderEbols(upsertOrderEbol(readOrderEbols(), delivery)))
+      try {
+        const delivery = prepareDeliveryEbol(existing, { ...record, orderDetails: getOrderDetails(record.orderNumber) }, {
+          photoCount: deliveryPhotoCount,
+          photos: deliveryPhotos,
+          hasDamage: damageReported,
+          exceptionNote: damageNote,
+        })
+        if (!writeOrderEbols(upsertOrderEbol(readOrderEbols(), delivery))) {
+          setDocumentSaveError('Delivery review could not be saved. Keep this page open, free device storage and retry.')
+          return
+        }
+        setDeliveryEbolReady(true)
+      } catch (error) {
+        setDocumentSaveError(error instanceof Error ? error.message : 'Could not prepare Delivery review.')
+        return
+      }
     }
+    completeDropoff(record.orderNumber)
     setComplete(true)
   }
 
@@ -94,7 +116,12 @@ export function DropoffVerifyScreen() {
     <div className="cargo-flow">
       <CargoFlowHeader title="Dropoff" subtitle={params.get('order') ? `Spoke order #${params.get('order')}` : undefined} />
       <div className="dropoff-body">
-        <form className="order-search" onSubmit={(event) => { event.preventDefault(); search() }}>
+        <form className="order-search" onSubmit={(event) => {
+          event.preventDefault()
+          const order = normalizeOrderNumber(query)
+          if (order !== params.get('order')) navigate(`/dropoff?order=${order}`)
+          else search()
+        }}>
           <label htmlFor="order-search">Order number</label>
           <div><span>#</span><input id="order-search" inputMode="numeric" value={query.replace('#', '')} onChange={(event) => setQuery(event.target.value)} /><button type="submit"><Search size={20} /><span>Search</span></button></div>
         </form>
@@ -103,6 +130,8 @@ export function DropoffVerifyScreen() {
 
         {record ? (
           <>
+            {changingOrder ? <p className="measurement-warning">The evidence below belongs to #{record.orderNumber}. Press Search to open the selected order.</p> : null}
+            {pendingSupplement ? <div className="measurement-warning"><p>Finish the Supplemental Pickup and its signatures before confirming Delivery.</p><button type="button" onClick={() => navigate(`/pickup?order=${record.orderNumber}&supplemental=1`)}>Resume Supplemental Pickup</button></div> : null}
             <section className="order-name-summary"><strong>{operationalName(getOrderDetails(record.orderNumber), record.orderNumber)}</strong><button type="button" onClick={() => navigate(`/orders/${record.orderNumber}/details`)}>Order details</button></section>
             <section className="found-summary">
               <div><Box size={22} /><strong>{calculatePieces(record.dimensionGroups)} pcs</strong></div>
@@ -138,6 +167,8 @@ export function DropoffVerifyScreen() {
               {damageReported ? <label className="delivery-damage-note">Damage details<textarea rows={3} value={damageNote} onChange={(event) => setDamageNote(event.target.value)} placeholder="Describe damage, packaging issue or other exception" /></label> : null}
             </section>
 
+            {documentSaveError ? <p role="alert" className="measurement-warning">{documentSaveError}</p> : null}
+            {!deliveryLocked && !canConfirm && !pendingSupplement && !changingOrder ? <p className="measurement-warning">{!deliveryPhotoCount ? 'Add a Delivery photo. ' : ''}Confirm cargo matches Pickup, then select No visible damage or describe the damage.</p> : null}
             <div className="flow-action">{deliveryLocked ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery`)}>Open locked Delivery review</button> : <button type="button" className="cargo-primary" disabled={!canConfirm} onClick={confirmDropoff}>Confirm Dropoff</button>}</div>
           </>
         ) : null}

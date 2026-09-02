@@ -10,6 +10,7 @@ import {
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts, removePickupDraft, writePickupDrafts } from '../pickupDraftStore'
+import { pickupReviewNeedsRefresh } from '../pickupReviewState'
 import { SignaturePad } from '../signature-components'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { HandoffCommentsView } from '../orderReviewComments'
@@ -43,7 +44,7 @@ export function PickupSignatureScreen() {
   const [driverSigned, setDriverSigned] = useState(false)
   const [storageError, setStorageError] = useState(false)
 
-  if (!canReviewOrderEvidence(supplement?.evidence ?? orderEbol?.pickup.evidence) || !orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput) || (supplementVersion !== undefined && !supplement?.evidence)) {
+  if (pickupReviewNeedsRefresh(orderEbol, readPickupDrafts()) || !canReviewOrderEvidence(supplement?.evidence ?? orderEbol?.pickup.evidence) || !orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput) || (supplementVersion !== undefined && !supplement?.evidence)) {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL signing" subtitle={`Pickup · Order #${orderNumber || 'unknown'}`} />

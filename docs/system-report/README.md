@@ -1,6 +1,6 @@
 # Системный отчёт Zaberman Mobile
 
-Статус на 2026-09-02: этапы 3–4 приняты и опубликованы; Этапы 5–6 приняты owner, их публикация в main разрешена перед Этапом 7.
+Статус на 2026-09-02: этапы 3–6 приняты и опубликованы; текущий baseline — `8756a6f`. Этап 7 реализован и проверен локально, готов к демонстрации owner. Приёмка и push — отдельно.
 
 ## Рекомендуемый вывод
 
@@ -19,6 +19,7 @@
 - [STAGE_4_LABEL_PRINT_DEMO.md](STAGE_4_LABEL_PRINT_DEMO.md) — выборочная печать/reprint, version filter, сохраняемый выбор и контрольный Scan.
 - [STAGE_5_EBOL_POD_DEMO.md](STAGE_5_EBOL_POD_DEMO.md) — комментарии сторон, read-only версии, document actions и проверки.
 - [STAGE_6_ORDER_DATA_DEMO.md](STAGE_6_ORDER_DATA_DEMO.md) — названия, Qty, Special Cargo, неизвестные измерения, Spoke preview и локальные ролевые правила.
+- [STAGE_7_OWNER_DEMO_REHEARSAL.md](STAGE_7_OWNER_DEMO_REHEARSAL.md) — инструкция ведущему, семь пресетов, две репетиции, UX-защиты и ожидаемые решения owner.
 - [SYSTEM_ANALYSIS.md](SYSTEM_ANALYSIS.md) — текущее состояние, бизнес-контекст, scope, процессы, требования, разрывы, риски и этапы.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — контекстная, контейнерная, data и sync-схемы; источники истины и API boundary.
 - [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) — PostgreSQL ER-модель, таблицы, инварианты, транзакции, безопасность и rollout.
@@ -34,4 +35,4 @@
 2. Соблюдать бизнес-инварианты `STAGE_0_PRODUCT_DECISIONS.md`; их production-механизмы не превращать в зависимости wireframe.
 3. Согласовать с owner сценарии и результат показа. Не путать готовность demo с готовностью к полевой эксплуатации.
 4. Архитектура, стек, DDL/API, IdP, оборудование и production-пилот — отдельный будущий backlog. Его gates не блокируют demo.
-5. `localStorage` и mock-данные не переносить как production-архитектуру. Этапы 3–6 изменили wireframe; backend/SQL не менялись. Следующий этап — 7. Публикация Этапов 5–6 в main разрешена owner.
+5. `localStorage` и mock-данные не переносить как production-архитектуру. Этапы 3–7 изменили wireframe; backend/SQL не менялись. Следующий шаг — просмотр owner, затем отдельное решение о публикации.

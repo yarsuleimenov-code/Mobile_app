@@ -12,6 +12,8 @@ import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
 import { HandoffCommentsEditor, HandoffCommentsView, useHandoffComments } from '../orderReviewComments'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { weightText, volumeText } from '../measurementDomain'
+import { pickupReviewNeedsRefresh } from '../pickupReviewState'
+import { readPickupDrafts } from '../pickupDraftStore'
 import { OrderDocumentHistory } from '../OrderDocumentHistory'
 
 function EvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) {
@@ -57,7 +59,7 @@ function PickupEbolContent() {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL" subtitle={`Pickup · Order #${orderNumber || 'unknown'}`} />
-        <div className="ebol-not-found"><FileText size={42} /><h2>Pickup record not found</h2><p>Save the Pickup record before starting its Order eBOL.</p><button type="button" className="cargo-primary" onClick={() => navigate('/pickup')}>Open Pickup</button></div>
+        <div className="ebol-not-found"><FileText size={42} /><h2>Pickup record not found</h2><p>Save the Pickup record before starting its Order eBOL.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/pickup?order=${orderNumber}`)}>Open Pickup</button></div>
         <CargoBottomNav />
       </div>
     )
@@ -70,7 +72,8 @@ function PickupEbolContent() {
     contactMethod, contactName, contactlessReason, contactlessAcknowledged, driverName, hasDamage, exceptionNote,
     contactComment: comments.contact, driverComment: comments.driver,
   }
-  const canConfirm = canLockPickupEbol(confirmationInput) && canReviewOrderEvidence(reviewEvidence)
+  const needsRefresh = pickupReviewNeedsRefresh(orderEbol, readPickupDrafts())
+  const canConfirm = !needsRefresh && canLockPickupEbol(confirmationInput) && canReviewOrderEvidence(reviewEvidence)
 
   const openSigning = () => navigate(`/orders/${orderNumber}/ebol/pickup/sign`, {
     state: { confirmationInput, supplementVersion: supplementalDraft?.version },
@@ -98,7 +101,7 @@ function PickupEbolContent() {
           ))}
           <p className="ebol-lock-note">Previously signed facts stay unchanged. Add physical places through a Supplemental Pickup with a new document version and new confirmations.</p>
           <button type="button" className="ebol-secondary ebol-add-supplement" onClick={() => navigate(`/pickup?order=${orderNumber}&supplemental=1`)}><FilePlus2 size={19} /> Add places · Supplemental Pickup</button>
-          <button type="button" className="cargo-primary" onClick={() => navigate('/')}>Back to Home</button>
+          <div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(orderEbol.delivery.lockedAt ? `/orders/${orderNumber}/ebol/pod` : `/dropoff?order=${orderNumber}`)}>{orderEbol.delivery.lockedAt ? 'View POD' : 'Continue to Dropoff'}</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>
         </main>
         <CargoBottomNav />
       </div>
@@ -109,6 +112,7 @@ function PickupEbolContent() {
     <div className="cargo-flow">
       <CargoFlowHeader title="Order eBOL" subtitle={supplementalDraft ? `Supplemental Pickup · Version ${supplementalDraft.version}` : `Pickup review · Order #${orderNumber}`} />
       <main className="pickup-ebol-body pickup-ebol-body--action">
+        {needsRefresh ? <div className="measurement-warning" role="alert"><p>The Pickup draft has changed. Update this review before signing.</p><button type="button" onClick={() => navigate(`/pickup?order=${orderNumber}${supplementalDraft ? '&supplemental=1' : ''}`)}>Return to Pickup draft</button></div> : null}
         {!canReviewOrderEvidence(reviewEvidence) ? <p className="measurement-warning">Complete the internal name, handling details and measurement reasons before signing. <button type="button" onClick={() => navigate(`/orders/${orderNumber}/details`)}>Open order details</button></p> : null}
         <div className="ebol-review-banner"><ShieldCheck size={24} /><span><strong>{supplementalDraft ? `Review ${supplementalDraft.addedPlaceIds.length} added places` : 'Review before signing'}</strong><small>{supplementalDraft ? 'Version 1 remains locked. These additions require fresh confirmations.' : 'Both parties should review the same Pickup evidence.'}</small></span></div>
 

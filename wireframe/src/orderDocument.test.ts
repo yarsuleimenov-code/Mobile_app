@@ -99,7 +99,10 @@ describe('Order eBOL comments and document versions', () => {
     const draft = prepareSupplementalPickup(original, supplementInput)
     expect(orderDocumentVersions(draft).map((item) => item.key)).toEqual(['pickup-1'])
     const supplemental = lockSupplementalPickup(draft, 2, input)
-    const complete = lockDeliveryEbol(prepareDeliveryEbol(supplemental, record, deliveryInput), input)
+    const deliveryRecord = { ...record, totalWeight: record.totalWeight + 18,
+      placeIds: [...original.pickup.evidence!.placeIds, 'ZB-EXTRA-01'],
+      dimensionGroups: [...record.dimensionGroups, { id: 'extra', quantity: 1, length: 12, width: 12, height: 36, weight: 18 }] }
+    const complete = lockDeliveryEbol(prepareDeliveryEbol(supplemental, deliveryRecord, deliveryInput), input)
     const versions = orderDocumentVersions(complete)
     expect(versions.map((item) => item.key)).toEqual(['pickup-1', 'pickup-2', 'delivery'])
     expect(versions[0].documentNumber).toBe(`${record.orderNumber}-PU-1`)

@@ -12,7 +12,7 @@
 2. подготовленный, но ещё не применённый PostgreSQL DDL baseline;
 3. собранный NestJS vertical slice `Create CargoPlace` с OpenAPI, unit-тестами и условным PostgreSQL integration-тестом.
 
-Текущая цель — демонстрация owner, не создание рабочего приложения. Этапы 3–4 (mock-фото/offline и выборочная печать labels) приняты и опубликованы. Этап 5 (комментарии сторон и документы eBOL/POD) принят owner. Этап 6 (имена, Special Cargo, неизвестные измерения и Spoke preview) реализован и проверен локально; следующий этап — репетиция owner-demo по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md). Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному будущему production-backlog и не блокирует demo-этапы.
+Текущая цель — демонстрация owner, не создание рабочего приложения. Этапы 3–6 приняты и опубликованы. Этап 7 реализован локально: семь пресетов, UX-защиты и две последовательные репетиции 7/7. Статус — готово к демонстрации, решение owner ожидается. [Инструкция и проверки](STAGE_7_OWNER_DEMO_REHEARSAL.md), [принятый план](OWNER_DEMO_PLAN.md). Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному будущему production-backlog и не блокирует demo-этапы.
 
 Правило показа от 2026-09-02: рабочие экраны выглядят как будущий продукт, без Simulate/demo/mock/prototype-пояснений; о природе wireframe ведущий предупреждает устно. Print и Print history, фото/sync, Scan, подписание и документы приведены к этому правилу. Служебная панель остаётся по `#/more/demo`, её ссылки из обычного UI скрыты. Реальные интеграции не добавлены.
 
@@ -27,7 +27,7 @@
 5. [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md) — текущий scope, нумерация и критерии demo-этапов 3–7; [WIREFRAME_IMPLEMENTATION_PLAN.md](../../WIREFRAME_IMPLEMENTATION_PLAN.md) — сводка плана и исторический каталог;
 6. исходные ТЗ и audit-пакет как исторические источники требований.
 
-Предыдущий опубликованный Git baseline этапов 3–4: `main`, commit `1d2a2d2` (`feat: add photo sync and label printing owner demo flows`). Этапы 3–4 и правило продуктового UI приняты owner. Локально реализованы [Этап 5](STAGE_5_EBOL_POD_DEMO.md) (принят owner) и [Этап 6](STAGE_6_ORDER_DATA_DEMO.md) (принят owner); owner разрешил общий commit/push в main. Этап 7 не реализован.
+Опубликованный Git baseline: `main`, commit `8756a6f` (`feat: add eBOL documents and order data owner demo flows`), включает принятые Этапы 5–6. Предыдущие Этапы 3–4 — `1d2a2d2`. Этап 7 реализован и проверен локально; owner acceptance и публикация пока не выполнены.
 
 ## 3. Что фактически реализовано
 
@@ -85,7 +85,7 @@
 
 Frontend перепроверен 2026-09-02; backend-результаты остаются от 2026-09-01:
 
-- Vitest: 18 файлов, 86 тестов — passed;
+- Vitest: 19 файлов, 102 теста — passed;
 - TypeScript project build — passed;
 - Vite production build — passed;
 - Backend Vitest: 2 файла, 10 unit-тестов — passed; PostgreSQL suite: 1 test skipped без `DATABASE_URL`;
@@ -100,9 +100,11 @@ Frontend перепроверен 2026-09-02; backend-результаты ос�
 - rendered QA Этапа 5: comments/reload/storage-error recovery, разные подписанные версии, refusal gate, POD и document actions — passed на 320/390/1440 px. [Детали](STAGE_5_EBOL_POD_DEMO.md). Этап принят owner.
 - rendered QA Этапа 6: roles/names/audit/reload, Spoke preview, empty-name draft, nullable measurements/reason, согласованный Qty, frozen original/reprint, Supplemental — passed на 320/390/1440 px. [Детали](STAGE_6_ORDER_DATA_DEMO.md). Регрессии этапов 4–5 проходят; Этап 6 принят owner.
 
-## 8. Следующий этап wireframe
+- rendered QA Этапа 7: два последовательных UI-only прогона 7/7, Reset/Cancel, 320/390/1440 px, защита order context/stale review/unsigned additions, отказ записи Delivery и успешный retry — passed. Регрессии этапов 5–6 проходят. [Инструкция и evidence](STAGE_7_OWNER_DEMO_REHEARSAL.md).
 
-Следующий после принятого Этапа 6 — Этап 7 «Репетиция owner-demo и UX-полировка» по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md): пресеты, короткий demo-script, семь обязательных сценариев и устранение UX-тупиков. Production integrations и полевой пилот не добавлять; готовые части wireframe повторно не строить. Push — по отдельному разрешению.
+## 8. Следующий шаг wireframe
+
+Показать owner семь сценариев по [STAGE_7_OWNER_DEMO_REHEARSAL.md](STAGE_7_OWNER_DEMO_REHEARSAL.md) и зафиксировать «принято / изменить / вне scope». Техническая подготовка Этапа 7 выполнена; бизнес-приёмка не заявляется до просмотра. Push — по отдельному запросу. Production integrations и полевой пилот не добавлять автоматически.
 
 ## 9. Отложенный production gate
 

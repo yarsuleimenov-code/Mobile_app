@@ -51,9 +51,9 @@ export function editOrderDetails(current: OrderDetails, edit: OrderDetailsEdit, 
     .map((field) => ({ at, role, field, before: current[field], after: next[field] }))] }
 }
 export const ORDER_DETAILS_STORAGE_KEY = 'zaberman-order-details:v1'
-export function readOrderDetails(): Record<string, OrderDetails> {
+export function readOrderDetails(storage: Pick<Storage, 'getItem'> = localStorage): Record<string, OrderDetails> {
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(ORDER_DETAILS_STORAGE_KEY) ?? '{}')
+    const parsed: unknown = JSON.parse(storage.getItem(ORDER_DETAILS_STORAGE_KEY) ?? '{}')
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
     return Object.fromEntries(Object.entries(parsed).filter(([, item]) => item
       && typeof item.internal_name === 'string' && typeof item.trade_name === 'string'

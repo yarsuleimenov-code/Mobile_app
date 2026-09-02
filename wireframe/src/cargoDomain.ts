@@ -137,6 +137,8 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
 }
 
 
+export const CARGO_RECORDS_STORAGE_KEY = 'zaberman-cargo-records:v4'
+
 export const initialCargoRecords: CargoRecord[] = [
   {
     orderNumber: '11155599',

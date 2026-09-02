@@ -30,6 +30,7 @@ export interface OrderEbolDriverConfirmation extends OrderEbolConfirmationDetail
 }
 
 export interface OrderEbolEvidenceSnapshot {
+  sourceDraftUpdatedAt?: string
   orderDetails?: OrderDetails
   measurements?: MeasurementSummary
   capturedAt: string
@@ -126,7 +127,9 @@ export function syncPickupOrderEbolDraft(
   const draft = createOrderEbol(record, capturedAt)
   return orderEbol ? {
     ...draft,
-    pickup: { ...draft.pickup, comments: orderEbol.pickup.comments },
+    pickup: { ...draft.pickup, comments: orderEbol.pickup.comments,
+      evidence: { ...draft.pickup.evidence!, hasDamage: orderEbol.pickup.evidence?.hasDamage ?? false,
+        exceptionNote: orderEbol.pickup.evidence?.exceptionNote ?? '' } },
     createdAt: orderEbol.createdAt,
   } : draft
 }
@@ -295,6 +298,12 @@ export function prepareDeliveryEbol(
   if (!orderEbol.pickup.lockedAt) throw new Error('Pickup eBOL must be locked before Delivery')
   if (orderEbol.delivery.lockedAt) throw new Error('Delivery eBOL is already locked')
   if (orderEbol.orderNumber !== record.orderNumber) throw new Error('Delivery order does not match eBOL')
+  if (findDraftSupplementalPickup(orderEbol)) throw new Error('Sign the Supplemental Pickup before Delivery.')
+  const signedIds = new Set(getEffectivePickupPlaceIds(orderEbol))
+  const cargoIds = expandCargoPlaces(record).map((place) => place.placeId)
+  if (signedIds.size && (signedIds.size !== cargoIds.length || cargoIds.some((id) => !signedIds.has(id)))) {
+    throw new Error('Cargo differs from the signed Pickup. Complete its Supplemental Pickup before Delivery.')
+  }
   const photos = evidencePhotos(input, orderEbol.orderNumber, 'delivery')
   if (!photos.length) throw new Error('Delivery evidence requires at least one photo')
   if (input.hasDamage && !input.exceptionNote.trim()) {
@@ -371,7 +380,7 @@ export function isOrderPodAvailable(orderEbol: OrderEbol | null | undefined) {
 }
 
 export function canReviewOrderEvidence(evidence: OrderEbolEvidenceSnapshot | null | undefined) {
-  return Boolean(evidence) && (!evidence?.orderDetails || !orderDetailsIssues(evidence.orderDetails).length)
+  return Boolean(evidence && evidence.pieceCount > 0 && evidence.photoCount > 0) && (!evidence?.orderDetails || !orderDetailsIssues(evidence.orderDetails).length)
     && !evidence?.measurements?.reasons.some((item) => !item.reason.trim())
 }
 

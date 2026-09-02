@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { initialCargoRecords, normalizeOrderNumber, type CargoRecord } from './cargoDomain'
+import { CARGO_RECORDS_STORAGE_KEY, initialCargoRecords, normalizeOrderNumber, type CargoRecord } from './cargoDomain'
 import { usePrototypeScenario } from './prototypeScenarioStore'
 import { mockTodaySpokeRoute, type SpokeRoute } from './spokeDomain'
 import { useEvidenceSync } from './useEvidenceSync'
@@ -28,7 +28,7 @@ interface CargoContextValue extends ReturnType<typeof useEvidenceSync> {
   completeDropoff: (orderNumber: string) => void
 }
 
-const STORAGE_KEY = 'zaberman-cargo-records:v4'
+const STORAGE_KEY = CARGO_RECORDS_STORAGE_KEY
 const SPOKE_ROUTE_STORAGE_KEY = 'zaberman-spoke-route:v1'
 const PENDING_SYNC_STORAGE_KEY = 'zaberman-pending-sync:v1'
 const CargoContext = createContext<CargoContextValue | null>(null)

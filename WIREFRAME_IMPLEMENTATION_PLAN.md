@@ -400,12 +400,14 @@ Pickup и Dropoff не объединяются в один статус: меж
 - Этап 3: отдельные mock-фото/категории/preview, восстановление Pickup/Delivery, очередь/retry/conflict и 40/100-photo presets реализованы локально. Signed evidence проверены; результат принят owner и опубликован в `1d2a2d2`. [Детали](docs/system-report/STAGE_3_PHOTO_OFFLINE_DEMO.md).
 - Этап 4: labels all/selected/one, version filter, preview/mock print/reprint, unavailable printer и корректный контрольный Scan реализованы локально. Результат принят owner и опубликован в `1d2a2d2`. [Детали](docs/system-report/STAGE_4_LABEL_PRINT_DEMO.md).
 
-- Этап 5: комментарии обеих сторон, версии и mock Download/Print/Email/Share реализованы и проверены локально. Этап принят owner; включён в разрешённую публикацию Этапов 5–6 в main. [Детали](docs/system-report/STAGE_5_EBOL_POD_DEMO.md).
-- Этап 6: trade/internal names, Qty, локальные роли и audit, Special Cargo, unknown measurements и Spoke preview реализованы и проверены. Принят owner; публикация в main разрешена. [Детали](docs/system-report/STAGE_6_ORDER_DATA_DEMO.md).
+- Этап 5: комментарии обеих сторон, версии и mock Download/Print/Email/Share реализованы и проверены локально. Этап принят owner и опубликован в `8756a6f`. [Детали](docs/system-report/STAGE_5_EBOL_POD_DEMO.md).
+- Этап 6: trade/internal names, Qty, локальные роли и audit, Special Cargo, unknown measurements и Spoke preview реализованы и проверены. Принят owner и опубликован в `8756a6f`. [Детали](docs/system-report/STAGE_6_ORDER_DATA_DEMO.md).
 
-### Оставшийся план — только hi-fi wireframe
+- Этап 7: семь пресетов, demo-script, UX-защиты и две последовательные репетиции 7/7 реализованы локально. Готов к демонстрации; приёмка и push отдельно. [Детали](docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md).
 
-Этап 6 ниже сохранён как исходный scope; он реализован локально. Этап принят owner; следующий — Этап 7.
+### Критерии этапов 6–7 — только hi-fi wireframe
+
+Ниже сохранён принятый scope. Этап 6 опубликован; техническая подготовка Этапа 7 выполнена, решение owner ожидается.
 
 | Этап | Минимальная работа | Критерий демонстрации |
 |---|---|---|
@@ -413,7 +415,7 @@ Pickup и Dropoff не объединяются в один статус: меж
 | 6. Данные заказа и Spoke preview | Trade/internal names, отдельное Qty, минимальный Special Cargo пример и неизвестные измерения, read-only mock-контекст Spoke | Owner понимает назначение и источник полей; внешние системы не изменяются |
 | 7. Репетиция owner-demo и UX-полировка | Presets, demo-script, семь сквозных проверок, back/resume и мобильная вёрстка | Две репетиции без помощи разработчика, нет блокирующих UX-дефектов, решения owner зафиксированы после показа |
 
-Оставшийся порядок: 6 → 7. Во всех этапах сначала используем готовые экраны; реализуем только недостающую часть. Нельзя считать запланированные возможности уже готовыми.
+Следующий шаг: показ owner по demo-script Этапа 7, фиксация замечаний и отдельное решение о push. План 6 → 7 технически выполнен в границах wireframe; production-ready статус не заявляется.
 
 Backend, PostgreSQL, SQLite/outbox, реальная камера/печать, PDF/email services, integrations, field pilot и production hardening вынесены в будущий production-backlog. Их готовность не блокирует owner-demo.
 

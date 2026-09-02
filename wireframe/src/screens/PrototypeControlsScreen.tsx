@@ -1,13 +1,8 @@
 import { AlertTriangle, Camera, CheckCircle2, Gauge, Printer, RefreshCw, RotateCcw, ScanLine, Settings2, ShieldX, Wifi, WifiOff } from 'lucide-react'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { EvidenceQueuePanel } from '../PhotoEvidence'
-import { demoPhotos } from '../photoEvidenceDomain'
-import { createPickupDraft } from '../pickupDraftDomain'
-import { findPickupDemoRecord } from '../pickupDemoData'
-import { findPickupDraft, readPickupDrafts, upsertPickupDraft, writePickupDrafts } from '../pickupDraftStore'
-import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
+import { installRehearsalPreset, rehearsalPresets, type RehearsalPresetId } from '../demoRehearsal'
 import { roleLabels } from '../data'
 import type { Role } from '../domain'
 import {
@@ -37,7 +32,6 @@ const deviceOptions: Array<{ value: DeviceKind; label: string; icon: typeof Came
 ]
 
 export function PrototypeControlsScreen() {
-  const navigate = useNavigate()
   const [presetError, setPresetError] = useState('')
   const {
     role, branch, network, syncOutcome, printOutcome, devices,
@@ -45,24 +39,14 @@ export function PrototypeControlsScreen() {
   } = usePrototypeScenario()
 
   const confirmReset = () => {
-    if (window.confirm('Reset all Zaberman mock data and prototype scenarios?')) resetMockData()
+    if (window.confirm('Reset all Zaberman demo data? This deletes saved drafts, signatures, documents, photos, print history and scenario settings on this device. The initial sample orders will be restored.')) resetMockData()
   }
-  const openPreset = (kind: 'normal' | 'offline' | 'conflict' | '40' | '100') => {
-    const orderNumber = { normal: '99003001', offline: '99003002', conflict: '99003003', '40': '99003040', '100': '99003100' }[kind]
-    const drafts = readPickupDrafts()
-    const ebol = findOrderEbol(readOrderEbols(), orderNumber)
-    if (!ebol?.pickup.lockedAt && !findPickupDraft(drafts, orderNumber, 'standard')) {
-      const count = kind === '40' ? 40 : kind === '100' ? 100 : 3
-      const record = { ...findPickupDemoRecord('23343775')!, orderNumber, photoCount: count, photos: demoPhotos(orderNumber, 'pickup', count) }
-      if (!writePickupDrafts(upsertPickupDraft(drafts, createPickupDraft(record, 'NJ1', 'standard')))) {
-        setPresetError('Could not save demo draft. Check local browser storage.')
-        return
-      }
-    }
-    setNetwork(kind === 'offline' ? 'offline' : 'online')
-    setSyncOutcome(kind === 'offline' ? 'retry' : kind === 'conflict' ? 'conflict' : 'success')
-    setDeviceAvailable('camera', true)
-    navigate(ebol?.pickup.lockedAt ? `/orders/${orderNumber}/ebol/pickup` : `/pickup?order=${orderNumber}`)
+  const openPreset = (kind: RehearsalPresetId) => {
+    try {
+      const path = installRehearsalPreset(kind)
+      window.location.hash = path
+      window.location.reload()
+    } catch (error) { setPresetError(error instanceof Error ? error.message : 'Could not prepare this scenario.') }
   }
 
   return (
@@ -72,15 +56,13 @@ export function PrototypeControlsScreen() {
         <div className="dev-only-banner"><Settings2 size={20} /><span><strong>DEV ONLY</strong><small>These settings simulate environment behavior and are not production configuration.</small></span></div>
 
         <section className="scenario-section">
-          <h2>Photo demo presets</h2>
-          <div className="scenario-options scenario-options--two">
-            <button type="button" onClick={() => openPreset('normal')}>Normal Pickup</button>
-            <button type="button" onClick={() => openPreset('offline')}>Offline + photo error</button>
-            <button type="button" onClick={() => openPreset('conflict')}>Draft conflict</button>
-            <button type="button" onClick={() => openPreset('40')}>40 mock photos</button>
-            <button type="button" onClick={() => openPreset('100')}>100 mock photos</button>
+          <h2>Owner-demo rehearsal</h2>
+          <p>Reset for a fresh run, then choose a scenario. Reopening preserves existing work. Presets set role, branch, connection and device availability; they do not sign new handoffs.</p>
+          <button type="button" className="ebol-secondary" onClick={confirmReset}><RotateCcw size={16} /> Reset all mock data</button>
+          <div className="rehearsal-presets">
+            {rehearsalPresets.slice(0, 7).map((preset) => <button type="button" key={preset.id} aria-label={preset.title} onClick={() => openPreset(preset.id)}><strong>{preset.title}</strong><small>{preset.detail}</small><code>#{preset.order}</code></button>)}
           </div>
-          <p>Separate demo orders. Existing drafts reopen without losing edits; signed versions open read-only. Use Reset all mock data below for a fresh rehearsal.</p>
+          <details className="rehearsal-extra"><summary>Optional photo volume checks</summary><div className="scenario-options scenario-options--two">{rehearsalPresets.slice(7).map((preset) => <button type="button" key={preset.id} onClick={() => openPreset(preset.id)}>{preset.title}</button>)}</div></details>
           {presetError ? <p role="alert">{presetError}</p> : null}
         </section>
 
@@ -129,9 +111,7 @@ export function PrototypeControlsScreen() {
 
         <section className="scenario-reset">
           <EvidenceQueuePanel />
-          <h2>Mock data</h2>
-          <p>Removes cargo records, eBOLs, route state, interstate drafts and all scenario settings.</p>
-          <button type="button" onClick={confirmReset}><RotateCcw size={19} /> Reset all mock data</button>
+          <p>Use Reset all mock data above only when you want to discard this rehearsal and restore the starting dataset.</p>
         </section>
       </main>
       <CargoBottomNav />

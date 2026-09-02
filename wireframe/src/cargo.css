@@ -848,3 +848,10 @@ textarea { font: inherit; }
 .evidence-order-details details { margin-top: 5px; }
 .evidence-order-details summary { cursor: pointer; color: var(--cargo-blue); font-size: 12px; }
 .evidence-order-details p { line-height: 1.5; margin: 8px 0; }
+.rehearsal-presets { display: grid; gap: 10px; margin: 16px 0; }
+.rehearsal-presets button { display: grid; gap: 5px; padding: 14px; text-align: left; border: 1px solid var(--cargo-border, #d8e0ec); border-radius: 10px; background: #fff; color: var(--cargo-navy); cursor: pointer; }
+.rehearsal-presets button:hover { background: #f0f6ff; }
+.rehearsal-presets strong { font-size: 14px; }
+.rehearsal-presets small, .rehearsal-presets code { font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.rehearsal-presets code { color: var(--cargo-blue); }
+.rehearsal-extra summary { cursor: pointer; font-size: 12px; margin-bottom: 12px; }

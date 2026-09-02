@@ -67,7 +67,10 @@ describe('Mock photo evidence', () => {
     const supplemental = lockSupplementalPickup(prepareSupplementalPickup(original, {
       addedPlaceIds: ['ZB-11155599-12'], totalWeight: 18, totalVolume: 2, photoCount: 1, photos: added, changeHistory: [],
     }), 2, signed)
-    const delivered = lockDeliveryEbol(prepareDeliveryEbol(supplemental, record, {
+    const deliveryRecord = { ...record, totalWeight: record.totalWeight + 18,
+      placeIds: [...original.pickup.evidence!.placeIds, 'ZB-11155599-12'],
+      dimensionGroups: [...record.dimensionGroups, { id: 'extra', quantity: 1, length: 12, width: 12, height: 24, weight: 18 }] }
+    const delivered = lockDeliveryEbol(prepareDeliveryEbol(supplemental, deliveryRecord, {
       photoCount: 2, photos: demoPhotos('11155599', 'delivery', 2), hasDamage: false, exceptionNote: '',
     }), signed)
     added[0].category = 'damage'

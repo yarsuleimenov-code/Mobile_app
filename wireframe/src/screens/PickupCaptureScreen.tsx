@@ -56,6 +56,8 @@ function PickupCaptureForm() {
   const [draft, setDraft] = useState<PickupDraft>(() => restoredDraft ?? {
     ...createPickupDraft(currentRecord ?? demoRecord, branch, mode), orderNumber: requestedOrder,
   })
+  const [orderLookup, setOrderLookup] = useState(requestedOrder)
+  const changingOrder = normalizeOrderNumber(orderLookup) !== draft.orderNumber
   const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error'>('saving')
   const [historyOpen, setHistoryOpen] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -86,7 +88,7 @@ function PickupCaptureForm() {
   }
   const commitGroupEdit = (groupId: string) => setDraft((current) => recordPickupDraftGroupEdit(current, groupId))
 
-  const canContinue = Boolean(normalizeOrderNumber(draft.orderNumber)) && draft.places.length > 0 && photos.length > 0 && saveState === 'saved' && !issues.length
+  const canContinue = !changingOrder && Boolean(normalizeOrderNumber(draft.orderNumber)) && draft.places.length > 0 && photos.length > 0 && saveState === 'saved' && !issues.length
   const submit = () => {
     if (!canContinue) return
     const normalizedOrderNumber = normalizeOrderNumber(draft.orderNumber)
@@ -116,6 +118,8 @@ function PickupCaptureForm() {
     } else {
       nextEbol = syncPickupOrderEbolDraft(existingEbol, record)
     }
+    const snapshot = findDraftSupplementalPickup(nextEbol) ?? nextEbol.pickup
+    if (snapshot.evidence) snapshot.evidence.sourceDraftUpdatedAt = draft.updatedAt
     if (!writeOrderEbols(upsertOrderEbol(orderEbols, nextEbol))) { setSaveState('error'); return }
     savePickup(record)
     setSaved(true)
@@ -158,9 +162,10 @@ function PickupCaptureForm() {
         ) : null}
 
         <div className="two-column-fields">
-          <label>Order #<input inputMode="numeric" value={draft.orderNumber} disabled={draft.mode === 'supplemental'} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'orderNumber', event.target.value))} /></label>
+          <label>Order #<input inputMode="numeric" value={orderLookup} disabled={draft.mode === 'supplemental'} onChange={(event) => setOrderLookup(event.target.value)} /></label>
           <label>Pickup date<input type="date" value={draft.pickupDate} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'pickupDate', event.target.value))} /></label>
         </div>
+        {changingOrder ? <div className="measurement-warning"><p>You are viewing order #{draft.orderNumber}. Open the selected order to load its own cargo and draft.</p><button type="button" disabled={!normalizeOrderNumber(orderLookup) || saveState !== 'saved'} onClick={() => navigate(`/pickup?order=${normalizeOrderNumber(orderLookup)}`)}>Open selected order</button></div> : null}
         <section className="order-name-summary"><span><strong>{operationalName(details, draft.orderNumber)}</strong><small>{details.special_cargo_type ? 'Special Cargo · see handling details' : 'Operational name'}</small></span><button type="button" onClick={() => navigate(`/orders/${normalizeOrderNumber(draft.orderNumber)}/details`)}>Order details</button></section>
         <label>Responsible manager<select value={draft.responsible} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'responsible', event.target.value))}><option>John Doe</option><option>Maria Lopez</option><option>Daniel Kim</option></select></label>
         <label>Packaging<select value={draft.packaging} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'packaging', event.target.value))}><option>Customer</option><option>Zaberman</option><option>Mixed</option></select></label>
@@ -206,7 +211,7 @@ function PickupCaptureForm() {
           {historyOpen ? <ol>{[...draft.history].reverse().map((entry) => <li key={entry.id}><span>{entry.detail}</span><time>{new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></li>)}</ol> : null}
         </section>
 
-        {issues.length ? <div className="measurement-warning" role="status"><strong>Before continuing</strong>{issues.map((issue) => <p key={issue}>{issue}</p>)}<p>Your draft remains saved.</p></div> : null}
+        {issues.length || !draft.places.length || !photos.length || saveState === 'error' ? <div className="measurement-warning" role="status"><strong>Before continuing</strong>{issues.map((issue) => <p key={issue}>{issue}</p>)}{!draft.places.length ? <p>Add at least one dimension group.</p> : null}{!photos.length ? <p>Add at least one cargo photo.</p> : null}<p>{saveState === 'error' ? 'Keep this page open and free device storage before continuing.' : 'Your draft remains saved.'}</p></div> : null}
         <div className="flow-action"><button className="cargo-primary" type="submit" disabled={!canContinue}>{draft.mode === 'supplemental' ? 'Create new document version' : 'Continue to Pickup review'}</button></div>
       </form>
       <CargoBottomNav />
