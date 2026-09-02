@@ -80,7 +80,7 @@ export function SignaturePad({ label, onSignedChange }: { label: string; onSigne
     <div className={`signature-pad${hasInk ? ' signature-pad--signed' : ''}`}>
       <canvas ref={canvasRef} width={640} height={220} aria-label={`${label} signature pad`} onPointerDown={startDrawing} onPointerMove={continueDrawing} onPointerUp={finishDrawing} onPointerCancel={finishDrawing} />
       <span className="signature-line">Sign above</span>
-      <div className="signature-pad-actions"><button type="button" onClick={clearSignature} disabled={!hasInk}>Clear</button><button type="button" onClick={useDemoSignature}>Use demo signature</button></div>
+      <div className="signature-pad-actions"><button type="button" onClick={clearSignature} disabled={!hasInk}>Clear</button><button type="button" onClick={useDemoSignature}>Insert signature</button></div>
     </div>
   )
 }

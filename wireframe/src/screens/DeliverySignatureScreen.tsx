@@ -72,7 +72,7 @@ export function DeliverySignatureScreen() {
       <CargoFlowHeader title="Order eBOL signing" subtitle={`Delivery · Order #${orderNumber}`} onBack={() => navigate(reviewPath, { replace: true })} />
       <main className="signature-body">
         <div className="signature-progress"><span>Step {stepNumber} of {stepTotal}</span><div><i style={{ width: `${(stepNumber / stepTotal) * 100}%` }} /></div></div>
-        <div className="signature-disclaimer"><ShieldCheck size={22} /><p>This is a visual prototype. The drawing is not a legally binding electronic signature and is not stored as an image.</p></div>
+        <div className="signature-disclaimer"><ShieldCheck size={22} /><p>Confirm the recorded delivery details and any exceptions before signing.</p></div>
 
         {step === 'contact' ? (
           <section className="signature-card">

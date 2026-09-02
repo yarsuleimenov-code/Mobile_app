@@ -12,7 +12,9 @@
 2. подготовленный, но ещё не применённый PostgreSQL DDL baseline;
 3. собранный NestJS vertical slice `Create CargoPlace` с OpenAPI, unit-тестами и условным PostgreSQL integration-тестом.
 
-Production mobile client, развёрнутый backend, настоящая identity, реальные интеграции и серверная БД отсутствуют. Ближайший production gate — выполнить уже подготовленный vertical slice на чистой PostgreSQL 16 test DB. Это не блокирует согласованные UX-правки hi-fi wireframe: текущий scope остаётся бизнес-прототипом.
+Текущая цель — демонстрация owner, не создание рабочего приложения. Этапы 3–4 (mock-фото/offline и выборочная печать labels) реализованы локально; следующий этап — комментарии сторон и представление eBOL/POD по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md). Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному будущему production-backlog и не блокирует demo-этапы.
+
+Правило показа от 2026-09-02: рабочие экраны выглядят как будущий продукт, без Simulate/demo/mock/prototype-пояснений; о природе wireframe ведущий предупреждает устно. Print и Print history, фото/sync, Scan, подписание и документы приведены к этому правилу. Служебная панель остаётся по `#/more/demo`, её ссылки из обычного UI скрыты. Реальные интеграции не добавлены.
 
 ## 2. Источники истины
 
@@ -22,10 +24,10 @@ Production mobile client, развёрнутый backend, настоящая ide
 2. [STAGE_0_PRODUCT_DECISIONS.md](STAGE_0_PRODUCT_DECISIONS.md) и [BOL_DECISION_LOG.md](../../BOL_DECISION_LOG.md) — утверждённый TO-BE baseline;
 3. этот текущий срез;
 4. [SYSTEM_ANALYSIS.md](SYSTEM_ANALYSIS.md), [ARCHITECTURE.md](ARCHITECTURE.md) и [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) как целевая модель;
-5. [WIREFRAME_IMPLEMENTATION_PLAN.md](../../WIREFRAME_IMPLEMENTATION_PLAN.md) как план и история инкрементов;
+5. [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md) — текущий scope, нумерация и критерии demo-этапов 3–7; [WIREFRAME_IMPLEMENTATION_PLAN.md](../../WIREFRAME_IMPLEMENTATION_PLAN.md) — сводка плана и исторический каталог;
 6. исходные ТЗ и audit-пакет как исторические источники требований.
 
-Git baseline: `main` на коммите `bb64bf6` (`feat: add cargo place API and editable pickup drafts`), отправлен в origin/main. Текущая корректировка mock-заявок и dimension groups выполнена поверх этого baseline.
+Опубликованный Git baseline: `main`, commit `298ff87` (`fix: compact pickup dimension groups and remove demo banner`). Принятый пересмотр плана и реализации Этапов 3–4 находятся в локальной рабочей копии, ещё без commit/push. Этап 3 принят owner; этапы 5–7 не реализованы.
 
 ## 3. Что фактически реализовано
 
@@ -34,10 +36,12 @@ Git baseline: `main` на коммите `bb64bf6` (`feat: add cargo place API a
 | Навигация | `Home | Tasks | Scan | More`, Cargo places и secondary Interstate | Часть legacy-экранов в `src` не подключена к `App.tsx` |
 | Pickup/Dropoff | Autosaved/restored Pickup draft, dimension group CRUD с индивидуальными PlaceID, заполненные route mock-заявки, history, Recent Operations edit и mock Dropoff reconcile | Только `localStorage`; нет реальных задач, камеры, файлов и server confirmation |
 | CargoPlace | Prototype PlaceID, `n/N`, labels, current status/location и короткая история | Проекция вычисляется из mock/local state |
+| Labels / Scan | All/selected/one, preview выбранных Code 128, version filter, mock print/reprint history, printer unavailable, valid/duplicate/unknown и manual lookup | Нет printer SDK или аппаратного scan; Print моделирует результат локально |
 | Order eBOL/POD | Pickup/Delivery review, locked original snapshot, Supplemental Pickup versions, повторные mock-подписи и POD preview | Подписи и PDF не production/legal artifacts |
+| Фото | Отдельные mock-фото, категории, preview/filter/remove, восстановление Pickup/Delivery, фото своих версий в review/POD | Только metadata и существующие demo-assets; без файлов и upload |
 | Interstate | Loading review, Trip, immutable loaded manifest в domain model, Unloading draft, BOL archive | Нет authoritative Trip service и atomic server Close |
-| Scenario controls | Роль, филиал, сеть, следующий sync outcome, доступность camera/scanner/printer, reset | Только управляемая демонстрация |
-| Persistence/sync | Versioned `localStorage`, pending counter, `Sync now`, retry/conflict/rejected simulation | Нет SQLite, durable outbox/inbox и conflict resolution UI |
+| Scenario controls | Роль, филиал, сеть, sync и print outcomes, camera/scanner/printer, normal/offline/conflict/40/100-photo presets, reset | Только управляемая демонстрация |
+| Persistence/sync | Versioned `localStorage`, очередь operation/photo с retry, сохранение ошибок, явный Keep local changes для demo-конфликта | Нет SQLite, durable outbox/inbox, реального merge и server sync |
 | Backend API | NestJS `POST /api/cargo-places`, OpenAPI, validation, permission check, idempotency и atomic transaction | Только первый command slice; development identity adapter, без deploy |
 | PostgreSQL | Две migrations; PD-011/PD-012 и `label_generated` отражены в DDL | Не применены к PostgreSQL 16 и не подключены к приложению |
 
@@ -65,7 +69,7 @@ Git baseline: `main` на коммите `bb64bf6` (`feat: add cargo place API a
 
 Статус: DDL и command transaction реализованы в source, но не подтверждены на runtime PostgreSQL.
 
-## 6. Обязательные implementation gaps
+## 6. Production implementation gaps — вне текущей demo-приёмки
 
 | Приоритет | Расхождение | Решение до API implementation |
 |---|---|---|
@@ -80,7 +84,7 @@ Git baseline: `main` на коммите `bb64bf6` (`feat: add cargo place API a
 
 Frontend перепроверен 2026-09-02; backend-результаты остаются от 2026-09-01:
 
-- Vitest: 14 файлов, 40 тестов — passed;
+- Vitest: 16 файлов, 67 тестов — passed;
 - TypeScript project build — passed;
 - Vite production build — passed;
 - Backend Vitest: 2 файла, 10 unit-тестов — passed; PostgreSQL suite: 1 test skipped без `DATABASE_URL`;
@@ -89,10 +93,18 @@ Frontend перепроверен 2026-09-02; backend-результаты ос�
 - PostgreSQL migrations — только статически просмотрены; runtime apply/rollback/RLS checks не выполнялись из-за отсутствия PostgreSQL runtime;
 - production integrations и живые данные не проверялись и не изменялись;
 - rendered QA Этапа 2: Chrome/Playwright fallback на локальном production preview, ширины 320/390/1440 px; group CRUD, restore, review, original + supplemental signing пройдены. In-app Browser по-прежнему блокируется Windows sandbox `setup refresh`; необязательный favicon возвращает 404.
+- rendered QA Этапа 3: photo CRUD/filter/preview, offline/reload/retry/conflict, immutable original/supplemental/Delivery evidence, POD, presets и camera fallback — passed. Детали: [STAGE_3_PHOTO_OFFLINE_DEMO.md](STAGE_3_PHOTO_OFFLINE_DEMO.md). Результат принят owner.
+- rendered QA Этапа 4: выбор/reload, выбранные Code 128 и print media, mock success/error/reprint, unavailable printer, точный Scan и отдельные Supplemental labels — passed. [Детали](STAGE_4_LABEL_PRINT_DEMO.md). Приёмка Этапа 4 owner ещё не проведена.
 
-## 8. Следующий gate
+## 8. Следующий этап wireframe
 
-Source-реализация `Create CargoPlace` описана в [STAGE_1_CREATE_CARGO_PLACE.md](STAGE_1_CREATE_CARGO_PLACE.md). Следующий минимальный результат — подтвердить её на PostgreSQL 16 test DB.
+Следующий — Этап 5 «eBOL/POD: комментарии сторон и представление документа» по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md): отдельные комментарии контакта и водителя, сохранение в своей версии, document preview и честные mock Download/Print/Email/Share. Существующие signing и snapshots повторно не строить.
+
+Затем: 6 — данные заказа и mock Spoke preview; 7 — репетиция owner-demo и UX-полировка. Готовые части текущего wireframe повторно не строить.
+
+## 9. Отложенный production gate
+
+Source-реализация `Create CargoPlace` описана в [STAGE_1_CREATE_CARGO_PLACE.md](STAGE_1_CREATE_CARGO_PLACE.md). После отдельного решения начать рабочее приложение нужно подтвердить её на PostgreSQL 16 test DB.
 
 Готовый результат этапа:
 
@@ -102,4 +114,4 @@ Source-реализация `Create CargoPlace` описана в [STAGE_1_CREAT
 4. отдельно добавляются проверки constraints, append-only triggers и optional RLS migration;
 5. wireframe остаётся UX-reference и не подключается напрямую к PostgreSQL.
 
-После этого можно начинать production mobile shell/SQLite sync spike. Расширение Interstate, BOL worker и полноценный UI следует отложить до runtime-подтверждения первого вертикального сценария.
+Production mobile shell/SQLite sync, BOL worker и реальный полевой пилот планируются отдельно. Это не является условием продолжения или приёмки owner-demo.

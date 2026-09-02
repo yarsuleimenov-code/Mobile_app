@@ -91,7 +91,7 @@ export function PickupSignatureScreen() {
       <CargoFlowHeader title="Order eBOL signing" subtitle={supplement ? `Supplemental Pickup · Version ${supplement.version}` : `Pickup · Order #${orderNumber}`} onBack={() => navigate(reviewPath, { replace: true })} />
       <main className="signature-body">
         <div className="signature-progress"><span>Step {stepNumber} of {stepTotal}</span><div><i style={{ width: `${(stepNumber / stepTotal) * 100}%` }} /></div></div>
-        <div className="signature-disclaimer"><ShieldCheck size={22} /><p>{supplement ? `Signatures apply only to ${supplement.addedPlaceIds.length} places in version ${supplement.version}. Version 1 remains unchanged. ` : ''}This is a visual prototype. The drawing is not a legally binding electronic signature and is not stored as an image.</p></div>
+        <div className="signature-disclaimer"><ShieldCheck size={22} /><p>{supplement ? `Signatures apply only to ${supplement.addedPlaceIds.length} places in version ${supplement.version}. Version 1 remains unchanged. ` : ''}Confirm the recorded cargo details and any exceptions before signing.</p></div>
 
         {step === 'contact' ? (
           <section className="signature-card">

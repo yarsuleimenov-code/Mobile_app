@@ -1,14 +1,16 @@
 # План реализации mobile-first wireframe Zaberman
 
-Статус на 2026-09-01: документ сохраняется как Product/UX plan и история реализованных prototype-инкрементов. Фактическое состояние зафиксировано в [`docs/system-report/CURRENT_STATE.md`](docs/system-report/CURRENT_STATE.md), утверждённый TO-BE baseline — в [`docs/system-report/STAGE_0_PRODUCT_DECISIONS.md`](docs/system-report/STAGE_0_PRODUCT_DECISIONS.md). При расхождении AS-IS источником истины является код и тесты; при расхождении TO-BE — принятые product decisions.
+Статус на 2026-09-02: актуальная цель — hi-fi wireframe для демонстрации owner. Переписанная очередь этапов 3–7: [OWNER_DEMO_PLAN.md](docs/system-report/OWNER_DEMO_PLAN.md) и раздел 10 ниже. Фактическое состояние — [CURRENT_STATE.md](docs/system-report/CURRENT_STATE.md), бизнес-правила — [STAGE_0_PRODUCT_DECISIONS.md](docs/system-report/STAGE_0_PRODUCT_DECISIONS.md). Старый расширенный каталог экранов не является обязательным scope demo; production-требования не блокируют продолжение wireframe.
 
 ## 1. Цель, scope и минимальный готовый результат
 
 ### Цель
 
-Подготовить mobile-first wireframe, который позволяет согласовать единый рабочий интерфейс Zaberman до выбора технологии и разработки. Прототип должен ответить на основной ежедневный бизнес-вопрос: как сотрудник быстро начинает Pickup или Dropoff, фиксирует фактические места и завершает локальную операцию без потери данных. Interstate Loading, Unloading и BOL должны оставаться отдельным дополнительным контуром только для соответствующих направлений и рейсов.
+Подготовить связанный mobile-first hi-fi wireframe, чтобы owner мог оценить путь «заявка → Pickup → dimension groups → фото → labels → подписи → Dropoff → POD» и согласовать UX. Offline, внешние сервисы и документы показываются через управляемые mock-состояния. Проверяется понятность процесса и восстановление локального demo-состояния, а не production-надёжность. Существующий Interstate остаётся отдельным дополнительным контуром без обязательного расширения.
 
-### Рекомендуемый scope прототипа
+### Расширенный каталог сценариев (исторический)
+
+Этот каталог сохраняется для контекста. Текущий минимальный scope и out-of-scope определены в [OWNER_DEMO_PLAN.md](docs/system-report/OWNER_DEMO_PLAN.md); весь каталог ниже не требуется для ближайшего owner-demo.
 
 Включить:
 
@@ -32,7 +34,9 @@
 - миграцию или изменение Telegram-бота, Loading Control и BOL Generator;
 - полноценную desktop-админку.
 
-### Минимальный готовый результат
+### Исторический расширенный набор проверок
+
+Ниже — прежние десять сценариев. Для текущих этапов 3–7 действуют семь demo-проверок нового плана; Same Day и новый interbranch flow не являются обязательными.
 
 Один связанный кликабельный mobile-first прототип для экрана шириной 360–390 px, в котором можно пройти минимум десять проверочных сценариев:
 
@@ -383,133 +387,34 @@ Pickup и Dropoff не объединяются в один статус: меж
 
 Минимальный lifecycle discrepancy: `Open → Assigned → Investigating → Resolved` с исходами `Found`, `Accepted variance`, `Returned`, `Damaged confirmed`, `Duplicate/invalid`. Автоматически закрывать discrepancy без ответственного решения нельзя.
 
-## 10. Последовательность реализации wireframe и критерии готовности
+## 10. Актуальная последовательность owner-demo
 
-### Этап 0. Product baseline и границы прототипа
+Переписано 2026-09-02. Полный план и критерии: [OWNER_DEMO_PLAN.md](docs/system-report/OWNER_DEMO_PLAN.md).
+Этот раздел заменяет прежнюю очередь экранов 0–7; новая нумерация соответствует принятому плану после BA weekly. Разделы 1–9 и 11–16 сохраняются как каталог/история и не расширяют обязательный scope текущей демонстрации.
 
-**Результат:** список утвержденных допущений, route/movement classification, terminology, роли, критичные P0-вопросы и десять test scenarios.
+### Что уже сделано
 
-**Готово, если:**
+- Этап 0: продуктовые решения приняты; сохраняем бизнес-правила, не требуем production-инфраструктуру для demo.
+- Этап 1: Data/API — отдельный POC, PostgreSQL runtime gate не закрыт; не является зависимостью wireframe.
+- Этап 2: Pickup draft/restore, compact dimension groups, история, Recent Operations, locked snapshot и Supplemental Pickup реализованы. Заполненные mock-заявки сохранены; demo-блок в форме скрыт.
+- Этап 3: отдельные mock-фото/категории/preview, восстановление Pickup/Delivery, очередь/retry/conflict и 40/100-photo presets реализованы локально. Signed evidence проверены; результат принят owner, push не выполнен. [Детали](docs/system-report/STAGE_3_PHOTO_OFFLINE_DEMO.md).
+- Этап 4: labels all/selected/one, version filter, preview/mock print/reprint, unavailable printer и корректный контрольный Scan реализованы локально. Результат проверен, ожидает приёмки owner. [Детали](docs/system-report/STAGE_4_LABEL_PRINT_DEMO.md).
 
-- направления и `movement_type` хранятся отдельно;
-- для всех девяти направлений определен допустимый movement type;
-- совпадение origin/destination не назначает Same Day автоматически;
-- Pickup/Dropoff отделены от RouteRun и interstate Loading/Unloading;
-- выбрана единица учета CargoPlace;
-- утверждено, кто назначает movement type, создает Same Day RouteRun и interstate Trip;
-- согласованы provisional role mapping и permission scope;
-- unresolved P0-вопросы имеют owner и дату решения;
-- определены source labels для declared/measured/unknown data.
+### Следующие этапы — только hi-fi wireframe
 
-### Этап 1. Главный экран и выбор Pickup/Dropoff
+| Этап | Минимальная работа | Критерий демонстрации |
+|---|---|---|
+| 5. eBOL/POD: комментарии и preview | Комментарии обеих сторон, версии, mock Download/Print/Email/Share; переиспользовать готовые подписи | Original неизменён, добавления подписаны отдельно, в итоговом документе понятны авторы и исключения |
+| 6. Данные заказа и Spoke preview | Trade/internal names, отдельное Qty, минимальный Special Cargo пример и неизвестные измерения, read-only mock-контекст Spoke | Owner понимает назначение и источник полей; внешние системы не изменяются |
+| 7. Репетиция owner-demo и UX-полировка | Presets, demo-script, семь сквозных проверок, back/resume и мобильная вёрстка | Две репетиции без помощи разработчика, нет блокирующих UX-дефектов, решения owner зафиксированы после показа |
 
-**Результат:** app shell `Home | Tasks | Scan | More`, Home с крупными `Start Pickup`/`Start Dropoff`, task chooser, Resume и базовый wireframe kit.
+Оставшийся порядок: 5 → 6 → 7. Во всех этапах сначала используем готовые экраны; реализуем только недостающую часть. Нельзя считать запланированные возможности уже готовыми.
 
-**Готово, если:**
-
-- Pickup и Dropoff начинаются с Home одним нажатием;
-- после quick action можно выбрать назначенную задачу, scan/manual OrderID или Resume draft;
-- Scan доступен одним действием;
-- active Same Day и attention/pending видимы без открытия More;
-- interstate не занимает основной navigation slot;
-- состояния loading/empty/error/offline предусмотрены в шаблонах;
-- touch-targets рассчитаны на одну руку/перчатки, ручной ввод минимизирован;
-- role/context/network видимы без открытия настроек.
-
-### Этап 2. Local standard Pickup и Dropoff
-
-**Результат:** end-to-end `local_standard` Pickup и Dropoff как основные независимые операции, без Trip/manifest/Loading/Unloading/BOL.
-
-**Готово, если:**
-
-- local task показывает branch direction и явно выбранный movement type;
-- Pickup и Dropoff имеют собственные статусы и completion;
-- Dropoff использует подтвержденные places и Pickup evidence;
-- Complete/Partial/Refused имеют разные итоговые состояния;
-- local flow нигде не требует TripID, manifest, Loading/Unloading или BOL;
-- POD остается в Dropoff/Order context;
-- happy path обеих операций укладывается в 2–3 минуты UI-взаимодействия без учета физической работы.
-
-### Этап 3. Same Day RouteRun
-
-**Результат:** R01–R02 и связанный сценарий `Pickup → локальная перевозка → Dropoff`.
-
-**Готово, если:**
-
-- `local_same_day` назначен явно, а не вычислен только по одинаковому филиалу;
-- RouteRun показывает crew/vehicle, последовательность задач и общий прогресс;
-- Pickup и Dropoff остаются отдельными operations и audit records;
-- локальная перевозка не создает interstate manifest/Loading/Unloading/BOL;
-- Dropoff ожидает фактически подтвержденные Pickup places;
-- partial Pickup, skipped Dropoff, reassignment и offline transition имеют отдельные состояния;
-- завершение RouteRun зависит от синхронизированных обязательных tasks.
-
-### Этап 4. CargoPlace, размеры, фото, labels и offline
-
-**Результат:** P02–P05, общие place/media components, Sync Center и local-first state variants для этапов 1–3.
-
-**Готово, если:**
-
-- можно создать несколько places и изменить actual count;
-- размеры, weight source и volume логически согласованы;
-- photo checklist различает item/package/damage/Pickup/Dropoff;
-- label содержит global и human-readable ID, показаны print/save/reprint;
-- CargoPlace не имеет обязательного TripID;
-- offline draft/resume, photo queue, sync status и validation errors показаны;
-- Retry не создает дубль, logout предупреждает о pending данных;
-- totals проходят простой тест: два места 24×16×40 дают по 8.89 cu ft и 17.78 cu ft суммарно.
-
-### Этап 5. Interstate Loading и Unloading
-
-**Результат:** T01–T02, L01–L03, U01–U03 как secondary flow из назначенной задачи или `More → Interstate`.
-
-**Готово, если:**
-
-- Trip выбирается до первого scan и показывает route/truck/manifest version;
-- только NJ1 ↔ CA1 и NJ1 ↔ CA2 автоматически используют этот flow;
-- корректный, duplicate, wrong-trip, damaged и unknown scan имеют разные результаты;
-- partial loading показывает confirmed и remaining places;
-- Unloading использует только confirmed loaded manifest;
-- Close summary формирует missing/extra/damaged и требует нужное permission;
-- offline Close не отображается как окончательно завершенный;
-- weight/volume totals считаются по фактическим places, а не по полному Order;
-- CA1 ↔ CA2 не получает этот flow до отдельного решения.
-
-### Этап 6. BOL и interstate-документы
-
-**Результат:** B01–B04 внутри T02; preflight, queue/status, PDF view и version history.
-
-**Готово, если:**
-
-- BOL открывается только из соответствующего interstate Trip;
-- preflight использует фактический manifest и показывает blocking fields;
-- различаются customer BOL, Interstate BOL и POD;
-- показаны queued/generating/retry/failed/generated states;
-- PDF можно открыть, download/print/share доступны по permissions;
-- видны BOL Number, TripID, version, lifecycle и signed copy;
-- correction создает новую версию, void требует причины;
-- ошибка BOL не меняет статус Loading/Trip fact;
-- local standard и Same Day не показывают Interstate BOL.
-
-### Этап 7. Ролевая проверка и handoff
-
-**Результат:** связанный кликабельный прототип, index экранов, state matrix и короткий сценарий usability review.
-
-**Готово, если:**
-
-- десять сценариев из раздела 1 проходят от начала до однозначного результата;
-- Warehouse, Delivery, Dispatching и IT подтвердили терминологию и права;
-- supervisor/admin actions недоступны обычному пользователю;
-- на каждом экране понятны объект, операция, прогресс, сеть и следующее действие;
-- Local/Same Day сценарии доступны быстрее и заметнее interstate;
-- отсутствуют dead ends и недоступные back/resume paths;
-- все P0-вопросы закрыты либо явно помечены как блокирующие реализацию;
-- прототип содержит annotations: business rule, source assumption, permission, offline behavior и acceptance state;
-- сформирован перечень экранов/состояний для последующей поэтапной разработки без необходимости заново проектировать flow.
+Backend, PostgreSQL, SQLite/outbox, реальная камера/печать, PDF/email services, integrations, field pilot и production hardening вынесены в будущий production-backlog. Их готовность не блокирует owner-demo.
 
 ## 11. Технический план реализации wireframe в репозитории
 
-На этом этапе раздел является только планом. Файлы приложения, зависимости и package scripts не создавать.
+Исторический технический план первоначального wireframe. React/Vite приложение уже создано; этот раздел не является командой повторно создавать каркас или зависимости. Дальнейшие изменения ограничены актуальным owner-demo планом.
 
 ### 11.1 Рекомендуемый стек
 
@@ -811,7 +716,7 @@ Order eBOL и Interstate BOL не заменяют друг друга. Зака
 Реализованный prototype scope:
 
 - создание, autosave и восстановление Pickup draft;
-- add/edit/delete отдельных мест со стабильными PlaceID;
+- add/edit/delete dimension groups со стабильными PlaceID отдельных мест; Qty, L/W/H и вес места расположены в один ряд;
 - открытие редактирования из Recent Operations и локальная change history;
 - locked version 1 недоступна для прямого изменения;
 - новые места после подписи создают Supplemental Pickup version 2+;

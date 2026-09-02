@@ -1,4 +1,5 @@
 import { calculatePieces, calculateVolume, expandCargoPlaces, type CargoChangeEntry, type CargoRecord } from './cargoDomain'
+import { evidencePhotos, type EvidencePhoto } from './photoEvidenceDomain'
 
 export type OrderEbolStatus =
   | 'draft'
@@ -33,6 +34,7 @@ export interface OrderEbolEvidenceSnapshot {
   totalWeight: number
   totalVolume: number
   photoCount: number
+  photos?: EvidencePhoto[]
   hasDamage: boolean
   exceptionNote: string
   changeHistory?: CargoChangeEntry[]
@@ -80,6 +82,7 @@ function emptyHandoff(): OrderEbolHandoffSnapshot {
 }
 
 export function createOrderEbol(record: CargoRecord, capturedAt = new Date().toISOString()): OrderEbol {
+  const photos = evidencePhotos(record, record.orderNumber, 'pickup')
   return {
     orderNumber: record.orderNumber,
     status: 'pickup_review',
@@ -90,7 +93,8 @@ export function createOrderEbol(record: CargoRecord, capturedAt = new Date().toI
         placeIds: expandCargoPlaces(record).map((place) => place.placeId),
         totalWeight: record.totalWeight,
         totalVolume: calculateVolume(record.dimensionGroups),
-        photoCount: record.photoCount,
+        photoCount: photos.length,
+        photos,
         hasDamage: false,
         exceptionNote: '',
         changeHistory: record.changeHistory ?? [],
@@ -168,6 +172,7 @@ export interface SupplementalPickupInput {
   totalWeight: number
   totalVolume: number
   photoCount: number
+  photos?: EvidencePhoto[]
   changeHistory: CargoChangeEntry[]
 }
 
@@ -182,6 +187,7 @@ export function prepareSupplementalPickup(
   const existingDraft = supplements.find((item) => item.status === 'draft')
   const version = existingDraft?.version
     ?? Math.max(1, ...supplements.filter((item) => item.status === 'locked').map((item) => item.version)) + 1
+  const photos = evidencePhotos(input, orderEbol.orderNumber, 'pickup', `supplement-${version}`)
   const supplemental: SupplementalPickupVersion = {
     version,
     documentNumber: `${orderEbol.orderNumber}-PU-${version}`,
@@ -193,7 +199,8 @@ export function prepareSupplementalPickup(
       placeIds: [...input.addedPlaceIds],
       totalWeight: input.totalWeight,
       totalVolume: input.totalVolume,
-      photoCount: input.photoCount,
+      photoCount: photos.length,
+      photos,
       hasDamage: false,
       exceptionNote: '',
       changeHistory: input.changeHistory,
@@ -253,6 +260,7 @@ export function getEffectivePickupPlaceIds(orderEbol: OrderEbol) {
 }
 export interface DeliveryEbolEvidenceInput {
   photoCount: number
+  photos?: EvidencePhoto[]
   hasDamage: boolean
   exceptionNote: string
 }
@@ -268,7 +276,8 @@ export function prepareDeliveryEbol(
   if (!orderEbol.pickup.lockedAt) throw new Error('Pickup eBOL must be locked before Delivery')
   if (orderEbol.delivery.lockedAt) throw new Error('Delivery eBOL is already locked')
   if (orderEbol.orderNumber !== record.orderNumber) throw new Error('Delivery order does not match eBOL')
-  if (input.photoCount < 1) throw new Error('Delivery evidence requires at least one photo')
+  const photos = evidencePhotos(input, orderEbol.orderNumber, 'delivery')
+  if (!photos.length) throw new Error('Delivery evidence requires at least one photo')
   if (input.hasDamage && !input.exceptionNote.trim()) {
     throw new Error('Delivery damage exception requires a note')
   }
@@ -285,7 +294,8 @@ export function prepareDeliveryEbol(
           : expandCargoPlaces(record).map((place) => place.placeId),
         totalWeight: record.totalWeight,
         totalVolume: calculateVolume(record.dimensionGroups),
-        photoCount: input.photoCount,
+        photoCount: photos.length,
+        photos,
         hasDamage: input.hasDamage,
         exceptionNote: input.hasDamage ? input.exceptionNote.trim() : '',
       },

@@ -1,7 +1,9 @@
-import { Camera, Clock3, History, LockKeyhole, Plus, Save, Trash2 } from 'lucide-react'
+import { Clock3, History, LockKeyhole, Plus, Save, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '../cargo-components'
+import { CargoBottomNav, CargoFlowHeader, SuccessState } from '../cargo-components'
+import { EvidenceEditor } from '../PhotoEvidence'
+import { evidencePhotos } from '../photoEvidenceDomain'
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import {
@@ -38,8 +40,8 @@ export function PickupCaptureScreen() {
 function PickupCaptureForm() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { findRecord, savePickup } = useCargo()
-  const { branch, devices } = usePrototypeScenario()
+  const { findRecord, savePickup, trackEvidenceOperation } = useCargo()
+  const { branch } = usePrototypeScenario()
   const requestedOrder = normalizeOrderNumber(params.get('order') ?? '11155599')
   const currentRecord = findRecord(requestedOrder)
   const [mode] = useState<'standard' | 'supplemental'>(() => {
@@ -59,15 +61,18 @@ function PickupCaptureForm() {
   const volume = useMemo(() => pickupDraftVolume(draft), [draft])
   const addedWeight = useMemo(() => pickupDraftWeight(draft), [draft])
   const groups = pickupDraftGroups(draft)
+  const photos = evidencePhotos(draft, normalizeOrderNumber(draft.orderNumber), 'pickup', draft.createdAt)
+  const operationId = `pickup:${draft.orderNumber}:${draft.mode}:${draft.createdAt}`
 
   useEffect(() => {
     setSaveState('saving')
-    const timeout = window.setTimeout(() => {
-      const didSave = writePickupDrafts(upsertPickupDraft(readPickupDrafts(), draft))
-      setSaveState(didSave ? 'saved' : 'error')
-    }, 250)
-    return () => window.clearTimeout(timeout)
-  }, [draft])
+    const savedDraft = { ...draft, photos: evidencePhotos(draft, normalizeOrderNumber(draft.orderNumber), 'pickup', draft.createdAt) }
+    const didSave = writePickupDrafts(upsertPickupDraft(readPickupDrafts(), savedDraft))
+    setSaveState(didSave ? 'saved' : 'error')
+    if (didSave) trackEvidenceOperation({ id: operationId, orderNumber: draft.orderNumber, handoff: 'pickup',
+      photos: savedDraft.photos, detail: `${draft.places.length} places · ${savedDraft.photos.length} photos · ${draft.orderComment || 'No comment'}`,
+      fingerprint: JSON.stringify(savedDraft) })
+  }, [draft, operationId, trackEvidenceOperation])
 
   const addGroup = () => setDraft((current) => addPickupDraftGroup(current))
   const removeGroup = (groupId: string) => setDraft((current) => removePickupDraftGroup(current, groupId))
@@ -83,10 +88,14 @@ function PickupCaptureForm() {
       || latestRecord?.title
       || mockTodaySpokeRoute.tasks.find((task) => task.externalId === normalizedOrderNumber)?.title
       || ''
-    const normalizedDraft = { ...draft, orderNumber: normalizedOrderNumber, title }
+    const normalizedDraft = { ...draft, orderNumber: normalizedOrderNumber, title, photos, photoCount: photos.length }
     const record = pickupDraftToRecord(normalizedDraft, latestRecord)
     const orderEbols = readOrderEbols()
     const existingEbol = findOrderEbol(orderEbols, record.orderNumber)
+    if (normalizedDraft.mode === 'standard' && existingEbol?.pickup.lockedAt) {
+      navigate(`/pickup?order=${record.orderNumber}&supplemental=1`)
+      return
+    }
     let nextEbol
     if (normalizedDraft.mode === 'supplemental') {
       if (!existingEbol?.pickup.lockedAt) return
@@ -95,6 +104,7 @@ function PickupCaptureForm() {
         totalWeight: addedWeight,
         totalVolume: volume,
         photoCount: normalizedDraft.photoCount,
+        photos: normalizedDraft.photos,
         changeHistory: normalizedDraft.history,
       })
       setSavedVersion(findDraftSupplementalPickup(nextEbol)?.version ?? 2)
@@ -117,14 +127,14 @@ function PickupCaptureForm() {
           message={supplemental
             ? `${draft.places.length} added ${draft.places.length === 1 ? 'place requires' : 'places require'} new confirmations. Version 1 remains unchanged.`
             : `Order #${orderNumber} and ${draft.places.length} places are ready for review.`}
-          action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${orderNumber}/ebol/pickup`)}>Open {supplemental ? `version ${savedVersion}` : 'Pickup'} review</button><button type="button" className="ebol-secondary" onClick={() => navigate(`/orders/${orderNumber}/labels`)}>Open place labels</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>}
+          action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${orderNumber}/ebol/pickup`)}>Open {supplemental ? `version ${savedVersion}` : 'Pickup'} review</button><button type="button" className="ebol-secondary" onClick={() => navigate(`/orders/${orderNumber}/labels${supplemental ? `?version=${savedVersion}` : ''}`)}>Open place labels</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>}
         />
         <CargoBottomNav />
       </div>
     )
   }
 
-  const canContinue = Boolean(normalizeOrderNumber(draft.orderNumber)) && draft.places.length > 0 && draft.photoCount > 0
+  const canContinue = Boolean(normalizeOrderNumber(draft.orderNumber)) && draft.places.length > 0 && photos.length > 0 && saveState === 'saved'
   const title = draft.mode === 'supplemental' ? 'Supplemental Pickup' : 'Pickup draft'
 
   return (
@@ -133,7 +143,7 @@ function PickupCaptureForm() {
       <form className="pickup-form pickup-draft-form" onSubmit={(event) => { event.preventDefault(); submit() }}>
         <div className={`draft-save-state draft-save-state--${saveState}`} role="status">
           {saveState === 'saving' ? <Clock3 size={17} /> : <Save size={17} />}
-          <span><strong>{saveState === 'saving' ? 'Saving draft…' : saveState === 'saved' ? 'Draft autosaved' : 'Draft could not be saved'}</strong><small>{wasRestored ? 'Restored after reopening this operation' : 'Changes stay on this device in the prototype'}</small></span>
+          <span><strong>{saveState === 'saving' ? 'Saving draft…' : saveState === 'saved' ? 'Draft autosaved' : 'Draft could not be saved'}</strong><small>{wasRestored ? 'Restored after reopening this operation' : 'Changes are saved on this device'}</small></span>
         </div>
 
         {draft.mode === 'supplemental' ? (
@@ -177,8 +187,10 @@ function PickupCaptureForm() {
         <section className="photo-section">
           <div className="form-section-title"><h2>{draft.mode === 'supplemental' ? 'New-place photos' : 'Cargo photos'}</h2><span>{draft.photoCount} photos</span></div>
           <p>Photograph the places and packing condition included in this version.</p>
-          <EvidenceGallery count={draft.photoCount} editable addDisabled={!devices.camera} onAdd={() => setDraft((current) => updateDraftMeta(current, 'photoCount', current.photoCount + 1))} onRemove={() => setDraft((current) => updateDraftMeta(current, 'photoCount', Math.max(0, current.photoCount - 1)))} />
-          <button type="button" className="camera-action" disabled={!devices.camera} onClick={() => setDraft((current) => updateDraftMeta(current, 'photoCount', current.photoCount + 1))}><Camera size={20} /> {devices.camera ? 'Take another photo' : 'Camera unavailable'}</button>
+          <EvidenceEditor photos={photos} orderNumber={draft.orderNumber} handoff="pickup" operationId={operationId}
+            onChange={(nextPhotos, detail) => setDraft((current) => ({ ...current, photos: nextPhotos, photoCount: nextPhotos.length,
+              updatedAt: new Date().toISOString(), history: [...current.history,
+                { id: crypto.randomUUID(), at: new Date().toISOString(), action: 'photo_changed', detail }] }))} />
         </section>
 
         <section className="draft-history">

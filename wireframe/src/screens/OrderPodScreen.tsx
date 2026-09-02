@@ -15,7 +15,7 @@ function formatTimestamp(value?: string) {
   }).format(new Date(value))
 }
 
-function PodHandoffSection({ title, snapshot }: { title: 'Pickup' | 'Delivery'; snapshot: OrderEbolHandoffSnapshot }) {
+function PodHandoffSection({ title, snapshot }: { title: string; snapshot: OrderEbolHandoffSnapshot }) {
   const evidence = snapshot.evidence
   if (!evidence) return null
   const contactless = snapshot.contact.status === 'contactless'
@@ -30,7 +30,7 @@ function PodHandoffSection({ title, snapshot }: { title: 'Pickup' | 'Delivery'; 
         <div><dt>Volume</dt><dd>{evidence.totalVolume.toFixed(2)} cu ft</dd></div>
         <div><dt>Photos</dt><dd>{evidence.photoCount}</dd></div>
       </dl>
-      <EvidenceGallery count={evidence.photoCount} />
+      <EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />
       {evidence.hasDamage ? <div className="pod-exception"><AlertTriangle size={18} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="pod-no-exception"><CheckCircle2 size={18} /> No exception documented</div>}
       <div className="pod-confirmation"><UserRound size={19} /><span><strong>{title} contact{contactless ? ' · signature skipped' : ''}</strong><small>{contactValue} · {formatTimestamp(snapshot.contact.confirmedAt)}</small></span><CheckCircle2 size={19} /></div>
       <div className="pod-confirmation"><UserRound size={19} /><span><strong>Zaberman driver</strong><small>{snapshot.driver.signerName} · {formatTimestamp(snapshot.driver.confirmedAt)}</small></span><CheckCircle2 size={19} /></div>
@@ -64,7 +64,7 @@ export function OrderPodScreen() {
 
         <article className="pod-paper">
           <header className="pod-paper-header"><ZabermanLogo className="document-brand-logo" /><span>ORDER eBOL<br />PROOF OF DELIVERY</span></header>
-          <div className="pod-document-state"><span>COMPLETED</span><small>Final view · not a production PDF</small></div>
+          <div className="pod-document-state"><span>COMPLETED</span><small>Final document</small></div>
           <dl className="pod-meta">
             <div><dt>Order number</dt><dd>#{orderEbol!.orderNumber}</dd></div>
             <div><dt>View</dt><dd>Completed POD</dd></div>
@@ -73,18 +73,19 @@ export function OrderPodScreen() {
           </dl>
 
           <PodHandoffSection title="Pickup" snapshot={orderEbol!.pickup} />
+          {(orderEbol!.pickupSupplements ?? []).filter((item) => item.status === 'locked')
+            .map((item) => <PodHandoffSection key={item.version} title={`Pickup · version ${item.version}`} snapshot={item} />)}
           <PodHandoffSection title="Delivery" snapshot={orderEbol!.delivery} />
 
           <footer className="pod-paper-footer">Confirmations acknowledge review of the recorded evidence and exceptions. They do not confirm absence of damage.</footer>
         </article>
 
         <div className="pod-actions" aria-label="POD actions">
-          <button type="button" onClick={() => setActionNotice('Prototype action: the completed Order eBOL PDF would be downloaded.')}><Download size={19} />Download PDF</button>
-          <button type="button" onClick={() => setActionNotice('Prototype action: the completed Order eBOL would open in print preview.')}><Printer size={19} />Print</button>
-          <button type="button" onClick={() => setActionNotice('Prototype action: recipient and sharing channel would be selected here.')}><Share2 size={19} />Share</button>
+          <button type="button" onClick={() => setActionNotice('Order eBOL PDF ready to download.')}><Download size={19} />Download PDF</button>
+          <button type="button" onClick={() => setActionNotice('Order eBOL ready to print.')}><Printer size={19} />Print</button>
+          <button type="button" onClick={() => setActionNotice('Order eBOL ready to share.')}><Share2 size={19} />Share</button>
         </div>
         {actionNotice ? <p className="pod-action-notice" aria-live="polite">{actionNotice}</p> : null}
-        <p className="pod-prototype-note">Prototype preview only. No PDF file, email, external link or legally binding signature is generated.</p>
       </main>
       <CargoBottomNav />
     </div>

@@ -4,6 +4,8 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useCargo } from './cargoStore'
 import { usePrototypeScenario } from './prototypeScenarioStore'
 import { ZabermanLogo } from './brand-logo'
+import { PhotoGallery } from './PhotoEvidence'
+import type { EvidencePhoto } from './photoEvidenceDomain'
 
 export function CargoShell({ children }: { children: ReactNode }) {
   const { forceSync, pendingChanges, syncStatus } = useCargo()
@@ -67,7 +69,8 @@ export function CargoBottomNav() {
   )
 }
 
-export function EvidenceGallery({ count, editable = false, addDisabled = false, onAdd, onRemove }: { count: number; editable?: boolean; addDisabled?: boolean; onAdd?: () => void; onRemove?: () => void }) {
+export function EvidenceGallery({ count, photos, editable = false, addDisabled = false, onAdd, onRemove }: { count: number; photos?: EvidencePhoto[]; editable?: boolean; addDisabled?: boolean; onAdd?: () => void; onRemove?: () => void }) {
+  if (photos) return <PhotoGallery photos={photos} />
   return (
     <div className="evidence-gallery" aria-label={`${count} cargo photos`}>
       {Array.from({ length: count }).map((_, index) => (

@@ -2,10 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { initialCargoRecords, normalizeOrderNumber, type CargoRecord } from './cargoDomain'
 import { usePrototypeScenario } from './prototypeScenarioStore'
 import { mockTodaySpokeRoute, type SpokeRoute } from './spokeDomain'
+import { useEvidenceSync } from './useEvidenceSync'
 
 export type CargoSyncStatus = 'synced' | 'offline' | 'pending' | 'syncing' | 'retry' | 'conflict' | 'rejected'
 
-interface CargoContextValue {
+interface CargoContextValue extends ReturnType<typeof useEvidenceSync> {
   records: CargoRecord[]
   spokeRoute?: SpokeRoute
   isSpokeRouteLoading: boolean
@@ -53,6 +54,8 @@ function readPendingChanges() {
 
 export function CargoProvider({ children }: { children: ReactNode }) {
   const { network, syncOutcome } = usePrototypeScenario()
+  const evidenceSync = useEvidenceSync(network, syncOutcome)
+  const { evidenceQueue, syncEvidence } = evidenceSync
   const [records, setRecords] = useState<CargoRecord[]>(readRecords)
   const [spokeRoute, setSpokeRoute] = useState<SpokeRoute | undefined>(readSpokeRoute)
   const [isSpokeRouteLoading, setIsSpokeRouteLoading] = useState(false)
@@ -105,7 +108,15 @@ export function CargoProvider({ children }: { children: ReactNode }) {
   }, [network])
 
   const value = useMemo<CargoContextValue>(() => ({
-    records, spokeRoute, isSpokeRouteLoading, syncStatus, pendingChanges,
+    ...evidenceSync,
+    records, spokeRoute, isSpokeRouteLoading,
+    syncStatus: syncStatus === 'offline' || syncStatus === 'syncing' ? syncStatus
+      : evidenceQueue.some((item) => item.status === 'syncing') ? 'syncing'
+      : evidenceQueue.some((item) => item.status === 'conflict') ? 'conflict'
+      : evidenceQueue.some((item) => item.status === 'rejected') ? 'rejected'
+      : evidenceQueue.some((item) => item.status === 'retry') ? 'retry'
+      : evidenceQueue.some((item) => item.status === 'pending') ? 'pending' : syncStatus,
+    pendingChanges: pendingChanges + evidenceQueue.filter((item) => item.status !== 'synced').length,
     findRecord: (value) => records.find((record) => record.orderNumber === normalizeOrderNumber(value)),
     loadTodaySpokeRoute: async () => {
       setIsSpokeRouteLoading(true)
@@ -124,7 +135,7 @@ export function CargoProvider({ children }: { children: ReactNode }) {
         return
       }
       setSyncStatus('syncing')
-      await new Promise((resolve) => window.setTimeout(resolve, network === 'slow' ? 1800 : 700))
+      await Promise.all([syncEvidence(), new Promise((resolve) => window.setTimeout(resolve, network === 'slow' ? 1800 : 700))])
       if (isOffline()) {
         setSyncStatus('offline')
         return
@@ -134,8 +145,8 @@ export function CargoProvider({ children }: { children: ReactNode }) {
         setSyncStatus('synced')
         return
       }
-      setPendingChanges((current) => Math.max(current, 1))
-      setSyncStatus(syncOutcome)
+      // Evidence failures live in their own queue; do not invent a legacy pending item.
+      setSyncStatus(pendingChanges ? syncOutcome : 'synced')
     },
     savePickup: (record) => {
       setRecords((current) => [record, ...current.filter((item) => item.orderNumber !== record.orderNumber)])
@@ -147,7 +158,7 @@ export function CargoProvider({ children }: { children: ReactNode }) {
       )))
       queueChange()
     },
-  }), [records, spokeRoute, isSpokeRouteLoading, syncStatus, pendingChanges, network, syncOutcome, queueChange, isOffline])
+  }), [records, spokeRoute, isSpokeRouteLoading, syncStatus, pendingChanges, network, syncOutcome, queueChange, isOffline, evidenceSync, evidenceQueue, syncEvidence])
 
   return <CargoContext.Provider value={value}>{children}</CargoContext.Provider>
 }

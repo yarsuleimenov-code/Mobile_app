@@ -27,7 +27,7 @@ export function InterstateBolScreen() {
           <footer><span>Shipper signature</span><span>Carrier signature</span></footer>
         </section>
         <div className="bol-actions"><button type="button" onClick={() => window.print()}><Download /> Save as PDF</button><button type="button" onClick={() => window.print()}><Printer /> Print</button></div>
-        <p>Prototype document preview. The PDF belongs only to this confirmed Trip manifest.</p>
+        <p>This document covers the confirmed Trip manifest.</p>
       </div>
       <CargoBottomNav />
     </div>

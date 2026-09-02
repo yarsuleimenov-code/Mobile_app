@@ -4,6 +4,10 @@
 
 Статус: синхронизирован с wireframe, PostgreSQL DDL и Stage 1 backend slice
 
+Уточнение цели 2026-09-02: текущая работа — owner-demo hi-fi wireframe по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md). Production-требования, последовательность раздела 14 и gates раздела 15 ниже сохранены как будущий backlog, а не условия demo-приёмки.
+
+Локально реализованы [Этап 3: mock-фото и offline-состояния](STAGE_3_PHOTO_OFFLINE_DEMO.md) и [Этап 4: выборочные labels и demo-печать](STAGE_4_LABEL_PRINT_DEMO.md). Сохраняются signed evidence и PlaceID; следующий demo-этап — комментарии сторон и представление eBOL/POD. Production sync и printer integration по-прежнему не реализованы.
+
 Аудитория: Product, Warehouse, Delivery, Dispatching, IT, разработка и QA
 
 ## 1. Вывод
@@ -311,7 +315,7 @@ Retention для photos, signatures, POD/BOL и audit events должен быт
 9. **Security risk:** перенос anonymous Apps Script/plaintext password недопустим.
 10. **Performance risk:** списки и manifests нельзя загружать целиком по модели старых Sheets.
 
-## 14. Рекомендуемая последовательность
+## 14. Будущая production-последовательность (вне owner-demo)
 
 ### Этап 0. Решения и technical spikes
 
@@ -348,7 +352,7 @@ Retention для photos, signatures, POD/BOL и audit events должен быт
 - performance/security/DR testing;
 - rollout по филиалам, training и support runbooks.
 
-## 15. Критерии готовности к разработке
+## 15. Критерии готовности к production-разработке (не к показу wireframe)
 
 - закрыты P0-решения и назначены владельцы P1;
 - утверждены context/container/data diagrams;

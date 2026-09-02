@@ -1,4 +1,4 @@
-import { ChevronRight, CloudCog, PackageSearch, RefreshCw, RotateCcw, Settings2, ShieldCheck, Truck, UserRound } from 'lucide-react'
+import { ChevronRight, CloudCog, PackageSearch, RefreshCw, ShieldCheck, Truck, UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
 import { useCargo } from '../cargoStore'
@@ -17,8 +17,8 @@ export function MoreScreen() {
   return (
     <CargoShell>
       <div className="screen-pad more-screen cargo-nav-screen">
-        <div className="screen-title"><h1>More</h1><p>Operations and device settings</p></div>
-        <div className="profile-block"><span><UserRound size={25} /></span><div><strong>{roleLabels[role]}</strong><small>{branch} · Demo user</small></div></div>
+        <div className="screen-title"><h1>More</h1><p>Operations and devices</p></div>
+        <div className="profile-block"><span><UserRound size={25} /></span><div><strong>{roleLabels[role]}</strong><small>Branch {branch}</small></div></div>
         <div className="menu-group">
           <button type="button" className="menu-row" onClick={forceSync} disabled={syncDisabled}>
             <span className="menu-icon"><CloudCog size={21} /></span><span><strong>Sync now</strong><small>{syncDescription}</small></span><RefreshCw className={syncStatus === 'syncing' ? 'is-spinning' : ''} size={19} />
@@ -27,10 +27,8 @@ export function MoreScreen() {
         </div>
         <div className="menu-group">
           <Link to="/places" className="menu-row"><span className="menu-icon"><PackageSearch size={21} /></span><span><strong>Cargo places</strong><small>PlaceID, status, location and history</small></span><ChevronRight size={19} /></Link>
-          <Link to="/more/demo" className="menu-row"><span className="menu-icon"><Settings2 size={21} /></span><span><strong>Prototype controls <em className="dev-badge">DEV</em></strong><small>Role, network, sync outcomes and devices</small></span><ChevronRight size={19} /></Link>
           <div className="menu-row"><span className="menu-icon"><ShieldCheck size={21} /></span><span><strong>Device availability</strong><small>{availableDevices} of 3 devices available</small></span><span /></div>
         </div>
-        <div className="prototype-note"><RotateCcw size={18} /><span>This prototype uses local mock data. No production systems are connected.</span></div>
       </div>
     </CargoShell>
   )

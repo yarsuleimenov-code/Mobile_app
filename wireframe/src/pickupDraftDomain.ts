@@ -2,6 +2,7 @@ import {
   calculateVolume, createCargoPlaceId, expandCargoPlaces,
   type CargoChangeEntry, type CargoRecord, type DimensionGroup, type Warehouse,
 } from './cargoDomain'
+import { evidencePhotos, type EvidencePhoto } from './photoEvidenceDomain'
 
 export type PickupDraftMode = 'standard' | 'supplemental'
 
@@ -25,7 +26,9 @@ export interface PickupDraft {
   orderComment: string
   responsible: string
   photoCount: number
+  photos?: EvidencePhoto[]
   basePlaceIds: string[]
+  basePhotoIds?: string[]
   places: PickupDraftPlace[]
   lastPlaceSequence?: number
   history: CargoChangeEntry[]
@@ -81,7 +84,9 @@ export function createPickupDraft(
     orderComment: record?.orderComment ?? '',
     responsible: record?.responsible ?? 'John Doe',
     photoCount: mode === 'supplemental' ? 0 : (record?.photoCount ?? 0),
+    photos: mode === 'supplemental' || !record ? [] : evidencePhotos(record, record.orderNumber, 'pickup'),
     basePlaceIds: mode === 'supplemental' ? currentPlaces.map((place) => place.placeId) : [],
+    basePhotoIds: mode === 'supplemental' && record ? evidencePhotos(record, record.orderNumber, 'pickup').map((photo) => photo.id) : [],
     places: mode === 'supplemental' ? [] : currentPlaces,
     history: [],
     createdAt: at,
@@ -235,6 +240,12 @@ export function pickupDraftToRecord(draft: PickupDraft, currentRecord?: CargoRec
     : []
   const allPlaces = [...basePlaces, ...draft.places]
   const [year, month, day] = draft.pickupDate.split('-')
+  const draftPhotos = evidencePhotos(draft, draft.orderNumber, 'pickup', draft.createdAt)
+  const draftPhotoIds = new Set(draftPhotos.map((photo) => photo.id))
+  const basePhotoIds = draft.basePhotoIds ? new Set(draft.basePhotoIds) : undefined
+  const basePhotos = draft.mode === 'supplemental' && currentRecord
+    ? evidencePhotos(currentRecord, draft.orderNumber, 'pickup').filter((photo) => basePhotoIds ? basePhotoIds.has(photo.id) : !draftPhotoIds.has(photo.id)) : []
+  const photos = [...basePhotos, ...draftPhotos]
   return {
     orderNumber: draft.orderNumber,
     title: draft.title || currentRecord?.title || '',
@@ -246,7 +257,8 @@ export function pickupDraftToRecord(draft: PickupDraft, currentRecord?: CargoRec
     packaging: draft.packaging,
     orderComment: draft.orderComment,
     responsible: draft.responsible,
-    photoCount: draft.mode === 'supplemental' ? (currentRecord?.photoCount ?? 0) + draft.photoCount : draft.photoCount,
+    photoCount: photos.length,
+    photos,
     status: 'pickup_recorded',
     placeIds: allPlaces.map((place) => place.placeId),
     changeHistory: [...(currentRecord?.changeHistory ?? []), ...draft.history],

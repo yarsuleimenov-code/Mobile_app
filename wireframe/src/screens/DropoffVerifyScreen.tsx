@@ -5,14 +5,15 @@ import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '
 import { calculatePieces, calculateVolume, type CargoRecord } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import { prepareDeliveryEbol } from '../orderEbolDomain'
+import { EvidenceEditor } from '../PhotoEvidence'
+import { evidencePhotos, type EvidencePhoto } from '../photoEvidenceDomain'
+import { readDeliveryDraft, writeDeliveryDraft } from '../deliveryDraftStore'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
-import { usePrototypeScenario } from '../prototypeScenarioStore'
 
 export function DropoffVerifyScreen() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { findRecord, completeDropoff } = useCargo()
-  const { devices } = usePrototypeScenario()
+  const { findRecord, completeDropoff, trackEvidenceOperation } = useCargo()
   const [query, setQuery] = useState(params.get('order') ?? '11155599')
   const [record, setRecord] = useState<CargoRecord | undefined>()
   const [searched, setSearched] = useState(false)
@@ -20,23 +21,48 @@ export function DropoffVerifyScreen() {
   const [noDamage, setNoDamage] = useState(false)
   const [damageReported, setDamageReported] = useState(false)
   const [complete, setComplete] = useState(false)
-  const [deliveryPhotoCount, setDeliveryPhotoCount] = useState(2)
+  const [deliveryPhotos, setDeliveryPhotos] = useState<EvidencePhoto[]>([])
+  const [pickupPhotos, setPickupPhotos] = useState<EvidencePhoto[]>([])
+  const [deliveryLocked, setDeliveryLocked] = useState(false)
+  const [storageError, setStorageError] = useState(false)
+  const deliveryPhotoCount = deliveryPhotos.length
   const [damageNote, setDamageNote] = useState('')
   const [deliveryEbolReady, setDeliveryEbolReady] = useState(false)
 
   const search = () => {
-    setRecord(findRecord(query))
+    const found = findRecord(query)
+    setRecord(found)
     setSearched(true)
-    setMatches(false)
-    setNoDamage(false)
-    setDamageReported(false)
-    setDeliveryPhotoCount(2)
-    setDamageNote('')
+    const draft = readDeliveryDraft(found?.orderNumber ?? query)
+    const ebol = found ? findOrderEbol(readOrderEbols(), found.orderNumber) : undefined
+    const locked = Boolean(ebol?.delivery.lockedAt)
+    setDeliveryLocked(locked)
+    setPickupPhotos(found ? ebol?.pickup.lockedAt && ebol.pickup.evidence
+      ? [ ...evidencePhotos(ebol.pickup.evidence, found.orderNumber, 'pickup'),
+        ...(ebol.pickupSupplements ?? []).filter((item) => item.status === 'locked' && item.evidence)
+          .flatMap((item) => evidencePhotos(item.evidence!, found.orderNumber, 'pickup', `supplement-${item.version}`)) ]
+      : evidencePhotos(found, found.orderNumber, 'pickup') : [])
+    setMatches(draft.matches)
+    setNoDamage(draft.noDamage)
+    setDamageReported(draft.damageReported)
+    setDeliveryPhotos(locked && ebol?.delivery.evidence
+      ? evidencePhotos(ebol.delivery.evidence, found!.orderNumber, 'delivery') : draft.photos)
+    setDamageNote(draft.damageNote)
     setDeliveryEbolReady(false)
   }
   useEffect(() => { if (params.get('order')) search() }, [])
+  useEffect(() => {
+    if (!record || deliveryLocked) return
+    const draft = { photos: deliveryPhotos, matches, noDamage, damageReported, damageNote }
+    const saved = writeDeliveryDraft(record.orderNumber, draft)
+    setStorageError(!saved)
+    if (saved) trackEvidenceOperation({ id: `delivery:${record.orderNumber}:draft`, orderNumber: record.orderNumber,
+      handoff: 'delivery', photos: deliveryPhotos, detail: `${deliveryPhotos.length} photos · ${damageNote || 'No damage note'}`,
+      fingerprint: JSON.stringify(draft) })
+  }, [record, deliveryLocked, deliveryPhotos, matches, noDamage, damageReported, damageNote, trackEvidenceOperation])
 
   const canConfirm = matches
+    && !deliveryLocked && !storageError
     && deliveryPhotoCount > 0
     && (noDamage || (damageReported && Boolean(damageNote.trim())))
 
@@ -48,6 +74,7 @@ export function DropoffVerifyScreen() {
     } else if (existing?.pickup.lockedAt) {
       const delivery = prepareDeliveryEbol(existing, record!, {
         photoCount: deliveryPhotoCount,
+        photos: deliveryPhotos,
         hasDamage: damageReported,
         exceptionNote: damageNote,
       })
@@ -81,15 +108,17 @@ export function DropoffVerifyScreen() {
             </section>
 
             <section className="dropoff-photos">
-              <div className="form-section-title"><h2>Pickup photos</h2><span>{record.photoCount} photos</span></div>
+              <div className="form-section-title"><h2>Pickup photos</h2><span>{pickupPhotos.length} photos</span></div>
               <p>Compare the cargo in front of you with this pickup record.</p>
-              <EvidenceGallery count={record.photoCount} />
+              <EvidenceGallery count={pickupPhotos.length} photos={pickupPhotos} />
             </section>
 
             <section className="dropoff-photos delivery-photo-section">
               <div className="form-section-title"><h2>Delivery photos</h2><span>{deliveryPhotoCount} photos</span></div>
               <p>Capture the cargo condition at the Delivery handoff.</p>
-              <EvidenceGallery count={deliveryPhotoCount} editable addDisabled={!devices.camera} onAdd={() => setDeliveryPhotoCount((count) => count + 1)} onRemove={() => setDeliveryPhotoCount((count) => Math.max(0, count - 1))} />
+              {deliveryLocked ? <><p>Delivery snapshot is locked. These photos cannot be edited.</p><EvidenceGallery count={deliveryPhotoCount} photos={deliveryPhotos} /></>
+                : <EvidenceEditor photos={deliveryPhotos} orderNumber={record.orderNumber} handoff="delivery" operationId={`delivery:${record.orderNumber}:draft`} onChange={setDeliveryPhotos} />}
+              {storageError ? <p role="alert">Delivery draft could not be saved. Keep this page open and free local storage.</p> : null}
             </section>
 
             <section className="dimension-recap">
@@ -97,14 +126,14 @@ export function DropoffVerifyScreen() {
               {record.dimensionGroups.map((group) => <p key={group.id}>{group.quantity} × {group.length} × {group.width} × {group.height} in</p>)}
             </section>
 
-            <section className="dropoff-checks">
+            <section className="dropoff-checks" hidden={deliveryLocked}>
               <label><input type="checkbox" checked={matches} onChange={(event) => setMatches(event.target.checked)} /><span><strong>Cargo matches pickup photos</strong><small>All pieces and packing look consistent.</small></span></label>
               <label><input type="checkbox" checked={noDamage} onChange={(event) => { setNoDamage(event.target.checked); if (event.target.checked) { setDamageReported(false); setDamageNote('') } }} /><span><strong>No visible damage</strong><small>No new damage found during visual check.</small></span></label>
               {damageReported ? <div className="damage-notice"><AlertTriangle size={20} /><span><strong>Damage marked</strong><small>Documented damage does not block Delivery.</small></span><button type="button" onClick={() => { setDamageReported(false); setDamageNote('') }}>Cancel</button></div> : <button type="button" className="report-damage" onClick={() => { setDamageReported(true); setNoDamage(false) }}><AlertTriangle size={18} /> Report damage instead</button>}
               {damageReported ? <label className="delivery-damage-note">Damage details<textarea rows={3} value={damageNote} onChange={(event) => setDamageNote(event.target.value)} placeholder="Describe damage, packaging issue or other exception" /></label> : null}
             </section>
 
-            <div className="flow-action"><button type="button" className="cargo-primary" disabled={!canConfirm} onClick={confirmDropoff}>Confirm Dropoff</button></div>
+            <div className="flow-action">{deliveryLocked ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery`)}>Open locked Delivery review</button> : <button type="button" className="cargo-primary" disabled={!canConfirm} onClick={confirmDropoff}>Confirm Dropoff</button>}</div>
           </>
         ) : null}
       </div>

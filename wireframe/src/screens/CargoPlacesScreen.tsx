@@ -1,13 +1,14 @@
 import { ChevronRight, MapPin, PackageSearch, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
 import { cargoPlaceStatusLabels } from '../cargoPlaceTracking'
 import { useTrackedCargoPlaces } from '../useTrackedCargoPlaces'
 
 export function CargoPlacesScreen() {
   const places = useTrackedCargoPlaces()
-  const [query, setQuery] = useState('')
+  const [params] = useSearchParams()
+  const [query, setQuery] = useState(params.get('order') ?? '')
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase()
     if (!normalized) return places

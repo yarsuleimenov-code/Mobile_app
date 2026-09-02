@@ -1,3 +1,5 @@
+import type { EvidencePhoto } from './photoEvidenceDomain'
+
 export interface DimensionGroup {
   id: string
   quantity: number
@@ -11,7 +13,7 @@ export interface DimensionGroup {
 export interface CargoChangeEntry {
   id: string
   at: string
-  action: 'draft_created' | 'place_added' | 'place_edited' | 'place_removed'
+  action: 'draft_created' | 'place_added' | 'place_edited' | 'place_removed' | 'photo_changed'
   detail: string
 }
 
@@ -32,6 +34,7 @@ export interface CargoRecord {
   orderComment: string
   responsible: string
   photoCount: number
+  photos?: EvidencePhoto[]
   status: CargoRecordStatus
   placeIds?: string[]
   changeHistory?: CargoChangeEntry[]
