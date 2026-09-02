@@ -9,7 +9,7 @@
 - versioned `localStorage` draft и восстановление после reload/reopen;
 - ввод через dimension groups: Qty, L/W/H и weight per place; отдельный стабильный prototype PlaceID для каждого места;
 - add/edit/delete групп до подписания и журнал изменений; уменьшение Qty сохраняет IDs оставшихся мест, новые места не переиспользуют удалённые IDs текущего draft;
-- заполненные mock-шаблоны четырёх Pickup-заявок маршрута; saved draft/record имеет приоритет, `Load demo data` требует подтверждения замены;
+- автоматическое заполнение mock-шаблонами четырёх Pickup-заявок маршрута; saved draft/record имеет приоритет. По замечанию owner служебный блок `Load demo data` убран из формы;
 - вход в редактирование из Home → Recent Operations;
 - запрет редактирования PlaceID из locked version 1;
 - Supplemental Pickup после подписи;
@@ -36,7 +36,7 @@
 - визуальная проверка пользователем выполнена; замечания по пустым заявкам и individual-place UI исправлены;
 - rendered QA: локальный production preview `http://127.0.0.1:4173/Mobile_app/`, Chrome headless через bundled Playwright, ширины 320/390/1440 px. In-app Browser недоступен из-за Windows sandbox `setup refresh`; использован разрешённый fallback без изменения пользовательского профиля;
 - проверен путь route → prefilled Pickup → group CRUD → autosave/reload → review → contact/driver signatures → Supplemental group → version 2 signatures; исходные evidence и confirmations сохранены;
-- дополнительно проверены все четыре mock-шаблона, отмена/подтверждение `Load demo data` и переход между order URL; форма сбрасывает локальное состояние по route key и не показывает данные предыдущего заказа;
+- дополнительно проверены все четыре mock-шаблона и переход между order URL; форма сбрасывает локальное состояние по route key и не показывает данные предыдущего заказа. Ранее проверенная кнопка `Load demo data` впоследствии удалена по замечанию owner;
 - страница не пустая, framework overlay и ошибок приложения нет; единственное предупреждение среды — HTTP 404 необязательного `/favicon.ico`. QA-снимки и скрипт находятся вне репозитория.
 
 ## Критерий готовности

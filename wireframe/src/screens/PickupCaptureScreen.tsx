@@ -75,11 +75,6 @@ function PickupCaptureForm() {
     setDraft((current) => updatePickupDraftGroup(current, groupId, field, Number(value) || 0))
   }
   const commitGroupEdit = (groupId: string) => setDraft((current) => recordPickupDraftGroupEdit(current, groupId))
-  const loadDemoData = () => {
-    if (!demoRecord || draft.mode !== 'standard') return
-    if (!window.confirm('Replace this editable draft with demo data? Saved documents will not be changed until you continue to review.')) return
-    setDraft(createPickupDraft(demoRecord, branch, 'standard'))
-  }
 
   const submit = () => {
     const normalizedOrderNumber = normalizeOrderNumber(draft.orderNumber)
@@ -141,11 +136,6 @@ function PickupCaptureForm() {
           <span><strong>{saveState === 'saving' ? 'Saving draft…' : saveState === 'saved' ? 'Draft autosaved' : 'Draft could not be saved'}</strong><small>{wasRestored ? 'Restored after reopening this operation' : 'Changes stay on this device in the prototype'}</small></span>
         </div>
 
-        <section className="pickup-demo-note">
-          <span><strong>{draft.title || 'Pickup order'}</strong><small>Demo data · photos and measurements are mock. Confirmations remain manual.</small></span>
-          {demoRecord && draft.mode === 'standard' ? <button type="button" onClick={loadDemoData}>Load demo data</button> : null}
-        </section>
-
         {draft.mode === 'supplemental' ? (
           <section className="supplemental-lock-reference">
             <LockKeyhole size={22} />
@@ -174,7 +164,7 @@ function PickupCaptureForm() {
               <article className="draft-place-card" key={group.id}>
                 <header><span><strong>Group {index + 1}</strong><code>{group.quantity} {group.quantity === 1 ? 'place' : 'places'} · individual PlaceIDs preserved</code></span><button type="button" onClick={() => removeGroup(group.id)} aria-label={`Remove group ${index + 1}`}><Trash2 size={18} /></button></header>
                 <div className="draft-place-fields draft-group-fields">
-                  {groupFields.map(({ field, label, suffix }) => <label key={field}><span>{label}</span><span><input aria-label={`${label} for group ${index + 1}`} inputMode={field === 'quantity' ? 'numeric' : 'decimal'} type="number" min={field === 'quantity' ? 1 : 0} max={field === 'quantity' ? 999 : undefined} step={field === 'quantity' ? 1 : 'any'} value={group[field]} onChange={(event) => updateGroup(group.id, field, event.target.value)} onBlur={() => commitGroupEdit(group.id)} /><small>{suffix}</small></span></label>)}
+                  {groupFields.map(({ field, label, suffix }) => <label key={field}><span className="draft-group-field-label">{field === 'weight' ? 'Weight' : label}<small>{field === 'weight' ? 'lb/pc' : suffix}</small></span><span><input aria-label={`${label} for group ${index + 1}`} inputMode={field === 'quantity' ? 'numeric' : 'decimal'} type="number" min={field === 'quantity' ? 1 : 0} max={field === 'quantity' ? 999 : undefined} step={field === 'quantity' ? 1 : 'any'} value={group[field]} onChange={(event) => updateGroup(group.id, field, event.target.value)} onBlur={() => commitGroupEdit(group.id)} /></span></label>)}
                 </div>
               </article>
             ))}
