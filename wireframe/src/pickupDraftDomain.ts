@@ -7,6 +7,7 @@ export type PickupDraftMode = 'standard' | 'supplemental'
 
 export interface PickupDraftPlace {
   placeId: string
+  dimensionGroupId?: string
   length: number
   width: number
   height: number
@@ -26,6 +27,7 @@ export interface PickupDraft {
   photoCount: number
   basePlaceIds: string[]
   places: PickupDraftPlace[]
+  lastPlaceSequence?: number
   history: CargoChangeEntry[]
   createdAt: string
   updatedAt: string
@@ -52,6 +54,7 @@ function draftPlaceFromRecord(record: CargoRecord): PickupDraftPlace[] {
     const group = groups.get(place.dimensionGroupId)
     return {
       placeId: place.placeId,
+      dimensionGroupId: place.dimensionGroupId,
       length: group?.length ?? 0,
       width: group?.width ?? 0,
       height: group?.height ?? 0,
@@ -92,7 +95,7 @@ export function createPickupDraft(
 
 export function nextPickupPlaceId(draft: PickupDraft) {
   const knownIds = [...draft.basePlaceIds, ...draft.places.map((place) => place.placeId)]
-  let highest = 0
+  let highest = draft.lastPlaceSequence ?? 0
   for (const placeId of knownIds) {
     const suffix = Number(placeId.match(/-(\d+)$/)?.[1] ?? 0)
     if (suffix > highest) highest = suffix
@@ -105,6 +108,7 @@ export function addPickupDraftPlace(draft: PickupDraft, at = new Date().toISOStr
   return {
     ...draft,
     places: [...draft.places, { placeId, length: 0, width: 0, height: 0, weight: 0 }],
+    lastPlaceSequence: Number(placeId.match(/-(\d+)$/)?.[1]),
     history: [...draft.history, historyEntry(draft, 'place_added', `${placeId} added`, at)],
     updatedAt: at,
   }
@@ -113,7 +117,7 @@ export function addPickupDraftPlace(draft: PickupDraft, at = new Date().toISOStr
 export function updatePickupDraftPlace(
   draft: PickupDraft,
   placeId: string,
-  field: keyof Omit<PickupDraftPlace, 'placeId'>,
+  field: 'length' | 'width' | 'height' | 'weight',
   value: number,
   at = new Date().toISOString(),
 ): PickupDraft {
@@ -141,18 +145,83 @@ export function removePickupDraftPlace(draft: PickupDraft, placeId: string, at =
   }
 }
 
-function toDimensionGroup(place: PickupDraftPlace): DimensionGroup {
-  return {
-    id: `draft-${place.placeId}`,
-    quantity: 1,
-    length: place.length,
-    width: place.width,
-    height: place.height,
+export interface PickupDraftGroup extends DimensionGroup {
+  weight: number
+  placeIds: string[]
+}
+
+// Groups are derived from places, preserving legacy drafts and their PlaceID order.
+export function pickupDraftGroups(draft: Pick<PickupDraft, 'places'>): PickupDraftGroup[] {
+  const groups: PickupDraftGroup[] = []
+  for (const place of draft.places) {
+    const previous = groups.at(-1)
+    const id = place.dimensionGroupId ?? previous?.id ?? `group-${place.placeId}`
+    if (previous && previous.id === id && previous.length === place.length
+      && previous.width === place.width && previous.height === place.height && previous.weight === place.weight) {
+      previous.quantity += 1
+      previous.placeIds.push(place.placeId)
+    } else {
+      groups.push({ id: place.dimensionGroupId ?? `group-${place.placeId}`, quantity: 1,
+        length: place.length, width: place.width, height: place.height, weight: place.weight,
+        placeIds: [place.placeId] })
+    }
   }
+  return groups
+}
+
+export function addPickupDraftGroup(draft: PickupDraft, at = new Date().toISOString()): PickupDraft {
+  const added = addPickupDraftPlace(draft, at)
+  const place = added.places.at(-1)!
+  return { ...added, places: added.places.map((item) => item === place
+    ? { ...item, dimensionGroupId: `group-${place.placeId}` } : item),
+    history: [...draft.history, historyEntry(draft, 'place_added', `Dimension group added · ${place.placeId}`, at)] }
+}
+
+export function updatePickupDraftGroup(
+  draft: PickupDraft, groupId: string, field: 'quantity' | 'length' | 'width' | 'height' | 'weight',
+  value: number, at = new Date().toISOString(),
+): PickupDraft {
+  const group = pickupDraftGroups(draft).find((item) => item.id === groupId)
+  if (!group || !Number.isFinite(value)) return draft
+  const ids = new Set(group.placeIds)
+  if (field !== 'quantity') return { ...draft, updatedAt: at,
+    places: draft.places.map((place) => ids.has(place.placeId)
+      ? { ...place, dimensionGroupId: groupId, [field]: Math.max(0, value) } : place) }
+  const quantity = Math.min(999, Math.max(1, Math.floor(value)))
+  const removedIds = new Set(group.placeIds.slice(quantity))
+  let next = { ...draft, updatedAt: at, places: draft.places.filter((place) => !removedIds.has(place.placeId)) }
+  for (let index = group.quantity; index < quantity; index += 1) {
+    const placeId = nextPickupPlaceId(next)
+    const insertionIndex = next.places.map((place) => ids.has(place.placeId)).lastIndexOf(true) + 1
+    next.places.splice(insertionIndex, 0, { placeId, dimensionGroupId: groupId,
+      length: group.length, width: group.width, height: group.height, weight: group.weight })
+    ids.add(placeId)
+    next = { ...next, lastPlaceSequence: Number(placeId.match(/-(\d+)$/)?.[1]) }
+  }
+  next.lastPlaceSequence = Math.max(next.lastPlaceSequence ?? 0,
+    ...draft.places.map((place) => Number(place.placeId.match(/-(\d+)$/)?.[1] ?? 0)))
+  return next
+}
+
+export function recordPickupDraftGroupEdit(draft: PickupDraft, groupId: string, at = new Date().toISOString()): PickupDraft {
+  const group = pickupDraftGroups(draft).find((item) => item.id === groupId)
+  if (!group) return draft
+  return { ...draft, updatedAt: at, history: [...draft.history, historyEntry(draft, 'place_edited',
+    `Dimension group updated · ${group.quantity} pcs × ${group.length} × ${group.width} × ${group.height} in · ${group.weight} lb/place`, at)] }
+}
+
+export function removePickupDraftGroup(draft: PickupDraft, groupId: string, at = new Date().toISOString()): PickupDraft {
+  const group = pickupDraftGroups(draft).find((item) => item.id === groupId)
+  if (!group) return draft
+  const ids = new Set(group.placeIds)
+  return { ...draft, updatedAt: at, places: draft.places.filter((place) => !ids.has(place.placeId)),
+    lastPlaceSequence: Math.max(draft.lastPlaceSequence ?? 0,
+      ...draft.places.map((place) => Number(place.placeId.match(/-(\d+)$/)?.[1] ?? 0))),
+    history: [...draft.history, historyEntry(draft, 'place_removed', `Dimension group removed · ${group.quantity} places`, at)] }
 }
 
 export function pickupDraftVolume(draft: PickupDraft) {
-  return calculateVolume(draft.places.map(toDimensionGroup))
+  return calculateVolume(pickupDraftGroups(draft))
 }
 
 export function pickupDraftWeight(draft: PickupDraft) {
@@ -173,7 +242,7 @@ export function pickupDraftToRecord(draft: PickupDraft, currentRecord?: CargoRec
     originBranch: draft.originBranch,
     destinationBranch: draft.destinationBranch,
     totalWeight: Math.round(allPlaces.reduce((total, place) => total + place.weight, 0) * 10) / 10,
-    dimensionGroups: allPlaces.map(toDimensionGroup),
+    dimensionGroups: pickupDraftGroups({ places: allPlaces }).map(({ placeIds: _ids, ...group }) => group),
     packaging: draft.packaging,
     orderComment: draft.orderComment,
     responsible: draft.responsible,

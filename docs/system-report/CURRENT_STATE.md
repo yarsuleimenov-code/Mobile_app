@@ -1,6 +1,6 @@
 # Реализованный контекст проекта
 
-Дата среза: 2026-09-01
+Дата среза: 2026-09-02
 
 Назначение: единая точка входа перед следующим этапом разработки.
 
@@ -12,7 +12,7 @@
 2. подготовленный, но ещё не применённый PostgreSQL DDL baseline;
 3. собранный NestJS vertical slice `Create CargoPlace` с OpenAPI, unit-тестами и условным PostgreSQL integration-тестом.
 
-Production mobile client, развёрнутый backend, настоящая identity, реальные интеграции и серверная БД отсутствуют. Ближайший gate — выполнить уже подготовленный vertical slice на чистой PostgreSQL 16 test DB; расширять UI до этого не следует.
+Production mobile client, развёрнутый backend, настоящая identity, реальные интеграции и серверная БД отсутствуют. Ближайший production gate — выполнить уже подготовленный vertical slice на чистой PostgreSQL 16 test DB. Это не блокирует согласованные UX-правки hi-fi wireframe: текущий scope остаётся бизнес-прототипом.
 
 ## 2. Источники истины
 
@@ -25,14 +25,14 @@ Production mobile client, развёрнутый backend, настоящая ide
 5. [WIREFRAME_IMPLEMENTATION_PLAN.md](../../WIREFRAME_IMPLEMENTATION_PLAN.md) как план и история инкрементов;
 6. исходные ТЗ и audit-пакет как исторические источники требований.
 
-Git baseline: `main` на коммите `5ce728f` (`feat: add managed scenarios and cargo place lifecycle`). PostgreSQL migrations и синхронизация system-report на момент среза находятся в рабочем дереве и ещё не входят в этот коммит.
+Git baseline: `main` на коммите `bb64bf6` (`feat: add cargo place API and editable pickup drafts`), отправлен в origin/main. Текущая корректировка mock-заявок и dimension groups выполнена поверх этого baseline.
 
 ## 3. Что фактически реализовано
 
 | Контур | Реализовано | Граница |
 |---|---|---|
 | Навигация | `Home | Tasks | Scan | More`, Cargo places и secondary Interstate | Часть legacy-экранов в `src` не подключена к `App.tsx` |
-| Pickup/Dropoff | Autosaved/restored Pickup draft, Place CRUD, change history, Recent Operations edit entry и mock Dropoff reconcile | Только `localStorage`; нет реальных задач, камеры, файлов и server confirmation |
+| Pickup/Dropoff | Autosaved/restored Pickup draft, dimension group CRUD с индивидуальными PlaceID, заполненные route mock-заявки, history, Recent Operations edit и mock Dropoff reconcile | Только `localStorage`; нет реальных задач, камеры, файлов и server confirmation |
 | CargoPlace | Prototype PlaceID, `n/N`, labels, current status/location и короткая история | Проекция вычисляется из mock/local state |
 | Order eBOL/POD | Pickup/Delivery review, locked original snapshot, Supplemental Pickup versions, повторные mock-подписи и POD preview | Подписи и PDF не production/legal artifacts |
 | Interstate | Loading review, Trip, immutable loaded manifest в domain model, Unloading draft, BOL archive | Нет authoritative Trip service и atomic server Close |
@@ -78,9 +78,9 @@ Git baseline: `main` на коммите `5ce728f` (`feat: add managed scenarios
 
 ## 7. Проверенное состояние
 
-На 2026-09-01:
+Frontend перепроверен 2026-09-02; backend-результаты остаются от 2026-09-01:
 
-- Vitest: 13 файлов, 35 тестов — passed;
+- Vitest: 14 файлов, 40 тестов — passed;
 - TypeScript project build — passed;
 - Vite production build — passed;
 - Backend Vitest: 2 файла, 10 unit-тестов — passed; PostgreSQL suite: 1 test skipped без `DATABASE_URL`;
@@ -88,7 +88,7 @@ Git baseline: `main` на коммите `5ce728f` (`feat: add managed scenarios
 - Compiled backend bootstrap и `GET /api/health` — passed;
 - PostgreSQL migrations — только статически просмотрены; runtime apply/rollback/RLS checks не выполнялись из-за отсутствия PostgreSQL runtime;
 - production integrations и живые данные не проверялись и не изменялись;
-- rendered Browser QA Этапа 2 заблокирован сбоем Windows sandbox `setup refresh`; Browser runtime завершился до открытия страницы.
+- rendered QA Этапа 2: Chrome/Playwright fallback на локальном production preview, ширины 320/390/1440 px; group CRUD, restore, review, original + supplemental signing пройдены. In-app Browser по-прежнему блокируется Windows sandbox `setup refresh`; необязательный favicon возвращает 404.
 
 ## 8. Следующий gate
 

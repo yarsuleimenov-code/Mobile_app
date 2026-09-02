@@ -660,6 +660,12 @@ textarea { font: inherit; }
 .draft-place-fields label > span:last-child { margin-top: 4px; display: flex; align-items: center; gap: 3px; }
 .draft-place-fields input { width: 100%; min-width: 0; height: 39px; padding: 7px; border: 1px solid #bfc8d2; border-radius: 7px; color: var(--cargo-navy); background: #fff; font: inherit; font-size: 13px; }
 .draft-place-fields small { color: var(--cargo-muted); font-size: 9px; }
+.draft-group-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.dimension-group-help { margin-top: 7px; color: var(--cargo-muted); font-size: 12px; line-height: 1.4; }
+.pickup-demo-note { margin-bottom: 14px; padding: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: #eef5ff; border-radius: 9px; }
+.pickup-demo-note > span { flex: 1 1 180px; display: flex; flex-direction: column; gap: 4px; }
+.pickup-demo-note small { color: var(--cargo-muted); font-size: 11px; line-height: 1.4; }
+.pickup-demo-note button { min-height: 36px; padding: 6px 10px; border: 1px solid #b6cff1; border-radius: 7px; color: var(--cargo-blue); background: #fff; font-weight: 700; cursor: pointer; }
 .draft-places-empty { padding: 22px 15px; color: var(--cargo-muted); background: #f4f6f8; border-radius: 9px; text-align: center; font-size: 12px; line-height: 1.4; }
 .draft-history { margin-top: 18px; border: 1px solid var(--cargo-line); border-radius: 10px; overflow: hidden; background: #fff; }
 .draft-history > button { width: 100%; min-height: 58px; padding: 10px 12px; display: grid; grid-template-columns: 22px minmax(0, 1fr) 20px; align-items: center; gap: 9px; border: 0; color: var(--cargo-navy); background: #fff; text-align: left; cursor: pointer; }

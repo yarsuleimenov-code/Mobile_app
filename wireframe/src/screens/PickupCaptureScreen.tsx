@@ -5,10 +5,11 @@ import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import {
-  addPickupDraftPlace, createPickupDraft, pickupDraftToRecord, pickupDraftVolume, pickupDraftWeight,
-  recordPickupDraftPlaceEdit, removePickupDraftPlace, updatePickupDraftPlace,
-  type PickupDraft, type PickupDraftPlace,
+  addPickupDraftGroup, createPickupDraft, pickupDraftGroups, pickupDraftToRecord, pickupDraftVolume, pickupDraftWeight,
+  recordPickupDraftGroupEdit, removePickupDraftGroup, updatePickupDraftGroup,
+  type PickupDraft,
 } from '../pickupDraftDomain'
+import { findPickupDemoRecord } from '../pickupDemoData'
 import { findPickupDraft, readPickupDrafts, upsertPickupDraft, writePickupDrafts } from '../pickupDraftStore'
 import {
   findDraftSupplementalPickup, prepareSupplementalPickup, syncPickupOrderEbolDraft,
@@ -17,11 +18,12 @@ import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from 
 import { mockTodaySpokeRoute } from '../spokeDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 
-const placeFields: Array<{ field: keyof Omit<PickupDraftPlace, 'placeId'>; label: string; suffix: string }> = [
+const groupFields: Array<{ field: 'quantity' | 'length' | 'width' | 'height' | 'weight'; label: string; suffix: string }> = [
+  { field: 'quantity', label: 'Qty', suffix: 'pcs' },
   { field: 'length', label: 'L', suffix: 'in' },
   { field: 'width', label: 'W', suffix: 'in' },
   { field: 'height', label: 'H', suffix: 'in' },
-  { field: 'weight', label: 'Weight', suffix: 'lb' },
+  { field: 'weight', label: 'Weight / place', suffix: 'lb' },
 ]
 
 function updateDraftMeta<K extends keyof PickupDraft>(draft: PickupDraft, field: K, value: PickupDraft[K]): PickupDraft {
@@ -29,6 +31,11 @@ function updateDraftMeta<K extends keyof PickupDraft>(draft: PickupDraft, field:
 }
 
 export function PickupCaptureScreen() {
+  const [params] = useSearchParams()
+  return <PickupCaptureForm key={params.toString()} />
+}
+
+function PickupCaptureForm() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { findRecord, savePickup } = useCargo()
@@ -41,13 +48,17 @@ export function PickupCaptureScreen() {
   })
   const [restoredDraft] = useState(() => findPickupDraft(readPickupDrafts(), requestedOrder, mode))
   const [wasRestored] = useState(Boolean(restoredDraft))
-  const [draft, setDraft] = useState<PickupDraft>(() => restoredDraft ?? createPickupDraft(currentRecord, branch, mode))
+  const demoRecord = findPickupDemoRecord(requestedOrder)
+  const [draft, setDraft] = useState<PickupDraft>(() => restoredDraft ?? {
+    ...createPickupDraft(currentRecord ?? demoRecord, branch, mode), orderNumber: requestedOrder,
+  })
   const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error'>('saving')
   const [historyOpen, setHistoryOpen] = useState(false)
   const [saved, setSaved] = useState(false)
   const [savedVersion, setSavedVersion] = useState(1)
   const volume = useMemo(() => pickupDraftVolume(draft), [draft])
   const addedWeight = useMemo(() => pickupDraftWeight(draft), [draft])
+  const groups = pickupDraftGroups(draft)
 
   useEffect(() => {
     setSaveState('saving')
@@ -58,12 +69,17 @@ export function PickupCaptureScreen() {
     return () => window.clearTimeout(timeout)
   }, [draft])
 
-  const addPlace = () => setDraft((current) => addPickupDraftPlace(current))
-  const removePlace = (placeId: string) => setDraft((current) => removePickupDraftPlace(current, placeId))
-  const updatePlace = (placeId: string, field: keyof Omit<PickupDraftPlace, 'placeId'>, value: string) => {
-    setDraft((current) => updatePickupDraftPlace(current, placeId, field, Number(value) || 0))
+  const addGroup = () => setDraft((current) => addPickupDraftGroup(current))
+  const removeGroup = (groupId: string) => setDraft((current) => removePickupDraftGroup(current, groupId))
+  const updateGroup = (groupId: string, field: typeof groupFields[number]['field'], value: string) => {
+    setDraft((current) => updatePickupDraftGroup(current, groupId, field, Number(value) || 0))
   }
-  const commitPlaceEdit = (placeId: string) => setDraft((current) => recordPickupDraftPlaceEdit(current, placeId))
+  const commitGroupEdit = (groupId: string) => setDraft((current) => recordPickupDraftGroupEdit(current, groupId))
+  const loadDemoData = () => {
+    if (!demoRecord || draft.mode !== 'standard') return
+    if (!window.confirm('Replace this editable draft with demo data? Saved documents will not be changed until you continue to review.')) return
+    setDraft(createPickupDraft(demoRecord, branch, 'standard'))
+  }
 
   const submit = () => {
     const normalizedOrderNumber = normalizeOrderNumber(draft.orderNumber)
@@ -125,6 +141,11 @@ export function PickupCaptureScreen() {
           <span><strong>{saveState === 'saving' ? 'Saving draft…' : saveState === 'saved' ? 'Draft autosaved' : 'Draft could not be saved'}</strong><small>{wasRestored ? 'Restored after reopening this operation' : 'Changes stay on this device in the prototype'}</small></span>
         </div>
 
+        <section className="pickup-demo-note">
+          <span><strong>{draft.title || 'Pickup order'}</strong><small>Demo data · photos and measurements are mock. Confirmations remain manual.</small></span>
+          {demoRecord && draft.mode === 'standard' ? <button type="button" onClick={loadDemoData}>Load demo data</button> : null}
+        </section>
+
         {draft.mode === 'supplemental' ? (
           <section className="supplemental-lock-reference">
             <LockKeyhole size={22} />
@@ -146,19 +167,20 @@ export function PickupCaptureScreen() {
         </section>
 
         <section className="draft-places-section">
-          <div className="form-section-title"><h2>{draft.mode === 'supplemental' ? 'New places' : 'Cargo places'}</h2><span>{draft.places.length}</span></div>
+          <div className="form-section-title"><h2>{draft.mode === 'supplemental' ? 'New dimension groups' : 'Dimension groups'}</h2><span>{groups.length} {groups.length === 1 ? 'group' : 'groups'} · {draft.places.length} pcs</span></div>
+          <p className="dimension-group-help">One group for places with the same dimensions and weight. Each place keeps its own label.</p>
           <div className="draft-place-list">
-            {draft.places.map((place, index) => (
-              <article className="draft-place-card" key={place.placeId}>
-                <header><span><strong>Place {index + 1}</strong><code>{place.placeId}</code></span><button type="button" onClick={() => removePlace(place.placeId)} aria-label={`Remove ${place.placeId}`}><Trash2 size={18} /></button></header>
-                <div className="draft-place-fields">
-                  {placeFields.map(({ field, label, suffix }) => <label key={field}><span>{label}</span><span><input aria-label={`${label} for ${place.placeId}`} inputMode="decimal" type="number" min="0" value={place[field]} onChange={(event) => updatePlace(place.placeId, field, event.target.value)} onBlur={() => commitPlaceEdit(place.placeId)} /><small>{suffix}</small></span></label>)}
+            {groups.map((group, index) => (
+              <article className="draft-place-card" key={group.id}>
+                <header><span><strong>Group {index + 1}</strong><code>{group.quantity} {group.quantity === 1 ? 'place' : 'places'} · individual PlaceIDs preserved</code></span><button type="button" onClick={() => removeGroup(group.id)} aria-label={`Remove group ${index + 1}`}><Trash2 size={18} /></button></header>
+                <div className="draft-place-fields draft-group-fields">
+                  {groupFields.map(({ field, label, suffix }) => <label key={field}><span>{label}</span><span><input aria-label={`${label} for group ${index + 1}`} inputMode={field === 'quantity' ? 'numeric' : 'decimal'} type="number" min={field === 'quantity' ? 1 : 0} max={field === 'quantity' ? 999 : undefined} step={field === 'quantity' ? 1 : 'any'} value={group[field]} onChange={(event) => updateGroup(group.id, field, event.target.value)} onBlur={() => commitGroupEdit(group.id)} /><small>{suffix}</small></span></label>)}
                 </div>
               </article>
             ))}
-            {!draft.places.length ? <div className="draft-places-empty">No editable places yet. Add the first place to continue.</div> : null}
+            {!draft.places.length ? <div className="draft-places-empty">No editable groups yet. Add a dimension group and enter its quantity.</div> : null}
           </div>
-          <button type="button" className="add-dimension" onClick={addPlace}><Plus size={18} /> Add place</button>
+          <button type="button" className="add-dimension" onClick={addGroup}><Plus size={18} /> Add dimension group</button>
           <div className="volume-total"><span>{draft.mode === 'supplemental' ? 'Added volume' : 'Total volume'}</span><strong>{volume.toFixed(2)} cu ft</strong></div>
         </section>
 

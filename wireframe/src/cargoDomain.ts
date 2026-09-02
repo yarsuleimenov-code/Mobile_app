@@ -4,6 +4,8 @@ export interface DimensionGroup {
   length: number
   width: number
   height: number
+  /** Weight of one place in lb; legacy records allocate the order total. */
+  weight?: number
 }
 
 export interface CargoChangeEntry {
@@ -42,7 +44,7 @@ export interface OrderCargoPlace {
   dimensionGroupId: string
   dimensions: string
   estimatedWeight: number
-  weightSource: 'allocated_from_order_total'
+  weightSource: 'allocated_from_order_total' | 'dimension_group'
   volume: number
   label: string
   currentLocation: string
@@ -94,6 +96,7 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
 
   return record.dimensionGroups.flatMap((group) => Array.from({ length: Math.max(0, group.quantity) }, () => {
     placeNumber += 1
+    const placeWeight = group.weight ?? estimatedWeight
     return {
       placeId: record.placeIds?.[placeNumber - 1] ?? createCargoPlaceId(record.orderNumber, placeNumber),
       orderNumber: record.orderNumber,
@@ -101,8 +104,8 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
       totalPlaces,
       dimensionGroupId: group.id,
       dimensions: `${group.length} × ${group.width} × ${group.height} in`,
-      estimatedWeight,
-      weightSource: 'allocated_from_order_total',
+      estimatedWeight: placeWeight,
+      weightSource: group.weight === undefined ? 'allocated_from_order_total' : 'dimension_group',
       volume: Math.round(((group.length * group.width * group.height) / 1728) * 100) / 100,
       label: `Place ${placeNumber}/${totalPlaces} · Code 128`,
       currentLocation: record.status === 'dropoff_complete'
@@ -111,7 +114,7 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
       status: record.status === 'dropoff_complete' ? 'delivered' : 'ready_for_loading',
       events: [
         { id: 'place-id-assigned', at: record.pickupDate, title: 'Place ID assigned', detail: `Created from Order #${record.orderNumber}` },
-        { id: 'pickup-recorded', at: record.pickupDate, title: 'Pickup recorded', detail: `${group.length} × ${group.width} × ${group.height} in · ${estimatedWeight} lb allocated` },
+        { id: 'pickup-recorded', at: record.pickupDate, title: 'Pickup recorded', detail: `${group.length} × ${group.width} × ${group.height} in · ${placeWeight} lb ${group.weight === undefined ? 'allocated' : 'per place'}` },
         ...(record.status === 'dropoff_complete'
           ? [{ id: 'delivery-completed', at: 'Current record', title: 'Delivery completed', detail: `Received at ${record.destinationBranch}` }]
           : []),
@@ -131,7 +134,7 @@ export const initialCargoRecords: CargoRecord[] = [
     totalWeight: 123,
     dimensionGroups: defaultDimensionGroups,
     packaging: 'Customer',
-    orderComment: 'commentSize\norderComment',
+    orderComment: 'Protect wood finish with blankets. Keep upright; call the recipient 30 minutes before arrival.',
     responsible: 'John Doe',
     photoCount: 4,
     status: 'pickup_recorded',

@@ -21,6 +21,7 @@ export const cargoPlaceStatusLabels: Record<CargoPlaceStatus, string> = {
 
 export const cargoPlaceWeightSourceLabels: Record<OrderCargoPlace['weightSource'], string> = {
   allocated_from_order_total: 'Allocated from Order total',
+  dimension_group: 'Per place from dimension group',
 }
 
 export function applyCargoPlaceTracking(place: OrderCargoPlace, context: CargoPlaceTrackingContext): TrackedCargoPlace {
