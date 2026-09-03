@@ -1,4 +1,4 @@
-import { ChevronRight, CloudCog, PackageSearch, RefreshCw, ShieldCheck, Truck, UserRound } from 'lucide-react'
+import { ChevronRight, CloudCog, PackageSearch, RefreshCw, Settings2, ShieldCheck, Truck, UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
 import { useCargo } from '../cargoStore'
@@ -27,6 +27,7 @@ export function MoreScreen() {
         </div>
         <div className="menu-group">
           <Link to="/places" className="menu-row"><span className="menu-icon"><PackageSearch size={21} /></span><span><strong>Cargo places</strong><small>PlaceID, status, location and history</small></span><ChevronRight size={19} /></Link>
+          <Link to="/more/demo" className="menu-row"><span className="menu-icon"><Settings2 size={21} /></span><span><strong>Administration</strong><small>Role, branch, connection and devices</small></span><ChevronRight size={19} /></Link>
           <div className="menu-row"><span className="menu-icon"><ShieldCheck size={21} /></span><span><strong>Device availability</strong><small>{availableDevices} of 3 devices available</small></span><span /></div>
         </div>
       </div>
