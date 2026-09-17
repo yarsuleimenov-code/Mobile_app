@@ -65,6 +65,8 @@ Pickup/Delivery review содержит отдельные Contact comment / Dri
 
 Из Document versions доступны read-only original, Supplemental и Delivery с номером, PlaceID, signer, временем и комментариями. Download/Print/Email/Share открывают диалог с выбранным документом, параметрами/адресатом и результатом. Реальной внешней отправки или PDF-файла нет. Продуктовые подписи в UI сохранены; ограничения раскрываются устно и в документации. [Реализация и проверки](../docs/system-report/STAGE_5_EBOL_POD_DEMO.md).
 
+Для подписывающего Pickup-контакта добавлен необязательный запрос email-копии конкретной версии eBOL: адрес подтверждается перед подписью водителя, а статус отправки виден в locked Pickup и Document versions. Offline-очередь, ошибка и повторная попытка показаны локально; фактической отправки нет. [Правила и проверки](../docs/system-report/PICKUP_EMAIL_COPY_WIREFRAME.md).
+
 ## Этап 6: данные заказа
 
 Tasks → Order details показывает external/internal names, источник, отдельный Qty, Special Cargo и Spoke preview. Dispatcher редактирует имя и обработку; Supervisor заполняет отсутствующее имя один раз. Fragile/Oversized и mapping Supervisor → crew lead — demo-допущения. Данные и audit сохраняются локально.

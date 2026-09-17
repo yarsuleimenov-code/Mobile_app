@@ -34,8 +34,8 @@ const deviceOptions: Array<{ value: DeviceKind; label: string; icon: typeof Came
 export function PrototypeControlsScreen() {
   const [presetError, setPresetError] = useState('')
   const {
-    role, branch, network, syncOutcome, printOutcome, devices,
-    setRole, setBranch, setNetwork, setSyncOutcome, setPrintOutcome, setDeviceAvailable, resetMockData,
+    role, branch, network, syncOutcome, printOutcome, emailOutcome, devices,
+    setRole, setBranch, setNetwork, setSyncOutcome, setPrintOutcome, setEmailOutcome, setDeviceAvailable, resetMockData,
   } = usePrototypeScenario()
 
   const confirmReset = () => {
@@ -96,6 +96,15 @@ export function PrototypeControlsScreen() {
             <button type="button" className={printOutcome === 'error' ? 'is-active' : ''} aria-pressed={printOutcome === 'error'} onClick={() => setPrintOutcome('error')}>Print error</button>
           </div>
           <p>Applies to Print in labels and Order eBOL/POD previews. No physical print job is sent.</p>
+        </section>
+
+        <section className="scenario-section">
+          <h2>Next document email result</h2>
+          <div className="scenario-options scenario-options--two">
+            <button type="button" className={emailOutcome === 'success' ? 'is-active' : ''} aria-pressed={emailOutcome === 'success'} onClick={() => setEmailOutcome('success')}>Email success</button>
+            <button type="button" className={emailOutcome === 'error' ? 'is-active' : ''} aria-pressed={emailOutcome === 'error'} onClick={() => setEmailOutcome('error')}>Email error</button>
+          </div>
+          <p>Applies to the automatic Pickup document copy and Retry. Offline requests remain queued.</p>
         </section>
 
         <section className="scenario-section">

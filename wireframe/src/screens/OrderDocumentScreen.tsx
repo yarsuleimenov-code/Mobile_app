@@ -9,6 +9,7 @@ import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
 import { OrderDocumentActions } from '../OrderDocumentActions'
 import { OrderDocumentHistory } from '../OrderDocumentHistory'
 import { PodHandoffSection } from '../order-document-components'
+import { PickupEmailDeliveryStatus } from '../PickupEmailDeliveryStatus'
 
 export function OrderDocumentScreen() {
   const { orderNumber = '', documentKey = '' } = useParams()
@@ -34,7 +35,8 @@ function OrderDocumentContent({ orderNumber, documentKey }: { orderNumber: strin
           <PodHandoffSection title={document.title} snapshot={document.snapshot} />
           <footer className="pod-paper-footer">Confirmations acknowledge review of the recorded evidence and exceptions. They do not confirm absence of damage.</footer>
         </article>
-        <OrderDocumentActions key={document.documentNumber} documentNumber={document.documentNumber} title={document.title} contactName={document.snapshot.contact.signerName} driverName={document.snapshot.driver.signerName} />
+        {document.key.startsWith('pickup-') ? <PickupEmailDeliveryStatus documentNumber={document.documentNumber} request={document.snapshot.contact.emailCopyRequest} /> : null}
+        <OrderDocumentActions key={document.documentNumber} documentNumber={document.documentNumber} title={document.title} contactName={document.snapshot.contact.signerName} contactEmail={document.snapshot.contact.emailCopyRequest?.recipientEmail} driverName={document.snapshot.driver.signerName} />
         <OrderDocumentHistory order={order} currentKey={document.key} />
         {order.status === 'completed' ? <Link className="ebol-secondary document-pod-link" to={`/orders/${orderNumber}/ebol/pod`}>View completed POD</Link> : null}
       </>}

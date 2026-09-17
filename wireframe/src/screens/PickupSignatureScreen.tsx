@@ -1,11 +1,14 @@
-import { CheckCircle2, FileSignature, FileX2, ShieldCheck, UserRound } from 'lucide-react'
+import { CheckCircle2, FileSignature, FileX2, Mail, ShieldCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
 import {
-  canReviewOrderEvidence, withCurrentOrderDetails, canLockPickupEbol, createOrderEbol, lockPickupEbol, lockSupplementalPickup,
+  readDocumentEmailDeliveries, resolveDocumentEmailDelivery, upsertDocumentEmailDelivery, writeDocumentEmailDeliveries,
+} from '../documentEmailStore'
+import {
+  canReviewOrderEvidence, withCurrentOrderDetails, canLockPickupEbol, createOrderEbol, isValidContactEmail, lockPickupEbol, lockSupplementalPickup,
   type OrderEbol, type PickupEbolConfirmationInput,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
@@ -14,6 +17,7 @@ import { pickupReviewNeedsRefresh } from '../pickupReviewState'
 import { SignaturePad } from '../signature-components'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { HandoffCommentsView } from '../orderReviewComments'
+import { usePrototypeScenario } from '../prototypeScenarioStore'
 
 interface PickupSignatureLocationState {
   confirmationInput: PickupEbolConfirmationInput
@@ -28,6 +32,7 @@ export function PickupSignatureScreen() {
   const orderNumber = normalizeOrderNumber(orderParam)
   const reviewPath = `/orders/${orderNumber}/ebol/pickup`
   const { findRecord, getOrderDetails } = useCargo()
+  const { network, emailOutcome } = usePrototypeScenario()
   const record = findRecord(orderNumber)
   const [orderEbol] = useState<OrderEbol | null>(() => withCurrentOrderDetails(
     findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null),
@@ -43,6 +48,8 @@ export function PickupSignatureScreen() {
   const [contactSigned, setContactSigned] = useState(!startsWithContact)
   const [driverSigned, setDriverSigned] = useState(false)
   const [storageError, setStorageError] = useState(false)
+  const [sendEmailCopy, setSendEmailCopy] = useState(false)
+  const [contactEmail, setContactEmail] = useState(orderEbol?.pickup.contact.emailCopyRequest?.recipientEmail ?? '')
 
   if (pickupReviewNeedsRefresh(orderEbol, readPickupDrafts()) || !canReviewOrderEvidence(supplement?.evidence ?? orderEbol?.pickup.evidence) || !orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput) || (supplementVersion !== undefined && !supplement?.evidence)) {
     return (
@@ -65,19 +72,34 @@ export function PickupSignatureScreen() {
   }
 
   const finishContact = () => {
+    if (sendEmailCopy && !isValidContactEmail(contactEmail)) return
     setContactSigned(true)
     setStep('driver')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const finishPickupSigning = () => {
+    const input = { ...confirmationInput, sendEmailCopy: startsWithContact && sendEmailCopy, contactEmail: contactEmail.trim() }
     const locked = supplementVersion === undefined
-      ? lockPickupEbol(orderEbol, confirmationInput)
-      : lockSupplementalPickup(orderEbol, supplementVersion, confirmationInput)
+      ? lockPickupEbol(orderEbol, input)
+      : lockSupplementalPickup(orderEbol, supplementVersion, input)
     const saved = writeOrderEbols(upsertOrderEbol(readOrderEbols(), locked))
     if (!saved) {
       setStorageError(true)
       return
+    }
+    const signedSupplement = supplementVersion === undefined
+      ? undefined
+      : locked.pickupSupplements.find((item) => item.version === supplementVersion)
+    const signedVersion = supplementVersion === undefined ? locked.pickup : signedSupplement
+    const request = signedVersion?.contact.emailCopyRequest
+    if (request) {
+      const documentNumber = signedSupplement?.documentNumber ?? `${orderNumber}-PU-1`
+      const deliveries = readDocumentEmailDeliveries()
+      const delivery = resolveDocumentEmailDelivery(
+        documentNumber, request.recipientEmail, request.requestedAt, network, emailOutcome,
+      )
+      writeDocumentEmailDeliveries(upsertDocumentEmailDelivery(deliveries, delivery))
     }
     writePickupDrafts(removePickupDraft(
       readPickupDrafts(),
@@ -104,8 +126,13 @@ export function PickupSignatureScreen() {
           <section className="signature-card">
             <div className="signature-role"><UserRound size={25} /><span><strong>Pickup contact</strong><small>{confirmationInput.contactName}</small></span></div>
             <p>By signing, the Pickup contact confirms review of the recorded evidence and exceptions.</p>
+            <div className="pickup-email-copy">
+              <label className="pickup-email-choice"><input type="checkbox" checked={sendEmailCopy} onChange={(event) => setSendEmailCopy(event.target.checked)} /><span><strong>Email me a copy of the signed Pickup document</strong><small>Optional. This address is used for this document version.</small></span></label>
+              {sendEmailCopy ? <label className="ebol-field">Email address<input type="email" autoComplete="email" spellCheck={false} maxLength={254} value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} placeholder="name@example.com" aria-invalid={Boolean(contactEmail) && !isValidContactEmail(contactEmail)} /></label> : null}
+              {sendEmailCopy && !isValidContactEmail(contactEmail) ? <p className="pickup-email-error" role="alert">Enter an email address in the correct format, like name@example.com.</p> : null}
+            </div>
             <SignaturePad label="Pickup contact" onSignedChange={setContactSigned} />
-            <button type="button" className="cargo-primary" disabled={!contactSigned} onClick={finishContact}>Accept contact signature</button>
+            <button type="button" className="cargo-primary" disabled={!contactSigned || (sendEmailCopy && !isValidContactEmail(contactEmail))} onClick={finishContact}>Accept contact signature</button>
           </section>
         ) : (
           <section className="signature-card">
@@ -114,6 +141,7 @@ export function PickupSignatureScreen() {
             ) : (
               <div className="signature-prior-confirmation"><CheckCircle2 size={20} /><span>{confirmationInput.contactName} signed</span></div>
             )}
+            {startsWithContact ? <div className="pickup-email-summary"><Mail size={20} /><span><strong>{sendEmailCopy ? 'Email copy requested' : 'No email copy requested'}</strong>{sendEmailCopy ? <small>{contactEmail.trim()}</small> : null}</span><button type="button" onClick={() => { setContactSigned(false); setDriverSigned(false); setStep('contact') }}>Change</button></div> : null}
             <div className="signature-role"><UserRound size={25} /><span><strong>Zaberman driver</strong><small>{confirmationInput.driverName}</small></span></div>
             <p>{confirmationInput.contactMethod === 'contactless' ? 'The driver is the only signer and confirms the selected contactless reason, Pickup evidence and exceptions.' : 'By signing, the driver confirms the same Pickup evidence and documented exceptions.'}</p>
             <SignaturePad key="driver" label="Zaberman driver" onSignedChange={setDriverSigned} />

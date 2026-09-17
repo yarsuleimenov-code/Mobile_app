@@ -15,6 +15,7 @@ import { weightText, volumeText } from '../measurementDomain'
 import { pickupReviewNeedsRefresh } from '../pickupReviewState'
 import { readPickupDrafts } from '../pickupDraftStore'
 import { OrderDocumentHistory } from '../OrderDocumentHistory'
+import { PickupEmailDeliveryStatus } from '../PickupEmailDeliveryStatus'
 
 function EvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) {
   return (
@@ -90,6 +91,7 @@ function PickupEbolContent() {
           <section className="ebol-locked-state"><span><LockKeyhole size={30} /></span><h2>Pickup snapshot locked</h2><p>Version 1 and its confirmations cannot be edited.</p></section>
           <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Pickup evidence</h2></div><EvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />{evidence.hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
           <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'contactless' ? 'Pickup contact · signature skipped' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
+          <PickupEmailDeliveryStatus documentNumber={`${orderNumber}-PU-1`} request={orderEbol.pickup.contact.emailCopyRequest} />
           <HandoffCommentsView comments={orderEbol.pickup.comments} />
           <OrderDocumentHistory order={orderEbol} />
           {(orderEbol.pickupSupplements ?? []).filter((item) => item.status === 'locked' && item.evidence).map((item) => (
@@ -97,6 +99,7 @@ function PickupEbolContent() {
               <p>{item.documentNumber} · locked evidence</p>
               <EvidenceGallery count={item.evidence!.photoCount} photos={item.evidence!.photos} />
               <HandoffCommentsView comments={item.comments} />
+              <PickupEmailDeliveryStatus documentNumber={item.documentNumber} request={item.contact.emailCopyRequest} />
             </section>
           ))}
           <p className="ebol-lock-note">Previously signed facts stay unchanged. Add physical places through a Supplemental Pickup with a new document version and new confirmations.</p>

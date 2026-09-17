@@ -11,6 +11,7 @@ interface PrototypeScenario {
   network: Exclude<NetworkMode, 'error'>
   syncOutcome: SyncOutcome
   printOutcome: 'success' | 'error'
+  emailOutcome: 'success' | 'error'
   devices: Record<DeviceKind, boolean>
 }
 
@@ -20,6 +21,7 @@ interface PrototypeScenarioContextValue extends PrototypeScenario {
   setNetwork: (network: PrototypeScenario['network']) => void
   setSyncOutcome: (outcome: SyncOutcome) => void
   setPrintOutcome: (outcome: PrototypeScenario['printOutcome']) => void
+  setEmailOutcome: (outcome: PrototypeScenario['emailOutcome']) => void
   setDeviceAvailable: (device: DeviceKind, available: boolean) => void
   resetMockData: () => void
 }
@@ -31,6 +33,7 @@ const initialScenario: PrototypeScenario = {
   network: 'online',
   syncOutcome: 'success',
   printOutcome: 'success',
+  emailOutcome: 'success',
   devices: { camera: true, scanner: true, printer: true },
 }
 
@@ -65,6 +68,7 @@ export function PrototypeScenarioProvider({ children }: { children: ReactNode })
     setNetwork: (network) => setScenario((current) => ({ ...current, network })),
     setSyncOutcome: (syncOutcome) => setScenario((current) => ({ ...current, syncOutcome })),
     setPrintOutcome: (printOutcome) => setScenario((current) => ({ ...current, printOutcome })),
+    setEmailOutcome: (emailOutcome) => setScenario((current) => ({ ...current, emailOutcome })),
     setDeviceAvailable: (device, available) => setScenario((current) => ({
       ...current,
       devices: { ...current.devices, [device]: available },

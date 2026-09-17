@@ -527,6 +527,29 @@ textarea { font: inherit; }
 .signature-role strong { font-size: 18px; }
 .signature-role small { color: var(--cargo-muted); }
 .signature-prior-confirmation { margin-bottom: 16px; padding: 10px 11px; display: flex; align-items: center; gap: 8px; color: #146c4b; background: #eaf8f2; border-radius: 8px; font-size: 12px; font-weight: 850; }
+.pickup-email-copy { margin-top: 18px; }
+.pickup-email-choice { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.pickup-email-choice input { flex: 0 0 auto; width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--cargo-blue); }
+.pickup-email-choice span { display: flex; flex-direction: column; gap: 4px; }
+.pickup-email-choice strong { font-size: 13px; line-height: 1.4; }
+.pickup-email-choice small { color: var(--cargo-muted); font-size: 11px; line-height: 1.4; }
+.pickup-email-copy .ebol-field { margin-top: 12px; }
+.pickup-email-error { margin: 7px 0 0; color: #9d2e27; font-size: 11px; line-height: 1.4; }
+.pickup-email-summary { margin: 0 0 16px; padding: 11px; display: flex; align-items: center; gap: 9px; color: var(--cargo-navy); background: #f1f6fc; border-radius: 8px; }
+.pickup-email-summary > svg { flex: 0 0 auto; }
+.pickup-email-summary span { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.pickup-email-summary strong { font-size: 12px; }
+.pickup-email-summary small { overflow-wrap: anywhere; color: var(--cargo-muted); }
+.pickup-email-summary button { flex: 0 0 auto; border: 0; color: var(--cargo-blue); background: transparent; font-size: 12px; font-weight: 850; cursor: pointer; }
+.pickup-email-status { margin: 14px 0; padding: 12px; display: flex; align-items: flex-start; gap: 9px; color: #6f5416; background: #fff7e4; border-radius: 9px; }
+.pickup-email-status--sent { color: #146c4b; background: #eaf8f2; }
+.pickup-email-status--failed { color: #9d2e27; background: #fff0ef; }
+.pickup-email-status > svg { flex: 0 0 auto; }
+.pickup-email-status span { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.pickup-email-status strong { font-size: 13px; }
+.pickup-email-status small { overflow-wrap: anywhere; font-size: 11px; line-height: 1.4; }
+.pickup-email-status button { min-height: 30px; padding: 0 7px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid currentColor; border-radius: 6px; color: inherit; background: transparent; font-size: 11px; font-weight: 850; cursor: pointer; }
+.pickup-email-status button:disabled { opacity: .5; cursor: default; }
 .signature-pad { position: relative; margin-top: 16px; border: 1px solid #aebac6; border-radius: 10px; overflow: hidden; background: linear-gradient(#fff, #fbfcfd); }
 .signature-pad--signed { border-color: #69b797; box-shadow: 0 0 0 2px rgba(0,148,95,.09); }
 .signature-pad canvas { width: 100%; height: 150px; display: block; touch-action: none; cursor: crosshair; background-image: linear-gradient(to bottom, transparent 74%, #d7dde4 75%, transparent 76%); }

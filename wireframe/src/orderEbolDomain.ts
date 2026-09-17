@@ -23,6 +23,7 @@ interface OrderEbolConfirmationDetails {
 export interface OrderEbolContactConfirmation extends OrderEbolConfirmationDetails {
   status: OrderEbolContactConfirmationStatus
   contactlessReason?: string
+  emailCopyRequest?: { recipientEmail: string; requestedAt: string }
 }
 
 export interface OrderEbolDriverConfirmation extends OrderEbolConfirmationDetails {
@@ -143,6 +144,13 @@ export interface PickupEbolConfirmationInput {
   driverName: string
   hasDamage: boolean
   exceptionNote: string
+  sendEmailCopy?: boolean
+  contactEmail?: string
+}
+
+export function isValidContactEmail(value: string) {
+  const email = value.trim()
+  return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
 export function canLockPickupEbol(input: PickupEbolConfirmationInput) {
@@ -151,7 +159,8 @@ export function canLockPickupEbol(input: PickupEbolConfirmationInput) {
     : Boolean(input.contactName.trim())
   const refused = input.contactMethod === 'contactless' && input.contactlessReason === 'Contact refused to sign'
   const exceptionIsComplete = (!refused || input.hasDamage) && (!input.hasDamage || Boolean(input.exceptionNote.trim()))
-  return contactIsComplete && Boolean(input.driverName.trim()) && exceptionIsComplete
+  const emailIsComplete = !input.sendEmailCopy || (input.contactMethod === 'signed' && isValidContactEmail(input.contactEmail ?? ''))
+  return contactIsComplete && Boolean(input.driverName.trim()) && exceptionIsComplete && emailIsComplete
 }
 
 export function lockPickupEbol(
@@ -175,7 +184,8 @@ export function lockPickupEbol(
       } : null,
       contact: input.contactMethod === 'contactless'
         ? { status: 'contactless', contactlessReason: input.contactlessReason.trim(), confirmedAt: lockedAt }
-        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt },
+        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt,
+          ...(input.sendEmailCopy ? { emailCopyRequest: { recipientEmail: input.contactEmail!.trim(), requestedAt: lockedAt } } : {}) },
       driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
       lockedAt,
     },
@@ -264,7 +274,8 @@ export function lockSupplementalPickup(
       },
       contact: input.contactMethod === 'contactless'
         ? { status: 'contactless', contactlessReason: input.contactlessReason.trim(), confirmedAt: lockedAt }
-        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt },
+        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt,
+          ...(input.sendEmailCopy ? { emailCopyRequest: { recipientEmail: input.contactEmail!.trim(), requestedAt: lockedAt } } : {}) },
       driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
       lockedAt,
     }),
