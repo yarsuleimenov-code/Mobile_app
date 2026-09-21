@@ -1,6 +1,6 @@
 # Технологический стек Zaberman Mobile
 
-Дата: 2026-09-01
+Дата исходного выбора: 2026-09-01. Сверка фактического стека: 2026-09-18.
 
 Статус: рекомендуемый вариант; версии production dependencies фиксируются при старте реализации.
 
@@ -30,7 +30,7 @@
 | Routing | React Router DOM `7.18.2` в lockfile, `HashRouter` | Подходит для GitHub Pages |
 | Language | TypeScript `5.9.3` в lockfile, strict | Доменные правила можно частично переиспользовать |
 | Build | Vite `7.3.6` в lockfile | Только web wireframe |
-| Tests | Vitest `3.2.7` в lockfile | 13 файлов / 35 тестов проходят |
+| Tests | Vitest `3.2.7` в lockfile | Повторная проверка 2026-09-18: 20 файлов / 106 тестов; `tsc -b` и Vite build проходят |
 | Barcode | JsBarcode `3.12.3` | Prototype Code 128 labels |
 | Icons | Lucide React | Только presentation dependency |
 | State | React Context/useState + `localStorage` | Mock; не production offline store |

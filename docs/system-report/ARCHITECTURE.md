@@ -27,7 +27,7 @@ flowchart LR
     API --> Ops["Logs, metrics, traces, alerts"]
 ```
 
-Граница Zaberman: операционные факты по `CargoPlace`, событиям, manifests, discrepancies и документам. Плановые Order/Task могут оставаться во внешнем master, но ownership должен быть утверждён до разработки.
+Граница Zaberman: операционные факты по `CargoPlace`, событиям, manifests, discrepancies и документам. Принятое решение PD-014 относит Order/Task/RouteRun к внешнему Order/Dispatch master, а Trip/Manifest — к Zaberman до утверждения TMS master; конкретный внешний system code ещё не выбран.
 
 ## 2. Контейнерная схема
 
