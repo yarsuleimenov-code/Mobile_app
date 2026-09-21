@@ -1,6 +1,6 @@
 # Публикация пользовательской документации
 
-Статус на 2026-09-21: реализация завершена локально. VitePress подключён, RU/EN контент формируется из текущих Markdown-источников, мобильная навигация настроена, More содержит вход Help & Instructions, а `pnpm build` создаёт единый Pages artifact. GitHub Actions проверяет artifact перед публикацией.
+Статус на 2026-09-21: опубликовано в `main` через PR #1 (`0b14625`). VitePress подключён, RU/EN контент формируется из текущих Markdown-источников, мобильная навигация настроена, More содержит вход Help & Instructions, а `pnpm build` создаёт единый Pages artifact. GitHub Actions run `35571062486` успешно выполнил build, проверку artifact и deployment.
 
 ## 1. Целевой результат
 
@@ -155,4 +155,6 @@ Playwright Test через установленный Chrome:
 - `pnpm build` последовательно собирает React/Vite-приложение и VitePress-документацию в `wireframe/dist/`;
 - `pnpm pages:verify` проверяет обязательные точки входа и отсутствие внутренних Open Questions в artifact;
 - `.github/workflows/deploy-pages.yml` выполняет install, общую сборку, проверку artifact и публикацию `wireframe/dist`;
-- внутренние `open-questions.md` сохраняются локально и исключены из Git через корневой `.gitignore`.
+- внутренние `open-questions.md` сохраняются локально и исключены из Git через корневой `.gitignore`;
+- опубликованные `/Mobile_app/`, `/help/`, `/help/ru/` и `/help/en/` возвращают HTTP 200; закрытый `/help/ru/internal/open-questions` возвращает HTTP 404;
+- browser smoke test опубликованной версии пройден на mobile и desktop: 2 из 2 сценариев.

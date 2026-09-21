@@ -6,7 +6,7 @@
 
 Уточнение цели 2026-09-02: текущая работа — owner-demo hi-fi wireframe по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md). Production-требования, последовательность раздела 14 и gates раздела 15 ниже сохранены как будущий backlog, а не условия demo-приёмки.
 
-Этапы 3–6 приняты owner. Код [Этапа 7](STAGE_7_OWNER_DEMO_REHEARSAL.md) включён в `main` (`762ffb5`); затем восстановлен вход More → Administration (`8f756a5`) и добавлен необязательный запрос email-копии Pickup eBOL (`4f9b552`). Текущий Git-срез — `4f9b552`. Отдельная бизнес-приёмка Этапа 7 не подтверждена проектными документами. Реальные sync, printer, PDF/email integrations отсутствуют. Текущие пользовательские сценарии описаны в [русском](../mobile-app/ru/README.md) и [английском](../mobile-app/README.md) комплекте.
+Этапы 3–6 приняты owner. Код [Этапа 7](STAGE_7_OWNER_DEMO_REHEARSAL.md) включён в `main` (`762ffb5`); затем восстановлен вход More → Administration (`8f756a5`) и добавлен необязательный запрос email-копии Pickup eBOL (`4f9b552`). Публикационный Git-срез приложения и документации — `0b14625`. Отдельная бизнес-приёмка Этапа 7 не подтверждена проектными документами. Реальные sync, printer, PDF/email integrations отсутствуют. Текущие пользовательские сценарии описаны в [русском](../mobile-app/ru/README.md) и [английском](../mobile-app/README.md) комплекте.
 
 Аудитория: Product, Warehouse, Delivery, Dispatching, IT, разработка и QA
 
@@ -62,7 +62,7 @@ Production-реализацию не следует строить поверх 
 | `BOL_DECISION_LOG.md` | Журнал решений | Разделение Order eBOL, Interstate BOL и POD |
 | `wireframe/` | Активный интерактивный web-прототип | Согласование интерфейса и части бизнес-правил |
 | `docs/system-report/CURRENT_STATE.md` | Текущий handoff | Реализованный контекст, проверка, расхождения и следующие бизнес-решения |
-| `docs/mobile-app/` и `knowledge-base/mobile-app/` | Документация в рабочем дереве | EN/RU бизнес-обзор, User Guide, Quick Start и статьи; внутренние Open Questions исключены из публичной публикации |
+| `docs/mobile-app/` и `knowledge-base/mobile-app/` | Опубликованная документация | EN/RU бизнес-обзор, User Guide, Quick Start и статьи; внутренние Open Questions исключены из публичной публикации |
 | `database/postgres/` | DDL baseline в репозитории | Initial schema и optional branch-scoped read RLS; runtime apply ещё не выполнен |
 | `backend/` | Первый server vertical slice | NestJS Create CargoPlace, OpenAPI, unit tests и guarded PostgreSQL integration test |
 
