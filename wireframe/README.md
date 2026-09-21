@@ -4,7 +4,7 @@
 
 Публичный прототип: https://yarsuleimenov-code.github.io/Mobile_app/
 
-Актуальная граница реализации и следующий рекомендуемый этап: [`docs/system-report/CURRENT_STATE.md`](../docs/system-report/CURRENT_STATE.md).
+Актуальная граница реализации: [`docs/system-report/CURRENT_STATE.md`](../docs/system-report/CURRENT_STATE.md). Бизнес- и пользовательская документация: [русская версия](../docs/mobile-app/ru/README.md) и [English version](../docs/mobile-app/README.md).
 
 Текущая цель — hi-fi wireframe для демонстрации owner. Переписанный [план этапов 3–7](../docs/system-report/OWNER_DEMO_PLAN.md): mock-фото/offline → labels → eBOL/POD → данные заказа/Spoke preview → репетиция показа. Backend, реальные интеграции, оборудование и полевой пилот в demo-scope не входят.
 
@@ -17,9 +17,22 @@ pnpm install
 pnpm dev
 ```
 
-Открыть `http://127.0.0.1:5173/`. Production-проверка: `pnpm build`.
+Открыть `http://127.0.0.1:5173/`. Команда `pnpm build` формирует единый Pages artifact: приложение в `dist/` и документацию в `dist/help/`. Проверка состава artifact: `pnpm pages:verify`.
 
-Проверено 2026-09-02: 19 test-файлов / 102 теста, TypeScript и Vite build проходят. Окончательная сборка прошла два последовательных прогона семи сценариев в Chrome/Playwright на 320/390/1440 px и регрессии этапов 5–6. Этапы 3–6 приняты и опубликованы; текущий baseline — `8756a6f`. Этап 7 готов к демонстрации локально; приёмка owner и push отдельно.
+### Документация
+
+Исходники находятся в `docs/mobile-app/` и `knowledge-base/mobile-app/`. Сгенерированный VitePress-контент не редактируется вручную.
+
+```powershell
+pnpm docs:prepare
+pnpm docs:dev
+pnpm docs:build
+pnpm docs:preview
+```
+
+Локальный preview после сборки: `http://127.0.0.1:4174/Mobile_app/help/`. Конфигурация и статус реализации описаны в [`DOCUMENTATION_SITE_IMPLEMENTATION.md`](../docs/system-report/DOCUMENTATION_SITE_IMPLEMENTATION.md).
+
+Срез 2026-09-18: текущий checkout `main`/`origin/main` — `4f9b552`. Этап 7 включён в `main` коммитом `762ffb5`; затем восстановлен вход More → Administration (`8f756a5`) и добавлен необязательный запрос email-копии Pickup eBOL (`4f9b552`). Этапы 3–6 приняты owner; отдельная бизнес-приёмка Этапа 7 документально не подтверждена. Повторная проверка frontend: 20 test-файлов / 106 тестов, TypeScript и Vite build проходят. Исторические две репетиции 7/7 на 320/390/1440 px описаны в [Этапе 7](../docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md).
 
 ## Что оценивать
 
@@ -71,7 +84,7 @@ Pickup/Delivery review содержит отдельные Contact comment / Dri
 
 Tasks → Order details показывает external/internal names, источник, отдельный Qty, Special Cargo и Spoke preview. Dispatcher редактирует имя и обработку; Supervisor заполняет отсутствующее имя один раз. Fragile/Oversized и mapping Supervisor → crew lead — demo-допущения. Данные и audit сохраняются локально.
 
-В dimension groups неизвестные величины показаны пустыми, требуется причина перед review. Неполный объём исключён из известных итогов. Подписанные документы и reprint сохраняют имя/измерения своей версии; новые дополнения получают текущие данные. [Границы, сценарий и проверки](../docs/system-report/STAGE_6_ORDER_DATA_DEMO.md). Этап 7 реализован; следующий шаг — просмотр owner по инструкции ниже.
+В dimension groups неизвестные величины показаны пустыми, требуется причина перед review. Неполный объём исключён из известных итогов. Подписанные документы и reprint сохраняют имя/измерения своей версии; новые дополнения получают текущие данные. [Границы, сценарий и проверки](../docs/system-report/STAGE_6_ORDER_DATA_DEMO.md). Этап 7 включён в `main`; следующий бизнес-шаг — просмотр owner и фиксация решения по инструкции ниже.
 
 ## Этап 7: готовность к показу
 

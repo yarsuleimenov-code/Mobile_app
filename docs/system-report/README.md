@@ -1,16 +1,18 @@
 # Системный отчёт Zaberman Mobile
 
-Статус на 2026-09-02: этапы 3–6 приняты и опубликованы; текущий baseline — `8756a6f`. Этап 7 реализован и проверен локально, готов к демонстрации owner. Приёмка и push — отдельно.
+Статус на 2026-09-18: код Этапа 7, вход More → Administration и email-копия Pickup eBOL уже находятся в `main` (`4f9b552`). Этапы 3–6 приняты owner; отдельное решение owner по Этапу 7 в проектных документах не зафиксировано. Подробный AS-IS срез — [CURRENT_STATE.md](CURRENT_STATE.md).
 
 ## Рекомендуемый вывод
 
-Сейчас создаётся интерактивный hi-fi wireframe для демонстрации owner. Дальнейшая работа — по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md), этапы 3–7. PostgreSQL DDL и NestJS `Create CargoPlace` сохранены в репозитории как отдельный технический POC; migrations ещё не проверены на runtime PostgreSQL 16. Production mobile client, аутентификация, реальные интеграции, media storage и надёжный offline-first контур отсутствуют и не входят в demo-приёмку.
+Интерактивный hi-fi wireframe служит для согласования процессов с owner. [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md) и файлы этапов 3–7 сохраняют историю требований и проверок; следующий практический шаг — бизнес-просмотр и решения по внутренним открытым вопросам. PostgreSQL DDL и NestJS `Create CargoPlace` — отдельный технический POC; migrations ещё не проверены на runtime PostgreSQL 16. Production mobile client, аутентификация, реальные интеграции, media storage и надёжный offline-first контур отсутствуют.
 
 Для production рекомендуется cross-platform мобильное приложение на React Native + Expo, локальная SQLite и outbox-синхронизация, модульный backend на TypeScript, PostgreSQL как system of record и S3-совместимое хранилище файлов. Архитектуру следует начинать как модульный монолит; микросервисы на MVP не нужны.
 
 ## Состав
 
-- [CURRENT_STATE.md](CURRENT_STATE.md) — фактически реализованный контекст, проверенное состояние и следующий demo-этап.
+- [CURRENT_STATE.md](CURRENT_STATE.md) — фактически реализованный контекст, актуальный Git-срез, границы проверки и следующие решения.
+- [DOCUMENTATION_SITE_IMPLEMENTATION.md](DOCUMENTATION_SITE_IMPLEMENTATION.md) — целевые URL, критерии готовности, зафиксированная база и правила публикации пользовательской документации вместе с прототипом.
+- [Mobile App: руководство на русском](../mobile-app/ru/README.md) и [на английском](../mobile-app/README.md) — бизнес-обзор, пользовательские инструкции, Quick Start и база знаний.
 - [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md) — актуальные этапы 3–7: сценарии, delta, критерии owner-demo и отдельный production-backlog.
 - [STAGE_0_PRODUCT_DECISIONS.md](STAGE_0_PRODUCT_DECISIONS.md) — утверждённые lifecycle, data, label, permission и signature-решения для следующего этапа.
 - [STAGE_1_CREATE_CARGO_PLACE.md](STAGE_1_CREATE_CARGO_PLACE.md) — реализованный API vertical slice, транзакция, проверки и оставшийся runtime gate.
@@ -20,6 +22,7 @@
 - [STAGE_5_EBOL_POD_DEMO.md](STAGE_5_EBOL_POD_DEMO.md) — комментарии сторон, read-only версии, document actions и проверки.
 - [STAGE_6_ORDER_DATA_DEMO.md](STAGE_6_ORDER_DATA_DEMO.md) — названия, Qty, Special Cargo, неизвестные измерения, Spoke preview и локальные ролевые правила.
 - [STAGE_7_OWNER_DEMO_REHEARSAL.md](STAGE_7_OWNER_DEMO_REHEARSAL.md) — инструкция ведущему, семь пресетов, две репетиции, UX-защиты и ожидаемые решения owner.
+- [PICKUP_EMAIL_COPY_WIREFRAME.md](PICKUP_EMAIL_COPY_WIREFRAME.md) — необязательный запрос email-копии подписанной версии Pickup eBOL, локальные статусы и ограничения отправки.
 - [SYSTEM_ANALYSIS.md](SYSTEM_ANALYSIS.md) — текущее состояние, бизнес-контекст, scope, процессы, требования, разрывы, риски и этапы.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — контекстная, контейнерная, data и sync-схемы; источники истины и API boundary.
 - [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) — PostgreSQL ER-модель, таблицы, инварианты, транзакции, безопасность и rollout.
@@ -31,8 +34,8 @@
 
 ## Как использовать
 
-1. Открыть `CURRENT_STATE.md`, затем `OWNER_DEMO_PLAN.md`; следующая работа — только недостающий UX текущего demo-этапа.
+1. Открыть `CURRENT_STATE.md` для AS-IS статуса, затем пользовательскую документацию и `OWNER_DEMO_PLAN.md` как историю demo-этапов.
 2. Соблюдать бизнес-инварианты `STAGE_0_PRODUCT_DECISIONS.md`; их production-механизмы не превращать в зависимости wireframe.
-3. Согласовать с owner сценарии и результат показа. Не путать готовность demo с готовностью к полевой эксплуатации.
+3. Согласовать с owner фактические сценарии и приоритетные открытые вопросы. Не путать публикацию кода, бизнес-приёмку и готовность к полевой эксплуатации.
 4. Архитектура, стек, DDL/API, IdP, оборудование и production-пилот — отдельный будущий backlog. Его gates не блокируют demo.
-5. `localStorage` и mock-данные не переносить как production-архитектуру. Этапы 3–7 изменили wireframe; backend/SQL не менялись. Следующий шаг — просмотр owner, затем отдельное решение о публикации.
+5. `localStorage` и mock-данные не переносить как production-архитектуру. Этапы 3–7 и последующие изменения уже находятся в `main`; backend/SQL ими не менялись. Следующий шаг — просмотр owner и фиксация бизнес-решений.

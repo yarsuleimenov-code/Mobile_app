@@ -1,6 +1,6 @@
 # Реализованный контекст проекта
 
-Дата среза: 2026-09-02
+Дата среза: 2026-09-18
 
 Назначение: единая точка входа перед следующим этапом разработки.
 
@@ -12,7 +12,7 @@
 2. подготовленный, но ещё не применённый PostgreSQL DDL baseline;
 3. собранный NestJS vertical slice `Create CargoPlace` с OpenAPI, unit-тестами и условным PostgreSQL integration-тестом.
 
-Текущая цель — демонстрация owner, не создание рабочего приложения. Этапы 3–6 приняты и опубликованы. Этап 7 реализован локально: семь пресетов, UX-защиты и две последовательные репетиции 7/7. Статус — готово к демонстрации, решение owner ожидается. [Инструкция и проверки](STAGE_7_OWNER_DEMO_REHEARSAL.md), [принятый план](OWNER_DEMO_PLAN.md). Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному будущему production-backlog и не блокирует demo-этапы.
+Текущая цель — согласование бизнес-прототипа с owner, не создание рабочего приложения. Этапы 3–6 приняты owner; код Этапа 7 включён в `main` коммитом `762ffb5`, но отдельная бизнес-приёмка owner в документах не зафиксирована. Позднее опубликованы вход More → Administration (`8f756a5`) и необязательная email-копия Pickup eBOL (`4f9b552`). [Инструкция Этапа 7](STAGE_7_OWNER_DEMO_REHEARSAL.md) сохраняет сценарии показа, [план](OWNER_DEMO_PLAN.md) — исторические критерии. Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному production-backlog.
 
 Правило показа от 2026-09-02 с уточнением owner от 2026-09-03: рабочие экраны выглядят как будущий продукт, без Simulate/demo/mock/prototype-пояснений; о природе wireframe ведущий предупреждает устно. Print и Print history, фото/sync, Scan, подписание и документы приведены к этому правилу. В More восстановлен пункт Administration → существующая служебная панель `#/more/demo`: роль, филиал, сеть, устройства и сценарии. Это исключение из прежнего скрытия входа; остальные рабочие экраны не меняются. Реальные интеграции и новая система прав доступа не добавлены.
 
@@ -27,7 +27,7 @@
 5. [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md) — текущий scope, нумерация и критерии demo-этапов 3–7; [WIREFRAME_IMPLEMENTATION_PLAN.md](../../WIREFRAME_IMPLEMENTATION_PLAN.md) — сводка плана и исторический каталог;
 6. исходные ТЗ и audit-пакет как исторические источники требований.
 
-Опубликованный Git baseline: `main`, commit `8756a6f` (`feat: add eBOL documents and order data owner demo flows`), включает принятые Этапы 5–6. Предыдущие Этапы 3–4 — `1d2a2d2`. Этап 7 реализован и проверен локально; owner acceptance и публикация пока не выполнены.
+Текущий checkout `main` и `origin/main`: `4f9b552` от 2026-09-17. История: Этапы 3–4 — `1d2a2d2`, Этапы 5–6 — `8756a6f`, Этап 7 — `762ffb5`, восстановленный вход Administration — `8f756a5`, email-копия Pickup eBOL — `4f9b552`. Наличие кода в `main` не подтверждает бизнес-приёмку Этапа 7 owner. Комплект пользовательских документов на [английском](../mobile-app/README.md) и [русском](../mobile-app/ru/README.md) создан в текущем рабочем дереве; он ещё не включён в указанный commit.
 
 ## 3. Что фактически реализовано
 
@@ -38,7 +38,7 @@
 | Данные заказа | Trade/internal names, отдельный Qty, source, role-gated edit/audit, Special Cargo, read-only Spoke preview; известные итоги и причины неполных измерений | Локальные fixtures и permissions; Fragile/Oversized и role mapping — demo-допущения |
 | CargoPlace | Prototype PlaceID, `n/N`, labels, current status/location и короткая история | Проекция вычисляется из mock/local state |
 | Labels / Scan | All/selected/one, preview выбранных Code 128, version filter, mock print/reprint history, printer unavailable, valid/duplicate/unknown и manual lookup | Нет printer SDK или аппаратного scan; Print моделирует результат локально |
-| Order eBOL/POD | Pickup/Delivery review, отдельные comments сторон, locked snapshots, Supplemental versions, read-only история документов, POD и Download/Print/Email/Share dialogs | Подписи и PDF не production/legal artifacts |
+| Order eBOL/POD | Pickup/Delivery review, отдельные comments сторон, locked snapshots, Supplemental versions, read-only история документов, POD, Download/Print/Email/Share dialogs и необязательная email-копия подписанной версии Pickup | Подписи, PDF и отправка email не production/legal artifacts; результат локально имитируется |
 | Фото | Отдельные mock-фото, категории, preview/filter/remove, восстановление Pickup/Delivery, фото своих версий в review/POD | Только metadata и существующие demo-assets; без файлов и upload |
 | Interstate | Loading review, Trip, immutable loaded manifest в domain model, Unloading draft, BOL archive | Нет authoritative Trip service и atomic server Close |
 | Scenario controls | Роль, филиал, сеть, sync и print outcomes, camera/scanner/printer, normal/offline/conflict/40/100-photo presets, reset | Только управляемая демонстрация |
@@ -83,7 +83,7 @@
 
 ## 7. Проверенное состояние
 
-Frontend перепроверен 2026-09-02; backend-результаты остаются от 2026-09-01:
+Frontend source повторно проверен 2026-09-18: Vitest — 20 файлов / 106 тестов, TypeScript `tsc -b` и Vite build проходят. Ниже сохранены подробные результаты проверок этапов от 2026-09-02; backend-результаты остаются от 2026-09-01:
 
 - Vitest: 19 файлов, 102 теста — passed;
 - TypeScript project build — passed;
@@ -104,7 +104,7 @@ Frontend перепроверен 2026-09-02; backend-результаты ос�
 
 ## 8. Следующий шаг wireframe
 
-Показать owner семь сценариев по [STAGE_7_OWNER_DEMO_REHEARSAL.md](STAGE_7_OWNER_DEMO_REHEARSAL.md) и зафиксировать «принято / изменить / вне scope». Техническая подготовка Этапа 7 выполнена; бизнес-приёмка не заявляется до просмотра. Push — по отдельному запросу. Production integrations и полевой пилот не добавлять автоматически.
+Провести с owner и операционной командой просмотр основных сценариев по [русскому руководству](../mobile-app/ru/user-guide.md) и [инструкции Этапа 7](STAGE_7_OWNER_DEMO_REHEARSAL.md). Зафиксировать «принято / изменить / вне scope» и принять решения по существенным внутренним открытым вопросам. Код Этапа 7 уже находится в `main`; отдельную бизнес-приёмку owner не заявлять без записи решения. Production integrations и полевой пилот не добавлять автоматически.
 
 ## 9. Отложенный production gate
 

@@ -1,12 +1,12 @@
 # Системный анализ будущего приложения Zaberman Mobile
 
-Дата: 2026-09-01
+Дата исходного анализа: 2026-09-01. Сверка AS-IS разделов: 2026-09-18.
 
-Статус: синхронизирован с wireframe, PostgreSQL DDL и Stage 1 backend slice
+Статус: целевая системная модель сохранена; текущая реализация сверена с [CURRENT_STATE.md](CURRENT_STATE.md) и пользовательскими документами.
 
 Уточнение цели 2026-09-02: текущая работа — owner-demo hi-fi wireframe по [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md). Production-требования, последовательность раздела 14 и gates раздела 15 ниже сохранены как будущий backlog, а не условия demo-приёмки.
 
-Приняты и опубликованы Этапы 3–6: [фото/offline](STAGE_3_PHOTO_OFFLINE_DEMO.md), [labels](STAGE_4_LABEL_PRINT_DEMO.md), [eBOL/POD](STAGE_5_EBOL_POD_DEMO.md), [данные заказа/Spoke](STAGE_6_ORDER_DATA_DEMO.md). Текущий Git baseline — `8756a6f`. [Этап 7](STAGE_7_OWNER_DEMO_REHEARSAL.md) реализован локально: пресеты, UX-защиты и две последовательные репетиции 7/7. Signed evidence и PlaceID сохраняются. Следующий шаг — просмотр owner; push отдельно. Реальные sync, printer, PDF/email integrations не реализованы.
+Этапы 3–6 приняты owner. Код [Этапа 7](STAGE_7_OWNER_DEMO_REHEARSAL.md) включён в `main` (`762ffb5`); затем восстановлен вход More → Administration (`8f756a5`) и добавлен необязательный запрос email-копии Pickup eBOL (`4f9b552`). Текущий Git-срез — `4f9b552`. Отдельная бизнес-приёмка Этапа 7 не подтверждена проектными документами. Реальные sync, printer, PDF/email integrations отсутствуют. Текущие пользовательские сценарии описаны в [русском](../mobile-app/ru/README.md) и [английском](../mobile-app/README.md) комплекте.
 
 Аудитория: Product, Warehouse, Delivery, Dispatching, IT, разработка и QA
 
@@ -61,8 +61,9 @@ Production-реализацию не следует строить поверх 
 | `WIREFRAME_IMPLEMENTATION_PLAN.md` | Product/UX baseline | Целевая терминология, процессы, роли, offline и карта экранов |
 | `BOL_DECISION_LOG.md` | Журнал решений | Разделение Order eBOL, Interstate BOL и POD |
 | `wireframe/` | Активный интерактивный web-прототип | Согласование интерфейса и части бизнес-правил |
-| `docs/system-report/CURRENT_STATE.md` | Текущий handoff | Реализованный контекст, проверка, расхождения и следующий vertical slice |
-| `database/postgres/` | DDL baseline в рабочем дереве | Initial schema и optional branch-scoped read RLS; runtime apply ещё не выполнен |
+| `docs/system-report/CURRENT_STATE.md` | Текущий handoff | Реализованный контекст, проверка, расхождения и следующие бизнес-решения |
+| `docs/mobile-app/` и `knowledge-base/mobile-app/` | Документация в рабочем дереве | EN/RU бизнес-обзор, User Guide, Quick Start и статьи; внутренние Open Questions исключены из публичной публикации |
+| `database/postgres/` | DDL baseline в репозитории | Initial schema и optional branch-scoped read RLS; runtime apply ещё не выполнен |
 | `backend/` | Первый server vertical slice | NestJS Create CargoPlace, OpenAPI, unit tests и guarded PostgreSQL integration test |
 
 Важно: исходный production-код Warehouse Apps Script и BOL Generator, описанный audit-пакетом, в текущем checkout отсутствует. Поэтому его текущее production-состояние повторно не подтверждено.
@@ -83,7 +84,7 @@ Production-реализацию не следует строить поверх 
 - PostgreSQL schema/RLS migrations как неподключённый design baseline;
 - NestJS `Create CargoPlace`: validation, branch permission, idempotency, optimistic version check, events и transactional outbox;
 - 10 backend unit-тестов и TypeScript build проходят; PostgreSQL integration-тест подготовлен и skipped без test DB;
-- 13 test-файлов, 35 тестов; на 2026-09-01 тесты, TypeScript project build и Vite production build проходят.
+- Повторная проверка frontend 2026-09-18: 20 test-файлов, 106 тестов; TypeScript `tsc -b` и Vite production build проходят. Исторические результаты 2026-09-01 сохранены в документах соответствующих этапов.
 
 ### 3.3 Что отсутствует или только имитируется
 
@@ -99,7 +100,7 @@ Production-реализацию не следует строить поверх 
 
 DDL описывает constraints, idempotency, append-only history, manifests, documents и outbox; PD-011/PD-012 реализованы. Первый command handler использует эту модель, но migrations не применялись к чистому PostgreSQL 16. Поэтому source готов, а работающий backend/database контур ещё не подтверждён.
 
-Активная навигация унифицирована как `Home | Tasks | Scan | More`: Tasks использует модель Spoke и ведёт в рабочие Pickup/Dropoff routes, Scan открывает активный Pickup flow, Interstate доступен из More. В `src` всё ещё остаются дублирующие legacy-экраны и `DemoProvider`, не подключённые к активному `App.tsx`; их следует считать prototype debt.
+Активная навигация унифицирована как `Home | Tasks | Scan | More`: Tasks показывает локальный образец маршрута Spoke и ведёт к Pickup/Dropoff; Scan выполняет поиск PlaceID или Order ID без создания и перемещения груза; Interstate доступен из More. В More также находится Administration → `#/more/demo`. В `src` остаются legacy-экраны и `DemoProvider`, не подключённые к активному `App.tsx`; их нельзя считать рабочими пользовательскими сценариями.
 
 ### 3.4 Оценка зрелости
 
@@ -366,6 +367,8 @@ Retention для photos, signatures, POD/BOL и audit events должен быт
 - Product, Warehouse, Delivery, Dispatching, IT и Security подтвердили baseline.
 
 ## 16. Проверка отчёта
+
+Результаты ниже относятся к исходному системному анализу от 2026-09-01. Повторная проверка frontend 2026-09-18: 20 файлов / 106 тестов, TypeScript и Vite build прошли; backend и PostgreSQL runtime повторно не проверялись.
 
 - Прочитаны оба DOCX структурно; визуальный DOCX-render не выполнен, так как LibreOffice отсутствует в локальной среде.
 - Сопоставлены audit-пакет, implementation plan, decision log и активный router/domain/store код.

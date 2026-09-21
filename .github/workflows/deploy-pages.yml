@@ -37,9 +37,13 @@ jobs:
         working-directory: wireframe
         run: pnpm install --frozen-lockfile
 
-      - name: Build wireframe
+      - name: Build app and documentation
         working-directory: wireframe
         run: pnpm run build
+
+      - name: Verify Pages artifact
+        working-directory: wireframe
+        run: pnpm run pages:verify
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

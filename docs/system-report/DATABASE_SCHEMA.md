@@ -1,8 +1,8 @@
 # Схема базы данных
 
-Дата синхронизации: 2026-09-01
+Дата исходной модели: 2026-09-01. Сверка статуса: 2026-09-18.
 
-Статус: DDL и первая command transaction в рабочем дереве; migrations ещё не применены и не проверены на runtime PostgreSQL 16.
+Статус: DDL и первая command transaction находятся в репозитории; migrations ещё не применены и не проверены на runtime PostgreSQL 16. Это целевая серверная модель, не подключённая к активному wireframe.
 
 ## 1. Решение
 
@@ -166,7 +166,7 @@ SQLite не копирует весь PostgreSQL DDL. Для mobile MVP дост
 
 | Решение | Почему блокирует production | Рекомендация |
 |---|---|---|
-| Master-система для Order/Task/RouteRun/Trip | Определяет ownership и правила reconciliation | Зафиксировать system code, immutable external ID и source version для каждой сущности |
+| Конкретная master-система Order/Task/RouteRun | Граница ownership принята, но внешний vendor и правила reconciliation ещё не выбраны | Зафиксировать system code, immutable external ID и source version; Trip/Manifest остаются у Zaberman до утверждения другого TMS master |
 | Матрица role × permission × branch | Нужна для write policies и supervisor overrides | Утвердить 4–6 ролей и разрешения по операциям, не по экранам |
 | Юридический статус eBOL/POD | Определяет подпись, retention и audit evidence | Провести legal review до внешнего пилота |
 | Retention/PII policy | Без неё нельзя безопасно удалять файлы и персональные данные | Утвердить сроки по типу документа/медиа и legal hold |
