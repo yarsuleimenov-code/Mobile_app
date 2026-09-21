@@ -1,6 +1,6 @@
 # Системный отчёт Zaberman Mobile
 
-Статус на 2026-09-18: код Этапа 7, вход More → Administration и email-копия Pickup eBOL уже находятся в `main` (`4f9b552`). Этапы 3–6 приняты owner; отдельное решение owner по Этапу 7 в проектных документах не зафиксировано. Подробный AS-IS срез — [CURRENT_STATE.md](CURRENT_STATE.md).
+Статус на 2026-09-21: приложение и публичная RU/EN документация опубликованы единым GitHub Pages deployment (`0b14625`); код Этапа 7, вход More → Administration и email-копия Pickup eBOL находятся в `main`. Этапы 3–6 приняты owner; отдельное решение owner по Этапу 7 в проектных документах не зафиксировано. Подробный AS-IS срез — [CURRENT_STATE.md](CURRENT_STATE.md).
 
 ## Рекомендуемый вывод
 

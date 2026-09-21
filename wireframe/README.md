@@ -32,7 +32,7 @@ pnpm docs:preview
 
 Локальный preview после сборки: `http://127.0.0.1:4174/Mobile_app/help/`. Конфигурация и статус реализации описаны в [`DOCUMENTATION_SITE_IMPLEMENTATION.md`](../docs/system-report/DOCUMENTATION_SITE_IMPLEMENTATION.md).
 
-Срез 2026-09-18: текущий checkout `main`/`origin/main` — `4f9b552`. Этап 7 включён в `main` коммитом `762ffb5`; затем восстановлен вход More → Administration (`8f756a5`) и добавлен необязательный запрос email-копии Pickup eBOL (`4f9b552`). Этапы 3–6 приняты owner; отдельная бизнес-приёмка Этапа 7 документально не подтверждена. Повторная проверка frontend: 20 test-файлов / 106 тестов, TypeScript и Vite build проходят. Исторические две репетиции 7/7 на 320/390/1440 px описаны в [Этапе 7](../docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md).
+Срез 2026-09-21: публикационный baseline приложения и RU/EN документации в `main` — `0b14625`. Этап 7 включён в `main` коммитом `762ffb5`; затем восстановлен вход More → Administration (`8f756a5`) и добавлен необязательный запрос email-копии Pickup eBOL (`4f9b552`). Этапы 3–6 приняты owner; отдельная бизнес-приёмка Этапа 7 документально не подтверждена. Повторная проверка frontend: 20 test-файлов / 106 тестов, TypeScript и Vite build проходят. Исторические две репетиции 7/7 на 320/390/1440 px описаны в [Этапе 7](../docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md).
 
 ## Что оценивать
 
