@@ -1,4 +1,4 @@
-import { Clock3, History, LockKeyhole, Plus, Save, Trash2 } from 'lucide-react'
+import { Clock3, History, LockKeyhole, MessageCircleMore, Plus, Save, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, SuccessState } from '../cargo-components'
@@ -8,6 +8,8 @@ import { dimensionState, measurementIssues, summarizeMeasurements, unknownWeight
 import { operationalName, orderDetailsIssues } from '../orderDetailsDomain'
 import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { normalizeOrderNumber } from '../cargoDomain'
+import { communicationPath } from '../communicationDomain'
+import { useCommunications } from '../communicationStore'
 import { useCargo } from '../cargoStore'
 import {
   addPickupDraftGroup, createPickupDraft, pickupDraftGroups, pickupDraftToRecord, pickupDraftVolume, pickupDraftWeight,
@@ -43,6 +45,7 @@ function PickupCaptureForm() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { findRecord, savePickup, trackEvidenceOperation, getOrderDetails } = useCargo()
+  const { getThread } = useCommunications()
   const { branch } = usePrototypeScenario()
   const requestedOrder = normalizeOrderNumber(params.get('order') ?? '11155599')
   const currentRecord = findRecord(requestedOrder)
@@ -66,6 +69,7 @@ function PickupCaptureForm() {
   const addedWeight = useMemo(() => pickupDraftWeight(draft), [draft])
   const groups = pickupDraftGroups(draft)
   const details = getOrderDetails(draft.orderNumber)
+  const communicationThread = getThread(normalizeOrderNumber(draft.orderNumber))
   const measurements = summarizeMeasurements(groups)
   const issues = [...orderDetailsIssues(details), ...measurementIssues(groups)]
   const photos = evidencePhotos(draft, normalizeOrderNumber(draft.orderNumber), 'pickup', draft.createdAt)
@@ -166,7 +170,7 @@ function PickupCaptureForm() {
           <label>Pickup date<input type="date" value={draft.pickupDate} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'pickupDate', event.target.value))} /></label>
         </div>
         {changingOrder ? <div className="measurement-warning"><p>You are viewing order #{draft.orderNumber}. Open the selected order to load its own cargo and draft.</p><button type="button" disabled={!normalizeOrderNumber(orderLookup) || saveState !== 'saved'} onClick={() => navigate(`/pickup?order=${normalizeOrderNumber(orderLookup)}`)}>Open selected order</button></div> : null}
-        <section className="order-name-summary"><span><strong>{operationalName(details, draft.orderNumber)}</strong><small>{details.special_cargo_type ? 'Special Cargo · see handling details' : 'Operational name'}</small></span><button type="button" onClick={() => navigate(`/orders/${normalizeOrderNumber(draft.orderNumber)}/details`)}>Order details</button></section>
+        <section className="order-name-summary"><span><strong>{operationalName(details, draft.orderNumber)}</strong><small>{details.special_cargo_type ? 'Special Cargo · see handling details' : 'Operational name'}</small></span><div className="order-summary-actions"><button type="button" className="order-message-button" aria-label={'Message ' + (communicationThread?.customerName ?? 'customer') + ' by SMS'} onClick={() => navigate(communicationPath(normalizeOrderNumber(draft.orderNumber)))}><MessageCircleMore size={17} /> SMS{communicationThread?.unreadCount ? <b>{communicationThread.unreadCount}</b> : null}</button><button type="button" onClick={() => navigate('/orders/' + normalizeOrderNumber(draft.orderNumber) + '/details')}>Order details</button></div></section>
         <label>Responsible manager<select value={draft.responsible} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'responsible', event.target.value))}><option>John Doe</option><option>Maria Lopez</option><option>Daniel Kim</option></select></label>
         <label>Packaging<select value={draft.packaging} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'packaging', event.target.value))}><option>Customer</option><option>Zaberman</option><option>Mixed</option></select></label>
         <label>Order comment<textarea rows={2} value={draft.orderComment} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'orderComment', event.target.value))} /></label>
