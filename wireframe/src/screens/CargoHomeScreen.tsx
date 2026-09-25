@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FilePenLine, FileText, LoaderCircle, RefreshCw, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FilePenLine, FileText, LoaderCircle, MessageCircleMore, RefreshCw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
@@ -6,6 +6,8 @@ import { operationalName } from '../orderDetailsDomain'
 import { summarizeMeasurements, weightText } from '../measurementDomain'
 import { calculatePieces } from '../cargoDomain'
 import { useCargo } from '../cargoStore'
+import { CORPORATE_SMS_NUMBER_LABEL } from '../communicationDomain'
+import { useCommunications } from '../communicationStore'
 import { getOrderDocumentNavigation } from '../orderEbolNavigation'
 import { readOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts } from '../pickupDraftStore'
@@ -14,6 +16,7 @@ import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
 export function CargoHomeScreen() {
   const navigate = useNavigate()
   const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute, clearSpokeRoute, getOrderDetails, getOrderCargo } = useCargo()
+  const { unreadTotal, threads } = useCommunications()
   const [routeQuery, setRouteQuery] = useState('')
   const [recentRecordsExpanded, setRecentRecordsExpanded] = useState(false)
   const [orderEbols] = useState(() => readOrderEbols())
@@ -38,6 +41,16 @@ export function CargoHomeScreen() {
             <ArrowDown size={46} /><strong>Dropoff</strong><small>Verify & complete delivery</small>
           </button>
         </section>
+
+        <button type="button" className="home-messages-card" onClick={() => navigate('/communications')}>
+          <span className="home-messages-icon"><MessageCircleMore size={26} />{unreadTotal ? <b>{unreadTotal}</b> : null}</span>
+          <span>
+            <strong>Messages</strong>
+            <small>{unreadTotal ? `${unreadTotal} unread · ${threads.length} customer conversations` : `${threads.length} customer conversations`}</small>
+            <small>Corporate SMS · {CORPORATE_SMS_NUMBER_LABEL}</small>
+          </span>
+          <ChevronRight size={20} />
+        </button>
 
         {!spokeRoute ? (
           <section className="spoke-import" aria-labelledby="spoke-import-title">

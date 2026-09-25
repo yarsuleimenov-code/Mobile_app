@@ -26,6 +26,7 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | Home | Cargo operations — `#/` | Pickup, Dropoff, load route, Order documents |
 | Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Dropoff stop; Order details |
 | Bottom nav | Scan — `#/scan` | Open place or order places |
+| Home / Tasks / Order details | Messages — `#/communications`, `#/orders/{number}/communications` | Send or review customer SMS for an Order |
 | Bottom nav | More — `#/more` | Help & Instructions, Interstate, Cargo places, Sync now, Administration |
 | Home / Tasks | Pickup draft — `#/pickup?order={number}` | Pickup review or place labels |
 | Tasks / Pickup | Order details — `#/orders/{number}/details` | Return to operation |
@@ -96,6 +97,10 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 ## Same Day
 
 The approved process model treats Pickup and Dropoff as separate operations linked to one RouteRun. The active app can show both types of stop on Today's route, but has no routed Same Day progress screen or verified automatic pairing of the two. Complete each stop through its normal Pickup or Dropoff path. Do not assume that finishing Pickup automatically completes or creates a Dropoff task. [Same Day article](../../knowledge-base/mobile-app/same-day.md).
+
+## Customer messages
+
+Open **Messages** from Home, or **Message customer** from a task or Order details. Every conversation is tied to one Order and customer contact. The sender identity is the Zaberman corporate SMS number **17178361039**; the employee's personal phone number is not used or shown. Outbound messages show Queued, Sending, Sent or Not sent. Use Retry for a failed message. Offline messages remain Queued until the connection returns. Incoming replies appear as unread in Messages and the related task. In the current wireframe, sending and receiving are local demonstrations; no telephony provider is connected.
 
 ## Cargo, Scan and labels
 

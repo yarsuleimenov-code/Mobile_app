@@ -27,7 +27,8 @@
 | --- | --- | --- |
 | Открытие приложения | Cargo operations — `#/` | Pickup, Dropoff, загрузка маршрута, Order documents |
 | Home / нижнее меню | Tasks — `#/tasks` | Операция остановки или Order details |
-| Нижнее меню | Scan — `#/scan` | Запись места или места заказа |
+| Нижнее меню | Scan — #/scan | Запись места или места заказа |
+| Home / Tasks / Order details | Messages — #/communications, #/orders/{number}/communications | Написать клиенту или просмотреть SMS по заказу |
 | Нижнее меню | More — `#/more` | Help & Instructions, Interstate, Cargo places, Sync now, Administration |
 | Home / Tasks | Pickup draft — `#/pickup?order={number}` | Pickup review или Place labels |
 | Tasks / Pickup | Order details — `#/orders/{number}/details` | Возврат к операции |
@@ -104,6 +105,10 @@
 ## Same Day
 
 Принятая модель связывает отдельные Pickup и Dropoff через RouteRun. Активное приложение показывает остановки обоих типов в Today's route, но не имеет доступного экрана прогресса Same Day и подтверждённого автоматического связывания пары. Выполняйте каждую остановку через обычный Pickup или Dropoff. Не считайте, что завершение Pickup автоматически создаёт или завершает задачу Dropoff. [Статья Same Day](../../../knowledge-base/mobile-app/ru/same-day.md).
+
+## Сообщения клиенту
+
+Откройте **Messages** с Home или **Message customer** из задачи либо Order details. Каждый диалог относится к одному Order и одному контакту клиента. Отправитель — корпоративный SMS-номер Zaberman **17178361039**; личный номер сотрудника не используется и не показывается. Исходящее сообщение получает статус Queued, Sending, Sent или Not sent. Для ошибки доступен Retry. В offline сообщение остаётся Queued до восстановления сети. Входящий ответ отмечается как непрочитанный в Messages и соответствующей задаче. В текущем wireframe отправка и получение моделируются локально; провайдер телефонии не подключён.
 
 ## Грузовые места, Scan и этикетки
 

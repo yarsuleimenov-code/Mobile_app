@@ -1,7 +1,10 @@
+import { MessageCircleMore } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { calculatePieces, normalizeOrderNumber } from '../cargoDomain'
+import { communicationPath } from '../communicationDomain'
+import { useCommunications } from '../communicationStore'
 import { useCargo } from '../cargoStore'
 import { canEditInternalName, operationalName, orderDetailsIssues, specialCargoLabels, type OrderDetailsEdit } from '../orderDetailsDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
@@ -13,6 +16,7 @@ export function OrderDetailsScreen() {
 }
 function OrderDetailsForm({ order }: { order: string }) {
   const { getOrderDetails, saveOrderDetails, getOrderCargo, spokeRoute } = useCargo()
+  const { getThread } = useCommunications()
   const { role } = usePrototypeScenario()
   const current = getOrderDetails(order)
   const cargo = getOrderCargo(order)
@@ -26,6 +30,7 @@ function OrderDetailsForm({ order }: { order: string }) {
   const canSpecial = role === 'dispatcher'
   const issues = orderDetailsIssues({ ...current, ...edit })
   const quantity = cargo ? calculatePieces(cargo.dimensionGroups) : null
+  const thread = getThread(order)
   const change = (patch: Partial<OrderDetailsEdit>) => { setEdit((value) => ({ ...value, ...patch })); setMessage('') }
   const save = () => {
     try {
@@ -72,6 +77,7 @@ function OrderDetailsForm({ order }: { order: string }) {
         {current.history.length ? <ol>{[...current.history].reverse().map((entry, index) => <li key={`${entry.at}-${index}`}><strong>{entry.field.replaceAll('_', ' ')}</strong><span>{entry.before || '(empty)'} → {entry.after || '(empty)'}</span><small>{entry.role} · {new Date(entry.at).toLocaleString()}</small></li>)}</ol> : <p>No order data changes yet.</p>}
       </details>
       <p className="order-role-note">Changes apply to current order data. Previously signed document versions remain unchanged.</p>
+      <Link className="order-message-action" to={communicationPath(order)}><MessageCircleMore size={19} /><span><strong>Message customer</strong><small>{thread?.customerName ?? 'Customer contact'} · {thread?.unreadCount ? `${thread.unreadCount} unread` : 'Corporate SMS'}</small></span></Link>
       <Link className="ebol-secondary" to={task ? spokeTaskPath(task, route.workDate) : `/pickup?order=${order}`}>Open {task?.operation === 'dropoff' ? 'Dropoff' : 'Pickup'}</Link>
     </main><CargoBottomNav />
   </div>

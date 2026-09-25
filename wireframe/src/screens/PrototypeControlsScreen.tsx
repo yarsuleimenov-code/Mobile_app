@@ -1,10 +1,11 @@
-import { AlertTriangle, Camera, CheckCircle2, Gauge, Printer, RefreshCw, RotateCcw, ScanLine, Settings2, ShieldX, Wifi, WifiOff } from 'lucide-react'
+import { AlertTriangle, Camera, CheckCircle2, Gauge, MessageCircleMore, Printer, RefreshCw, RotateCcw, ScanLine, Settings2, ShieldX, Wifi, WifiOff } from 'lucide-react'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { useState } from 'react'
 import { EvidenceQueuePanel } from '../PhotoEvidence'
 import { installRehearsalPreset, rehearsalPresets, type RehearsalPresetId } from '../demoRehearsal'
 import { roleLabels } from '../data'
 import type { Role } from '../domain'
+import { useCommunications } from '../communicationStore'
 import {
   usePrototypeScenario,
   type DeviceKind,
@@ -33,9 +34,11 @@ const deviceOptions: Array<{ value: DeviceKind; label: string; icon: typeof Came
 
 export function PrototypeControlsScreen() {
   const [presetError, setPresetError] = useState('')
+  const { threads, receiveMockReply } = useCommunications()
+  const [replyOrder, setReplyOrder] = useState(threads[0]?.orderNumber ?? '')
   const {
-    role, branch, network, syncOutcome, printOutcome, emailOutcome, devices,
-    setRole, setBranch, setNetwork, setSyncOutcome, setPrintOutcome, setEmailOutcome, setDeviceAvailable, resetMockData,
+    role, branch, network, syncOutcome, printOutcome, emailOutcome, smsOutcome, devices,
+    setRole, setBranch, setNetwork, setSyncOutcome, setPrintOutcome, setEmailOutcome, setSmsOutcome, setDeviceAvailable, resetMockData,
   } = usePrototypeScenario()
 
   const confirmReset = () => {
@@ -105,6 +108,19 @@ export function PrototypeControlsScreen() {
             <button type="button" className={emailOutcome === 'error' ? 'is-active' : ''} aria-pressed={emailOutcome === 'error'} onClick={() => setEmailOutcome('error')}>Email error</button>
           </div>
           <p>Applies to the automatic Pickup document copy and Retry. Offline requests remain queued.</p>
+        </section>
+
+        <section className="scenario-section">
+          <h2>Customer messages</h2>
+          <div className="scenario-options scenario-options--two">
+            <button type="button" className={smsOutcome === 'success' ? 'is-active' : ''} aria-pressed={smsOutcome === 'success'} onClick={() => setSmsOutcome('success')}>SMS success</button>
+            <button type="button" className={smsOutcome === 'error' ? 'is-active' : ''} aria-pressed={smsOutcome === 'error'} onClick={() => setSmsOutcome('error')}>SMS error</button>
+          </div>
+          <div className="mock-reply-control">
+            <label>Incoming reply for<select value={replyOrder} onChange={(event) => setReplyOrder(event.target.value)}>{threads.map((thread) => <option value={thread.orderNumber} key={thread.id}>#{thread.orderNumber} · {thread.customerName}</option>)}</select></label>
+            <button type="button" onClick={() => receiveMockReply(replyOrder)} disabled={!replyOrder}><MessageCircleMore size={17} /> Receive reply</button>
+          </div>
+          <p>Outbound messages use 17178361039. Incoming replies appear unread in Messages and the related task.</p>
         </section>
 
         <section className="scenario-section">

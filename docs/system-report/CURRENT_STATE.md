@@ -1,6 +1,6 @@
 # Реализованный контекст проекта
 
-Дата среза: 2026-09-21
+Дата среза: 2026-09-25
 
 Назначение: единая точка входа перед следующим этапом разработки.
 
@@ -33,7 +33,8 @@
 
 | Контур | Реализовано | Граница |
 |---|---|---|
-| Навигация | `Home | Tasks | Scan | More`, Cargo places и secondary Interstate | Часть legacy-экранов в `src` не подключена к `App.tsx` |
+| Навигация | Home | Tasks | Scan | More, Cargo places и secondary Interstate | Часть legacy-экранов в src не подключена к App.tsx |
+| Customer SMS | Messages inbox, Order-thread для 7 mock-заказов, корпоративный sender 17178361039, unread, offline queue, failure/retry и mock incoming reply | Только localStorage и управляемая демонстрация; реальная телефония, SMS API, webhook, push и звонки отсутствуют |
 | Pickup/Dropoff | Autosaved/restored Pickup draft, dimension group CRUD с индивидуальными PlaceID, заполненные route mock-заявки, history, Recent Operations edit и mock Dropoff reconcile | Только `localStorage`; нет реальных задач, камеры, файлов и server confirmation |
 | Данные заказа | Trade/internal names, отдельный Qty, source, role-gated edit/audit, Special Cargo, read-only Spoke preview; известные итоги и причины неполных измерений | Локальные fixtures и permissions; Fragile/Oversized и role mapping — demo-допущения |
 | CargoPlace | Prototype PlaceID, `n/N`, labels, current status/location и короткая история | Проекция вычисляется из mock/local state |
@@ -41,7 +42,7 @@
 | Order eBOL/POD | Pickup/Delivery review, отдельные comments сторон, locked snapshots, Supplemental versions, read-only история документов, POD, Download/Print/Email/Share dialogs и необязательная email-копия подписанной версии Pickup | Подписи, PDF и отправка email не production/legal artifacts; результат локально имитируется |
 | Фото | Отдельные mock-фото, категории, preview/filter/remove, восстановление Pickup/Delivery, фото своих версий в review/POD | Только metadata и существующие demo-assets; без файлов и upload |
 | Interstate | Loading review, Trip, immutable loaded manifest в domain model, Unloading draft, BOL archive | Нет authoritative Trip service и atomic server Close |
-| Scenario controls | Роль, филиал, сеть, sync и print outcomes, camera/scanner/printer, normal/offline/conflict/40/100-photo presets, reset | Только управляемая демонстрация |
+| Scenario controls | Роль, филиал, сеть, sync/print/email/SMS outcomes, mock incoming reply, camera/scanner/printer, normal/offline/conflict/40/100-photo presets, reset | Только управляемая демонстрация |
 | Persistence/sync | Versioned `localStorage`, очередь operation/photo с retry, сохранение ошибок, явный Keep local changes для demo-конфликта | Нет SQLite, durable outbox/inbox, реального merge и server sync |
 | Backend API | NestJS `POST /api/cargo-places`, OpenAPI, validation, permission check, idempotency и atomic transaction | Только первый command slice; development identity adapter, без deploy |
 | PostgreSQL | Две migrations; PD-011/PD-012 и `label_generated` отражены в DDL | Не применены к PostgreSQL 16 и не подключены к приложению |
@@ -83,7 +84,7 @@
 
 ## 7. Проверенное состояние
 
-Frontend source повторно проверен 2026-09-18: Vitest — 20 файлов / 106 тестов, TypeScript `tsc -b` и Vite build проходят. Ниже сохранены подробные результаты проверок этапов от 2026-09-02; backend-результаты остаются от 2026-09-01:
+Frontend source повторно проверен 2026-09-25: Vitest — 21 файл / 110 тестов, TypeScript `tsc -b` и Vite build проходят. Messages дополнительно проверены в Chrome на 390×844 и 1440×1000: 7 threads, Order navigation и отправка до Sent; console содержит только известный необязательный `favicon.ico` 404. Ниже сохранены подробные результаты проверок этапов от 2026-09-02; backend-результаты остаются от 2026-09-01:
 
 - Vitest: 19 файлов, 102 теста — passed;
 - TypeScript project build — passed;
