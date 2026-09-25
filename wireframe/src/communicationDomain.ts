@@ -80,6 +80,25 @@ export function latestMessage(thread: CommunicationThread) {
   return thread.messages.at(-1)
 }
 
+export function filterCommunicationThreads(threads: CommunicationThread[], query: string, unreadOnly = false) {
+  const normalized = query.trim().toLowerCase()
+  return threads.filter((thread) => {
+    if (unreadOnly && !thread.unreadCount) return false
+    if (!normalized) return true
+    return [thread.orderNumber, thread.customerName, thread.customerPhone, ...thread.messages.map((message) => message.body)]
+      .some((value) => value.toLowerCase().includes(normalized))
+  })
+}
+
+export function communicationDayLabel(value: string, now = new Date()) {
+  const date = new Date(value)
+  if (date.toDateString() === now.toDateString()) return 'Today'
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 export function createOutboundMessage(
   thread: CommunicationThread,
   body: string,

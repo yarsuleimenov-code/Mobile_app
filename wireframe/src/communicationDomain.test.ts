@@ -3,6 +3,8 @@ import {
   appendInboundMessage,
   CORPORATE_SMS_NUMBER,
   createOutboundMessage,
+  communicationDayLabel,
+  filterCommunicationThreads,
   initialCommunicationThreads,
   markThreadRead,
   updateMessageStatus,
@@ -36,5 +38,19 @@ describe('Order SMS communications', () => {
 
   it('rejects an empty outgoing message', () => {
     expect(() => createOutboundMessage(original, '   ', false, 'out-3', '2026-09-25T10:00:00Z')).toThrow('empty')
+  })
+
+  it('filters the inbox by customer, order, message text and unread state', () => {
+    expect(filterCommunicationThreads(initialCommunicationThreads, 'Laura').map((thread) => thread.orderNumber)).toEqual(['23343775'])
+    expect(filterCommunicationThreads(initialCommunicationThreads, '11155599')).toHaveLength(1)
+    expect(filterCommunicationThreads(initialCommunicationThreads, 'driveway')).toHaveLength(1)
+    expect(filterCommunicationThreads(initialCommunicationThreads, '', true).every((thread) => thread.unreadCount > 0)).toBe(true)
+  })
+
+  it('uses readable day labels in a conversation', () => {
+    const now = new Date('2026-09-25T12:00:00-04:00')
+    expect(communicationDayLabel('2026-09-25T08:00:00-04:00', now)).toBe('Today')
+    expect(communicationDayLabel('2026-09-24T08:00:00-04:00', now)).toBe('Yesterday')
+    expect(communicationDayLabel('2026-09-21T08:00:00-04:00', now)).toMatch(/Sep 21/)
   })
 })
