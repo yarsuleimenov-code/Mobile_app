@@ -1,6 +1,6 @@
 # Реализованный контекст проекта
 
-Дата среза: 2026-09-26
+Дата среза: 2026-09-28
 
 Назначение: единая точка входа перед следующим этапом разработки.
 
@@ -42,8 +42,9 @@
 | Order eBOL/POD | Pickup/Delivery review, отдельные comments сторон, locked snapshots, Supplemental versions, read-only история документов, POD, Download/Print/Email/Share dialogs и необязательная email-копия подписанной версии Pickup | Подписи, PDF и отправка email не production/legal artifacts; результат локально имитируется |
 | Фото | Отдельные mock-фото, категории, preview/filter/remove, восстановление Pickup/Delivery, фото своих версий в review/POD | Только metadata и существующие demo-assets; без файлов и upload |
 | Предрейсовый осмотр | Gate перед дневным маршрутом, 7 safety-checks, 4 camera-only ракурса, attestation, блокировка при Issue и сохранение на устройстве | Hi-fi wireframe; без реальной камеры, vehicle assignment, supervisor override, ремонтных задач и server audit |
+| Delivery OTP | Для выбранных заказов: SMS на неизменяемый маскированный номер, 6 цифр, 3 попытки/отправки, expired/delivery error/offline/locked, затем подпись водителя и OTP marker в POD | Hi-fi wireframe; Twilio Verify, регистрация sender/compliance, backend verification, audit и supervisor override отсутствуют. См. [DELIVERY_OTP_WIREFRAME.md](DELIVERY_OTP_WIREFRAME.md) |
 | Interstate | Loading review, Trip, immutable loaded manifest в domain model, Unloading draft, BOL archive | Нет authoritative Trip service и atomic server Close |
-| Scenario controls | Роль, филиал, сеть, sync/print/email/SMS outcomes, mock incoming reply, camera/scanner/printer, normal/offline/conflict/40/100-photo presets, reset | Только управляемая демонстрация |
+| Scenario controls | Роль, филиал, сеть, sync/print/email/SMS/Delivery OTP outcomes, mock incoming reply, camera/scanner/printer, normal/offline/conflict/OTP/40/100-photo presets, reset | Только управляемая демонстрация |
 | Persistence/sync | Versioned `localStorage`, очередь operation/photo с retry, сохранение ошибок, явный Keep local changes для demo-конфликта | Нет SQLite, durable outbox/inbox, реального merge и server sync |
 | Backend API | NestJS `POST /api/cargo-places`, OpenAPI, validation, permission check, idempotency и atomic transaction | Только первый command slice; development identity adapter, без deploy |
 | PostgreSQL | Две migrations; PD-011/PD-012 и `label_generated` отражены в DDL | Не применены к PostgreSQL 16 и не подключены к приложению |
@@ -85,7 +86,7 @@
 
 ## 7. Проверенное состояние
 
-Frontend source повторно проверен 2026-09-26: Vitest — 21 файл / 112 тестов, TypeScript tsc -b, Vite build и VitePress docs build проходят. Messages проверены в Chrome на 390×844 и 1440×1000: 7 threads, поиск, All/Unread, быстрые сообщения, offline, failure/retry, Order navigation и отправка до Sent. Вход Pickup draft → SMS → Order-thread дополнительно проверен на 430×1240 и 390×844; console содержит только известный необязательный favicon.ico 404. Ниже сохранены подробные результаты проверок этапов от 2026-09-02; backend-результаты остаются от 2026-09-01:
+Frontend source повторно проверен 2026-09-28: Vitest — 23 файла / 123 теста, TypeScript tsc -b, Vite build и VitePress docs build проходят. OTP rendered QA не выполнен: обязательный для Playwright CLI `npx` отсутствует в текущем окружении. Messages ранее проверены в Chrome на 390×844 и 1440×1000: 7 threads, поиск, All/Unread, быстрые сообщения, offline, failure/retry, Order navigation и отправка до Sent. Вход Pickup draft → SMS → Order-thread дополнительно проверен на 430×1240 и 390×844; console содержит только известный необязательный favicon.ico 404. Ниже сохранены подробные результаты проверок этапов от 2026-09-02; backend-результаты остаются от 2026-09-01:
 
 - Vitest: 19 файлов, 102 теста — passed;
 - TypeScript project build — passed;

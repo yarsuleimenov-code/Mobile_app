@@ -84,4 +84,24 @@ describe('Delivery eBOL confirmation', () => {
       },
     })
   })
+
+  it('requires a verified OTP and records only the masked recipient reference', () => {
+    const delivery = prepareDeliveryEbol(lockedPickup(), initialCargoRecords[0], {
+      photoCount: 2,
+      hasDamage: false,
+      exceptionNote: '',
+    })
+    const otpInput: DeliveryEbolConfirmationInput = {
+      ...signedInput,
+      contactMethod: 'otp',
+      contactName: 'Michael Reed',
+      otpPhoneLast4: '0198',
+      otpVerified: false,
+    }
+    expect(canLockDeliveryEbol(otpInput)).toBe(false)
+    const completed = lockDeliveryEbol(delivery, { ...otpInput, otpVerified: true })
+    expect(completed.delivery.contact).toMatchObject({
+      status: 'otp', signerName: 'Michael Reed', otpPhoneLast4: '0198',
+    })
+  })
 })

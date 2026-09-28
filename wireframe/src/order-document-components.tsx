@@ -10,7 +10,12 @@ export function PodHandoffSection({ title, snapshot }: { title: string; snapshot
   const evidence = snapshot.evidence
   if (!evidence) return null
   const contactless = snapshot.contact.status === 'contactless'
-  const contactValue = contactless ? snapshot.contact.contactlessReason : snapshot.contact.signerName
+  const otp = snapshot.contact.status === 'otp'
+  const contactValue = contactless
+    ? snapshot.contact.contactlessReason
+    : otp
+      ? `${snapshot.contact.signerName} · ••• ••• ${snapshot.contact.otpPhoneLast4}`
+      : snapshot.contact.signerName
 
   return (
     <section className="pod-handoff">
@@ -25,7 +30,7 @@ export function PodHandoffSection({ title, snapshot }: { title: string; snapshot
       <details className="document-place-list"><summary>Included places ({evidence.placeIds.length})</summary><div>{evidence.placeIds.map((id) => <code key={id}>{id}</code>)}</div></details>
       <EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />
       {evidence.hasDamage ? <div className="pod-exception"><AlertTriangle size={18} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="pod-no-exception"><CheckCircle2 size={18} /> No exception documented</div>}
-      <div className="pod-confirmation"><UserRound size={19} /><span><strong>{title} contact{contactless ? ' · signature skipped' : ''}</strong><small>{contactValue} · {formatTimestamp(snapshot.contact.confirmedAt)}</small></span><CheckCircle2 size={19} /></div>
+      <div className="pod-confirmation"><UserRound size={19} /><span><strong>{title} contact{contactless ? ' · signature skipped' : otp ? ' · OTP verified' : ''}</strong><small>{contactValue} · {formatTimestamp(snapshot.contact.confirmedAt)}</small></span><CheckCircle2 size={19} /></div>
       <div className="pod-confirmation"><UserRound size={19} /><span><strong>Zaberman driver</strong><small>{snapshot.driver.signerName} · {formatTimestamp(snapshot.driver.confirmedAt)}</small></span><CheckCircle2 size={19} /></div>
       <HandoffCommentsView comments={snapshot.comments} />
     </section>

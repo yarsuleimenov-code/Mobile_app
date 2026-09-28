@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { NetworkMode, Role } from './domain'
+import type { OtpOutcome } from './deliveryOtpDomain'
 
 export type PrototypeBranch = 'NJ1' | 'CA1' | 'CA2'
 export type SyncOutcome = 'success' | 'retry' | 'conflict' | 'rejected'
@@ -14,6 +15,7 @@ interface PrototypeScenario {
   printOutcome: 'success' | 'error'
   emailOutcome: 'success' | 'error'
   smsOutcome: SmsOutcome
+  otpOutcome: OtpOutcome
   devices: Record<DeviceKind, boolean>
 }
 
@@ -25,6 +27,7 @@ interface PrototypeScenarioContextValue extends PrototypeScenario {
   setPrintOutcome: (outcome: PrototypeScenario['printOutcome']) => void
   setEmailOutcome: (outcome: PrototypeScenario['emailOutcome']) => void
   setSmsOutcome: (outcome: SmsOutcome) => void
+  setOtpOutcome: (outcome: OtpOutcome) => void
   setDeviceAvailable: (device: DeviceKind, available: boolean) => void
   resetMockData: () => void
 }
@@ -38,6 +41,7 @@ const initialScenario: PrototypeScenario = {
   printOutcome: 'success',
   emailOutcome: 'success',
   smsOutcome: 'success',
+  otpOutcome: 'success',
   devices: { camera: true, scanner: true, printer: true },
 }
 
@@ -74,6 +78,7 @@ export function PrototypeScenarioProvider({ children }: { children: ReactNode })
     setPrintOutcome: (printOutcome) => setScenario((current) => ({ ...current, printOutcome })),
     setEmailOutcome: (emailOutcome) => setScenario((current) => ({ ...current, emailOutcome })),
     setSmsOutcome: (smsOutcome) => setScenario((current) => ({ ...current, smsOutcome })),
+    setOtpOutcome: (otpOutcome) => setScenario((current) => ({ ...current, otpOutcome })),
     setDeviceAvailable: (device, available) => setScenario((current) => ({
       ...current,
       devices: { ...current.devices, [device]: available },

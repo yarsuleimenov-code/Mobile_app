@@ -2,7 +2,7 @@ import { CARGO_RECORDS_STORAGE_KEY, initialCargoRecords, type CargoRecord } from
 import { findPickupDemoRecord } from './pickupDemoData'
 import { createPickupDraft } from './pickupDraftDomain'
 import { PICKUP_DRAFTS_STORAGE_KEY, readPickupDrafts, upsertPickupDraft } from './pickupDraftStore'
-import { createOrderEbol, lockPickupEbol, type OrderEbol } from './orderEbolDomain'
+import { createOrderEbol, lockPickupEbol, prepareDeliveryEbol, type OrderEbol } from './orderEbolDomain'
 import { ORDER_EBOLS_STORAGE_KEY, readOrderEbols, upsertOrderEbol } from './orderEbolStore'
 import { initialOrderDetails, ORDER_DETAILS_STORAGE_KEY, readOrderDetails } from './orderDetailsDomain'
 import { demoPhotos } from './photoEvidenceDomain'
@@ -16,7 +16,8 @@ export const rehearsalPresets = [
   { id: 'printer', order: '99007004', source: '23343775', title: 'Printer unavailable', detail: '4 · Preview retained selection; enable printer for print/reprint', start: 'labels' },
   { id: 'damage', order: '99007005', source: '23343782', title: 'Damage + contactless', detail: '5 · Review damage and comments; choose contactless reason', start: 'review' },
   { id: 'supplemental', order: '99007006', source: '23343775', title: 'Locked Pickup + Supplemental', detail: '6 · Original is already signed; add places with fresh signatures', start: 'locked' },
-  { id: 'conflict', order: '99003003', source: '23343775', title: 'Draft conflict', detail: '7 · Sync → compare → Keep local changes; inspect order data', start: 'pickup' },
+  { id: 'otp', order: '99007008', source: '23343775', title: 'OTP Delivery', detail: '7 · Verify recipient by SMS code → driver signature → POD', start: 'otp' },
+  { id: 'conflict', order: '99003003', source: '23343775', title: 'Draft conflict', detail: '8 · Sync → compare → Keep local changes; inspect order data', start: 'pickup' },
   { id: '40', order: '99003040', source: '23343775', title: '40 mock photos', detail: 'Optional large gallery', start: 'pickup' },
   { id: '100', order: '99003100', source: '23343775', title: '100 mock photos', detail: 'Optional large gallery', start: 'pickup' },
 ] as const
@@ -46,6 +47,16 @@ export function buildRehearsalPreset(id: RehearsalPresetId) {
     contactlessAcknowledged: false, hasDamage: false, exceptionNote: '',
     contactComment: 'Three chairs handed over.', driverComment: 'Count and packing checked.',
   }, at)
+  if (orderEbol && id === 'otp') {
+    orderEbol = lockPickupEbol(orderEbol, {
+      contactMethod: 'signed', contactName: 'Michael Reed', driverName: 'Chris Adams', contactlessReason: '',
+      contactlessAcknowledged: false, hasDamage: false, exceptionNote: '',
+      contactComment: 'Cargo released for delivery.', driverComment: 'Pickup count and condition confirmed.',
+    }, at)
+    orderEbol = prepareDeliveryEbol(orderEbol, record, {
+      photoCount: 2, photos: demoPhotos(preset.order, 'delivery', 2), hasDamage: false, exceptionNote: '',
+    }, at)
+  }
   return { preset, record, orderEbol, draft: createPickupDraft(record, 'NJ1', 'standard', at) }
 }
 
@@ -74,7 +85,8 @@ export function installRehearsalPreset(id: RehearsalPresetId, storage: StorageAc
   }))
   writes.set(SCENARIO_KEY, JSON.stringify({ branch: 'NJ1', role: id === 'conflict' ? 'dispatcher' : 'delivery',
     network: id === 'offline' ? 'offline' : 'online', syncOutcome: id === 'offline' ? 'retry' : id === 'conflict' ? 'conflict' : 'success',
-    printOutcome: 'success', devices: { camera: true, scanner: true, printer: id !== 'printer' } }))
+    printOutcome: 'success', emailOutcome: 'success', smsOutcome: 'success', otpOutcome: 'success',
+    devices: { camera: true, scanner: true, printer: id !== 'printer' } }))
   const previous = new Map([...writes.keys()].map((key) => [key, storage.getItem(key)]))
   try {
     for (const [key, value] of writes) storage.setItem(key, value)
@@ -87,5 +99,6 @@ export function installRehearsalPreset(id: RehearsalPresetId, storage: StorageAc
   if (existing) return getOrderDocumentNavigation(existing).path
   return preset.start === 'labels' ? `/orders/${preset.order}/labels`
     : preset.start === 'review' || preset.start === 'locked' ? `/orders/${preset.order}/ebol/pickup`
+    : preset.start === 'otp' ? `/orders/${preset.order}/ebol/delivery`
     : `/pickup?order=${preset.order}`
 }

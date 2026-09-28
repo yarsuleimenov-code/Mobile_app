@@ -23,8 +23,9 @@ describe('Owner rehearsal presets', () => {
     expect(value.draft.places.every((place) => place.placeId.startsWith('ZB-' + order + '-'))).toBe(true)
     expect(new Set(value.draft.places.map((place) => place.placeId)).size).toBe(value.draft.places.length)
     expect(value.record.photos?.length).toBe(id === '40' ? 40 : id === '100' ? 100 : id === 'damage' ? 4 : 3)
-    expect(Boolean(value.orderEbol?.pickup.lockedAt)).toBe(id === 'supplemental')
+    expect(Boolean(value.orderEbol?.pickup.lockedAt)).toBe(id === 'supplemental' || id === 'otp')
     expect(value.orderEbol?.delivery.lockedAt).toBeUndefined()
+    if (id === 'otp') expect(value.orderEbol?.delivery.evidence?.photoCount).toBe(2)
   })
 
   it('installs all scenarios without losing other orders or recording an unfinished Pickup', () => {
@@ -35,9 +36,9 @@ describe('Owner rehearsal presets', () => {
       expect(path).toContain(preset.order)
     }
     expect(readPickupDrafts(storage)).toHaveLength(6)
-    expect(readOrderEbols(storage)).toHaveLength(3)
+    expect(readOrderEbols(storage)).toHaveLength(4)
     expect(JSON.parse(storage.getItem(CARGO_RECORDS_STORAGE_KEY)!).some((item: { orderNumber: string }) => item.orderNumber === '99003001')).toBe(false)
-    expect(JSON.parse(storage.getItem('zaberman-spoke-route:v1')!).tasks.filter((item: { stopId: string }) => item.stopId.startsWith('rehearsal-'))).toHaveLength(9)
+    expect(JSON.parse(storage.getItem('zaberman-spoke-route:v1')!).tasks.filter((item: { stopId: string }) => item.stopId.startsWith('rehearsal-'))).toHaveLength(10)
     expect(storage.getItem('unrelated-key')).toBe('keep')
   })
 

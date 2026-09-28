@@ -5,6 +5,7 @@ import { EvidenceQueuePanel } from '../PhotoEvidence'
 import { installRehearsalPreset, rehearsalPresets, type RehearsalPresetId } from '../demoRehearsal'
 import { roleLabels } from '../data'
 import type { Role } from '../domain'
+import { OTP_DEMO_CODE, type OtpOutcome } from '../deliveryOtpDomain'
 import { useCommunications } from '../communicationStore'
 import {
   usePrototypeScenario,
@@ -31,14 +32,20 @@ const deviceOptions: Array<{ value: DeviceKind; label: string; icon: typeof Came
   { value: 'scanner', label: 'Scanner', icon: ScanLine },
   { value: 'printer', label: 'Printer', icon: Printer },
 ]
+const otpOutcomes: Array<{ value: OtpOutcome; label: string }> = [
+  { value: 'success', label: 'Success' },
+  { value: 'invalid', label: 'Invalid code' },
+  { value: 'expired', label: 'Expired code' },
+  { value: 'delivery_error', label: 'SMS delivery error' },
+]
 
 export function PrototypeControlsScreen() {
   const [presetError, setPresetError] = useState('')
   const { threads, receiveMockReply } = useCommunications()
   const [replyOrder, setReplyOrder] = useState(threads[0]?.orderNumber ?? '')
   const {
-    role, branch, network, syncOutcome, printOutcome, emailOutcome, smsOutcome, devices,
-    setRole, setBranch, setNetwork, setSyncOutcome, setPrintOutcome, setEmailOutcome, setSmsOutcome, setDeviceAvailable, resetMockData,
+    role, branch, network, syncOutcome, printOutcome, emailOutcome, smsOutcome, otpOutcome, devices,
+    setRole, setBranch, setNetwork, setSyncOutcome, setPrintOutcome, setEmailOutcome, setSmsOutcome, setOtpOutcome, setDeviceAvailable, resetMockData,
   } = usePrototypeScenario()
 
   const confirmReset = () => {
@@ -63,9 +70,9 @@ export function PrototypeControlsScreen() {
           <p>Reset for a fresh run, then choose a scenario. Reopening preserves existing work. Presets set role, branch, connection and device availability; they do not sign new handoffs.</p>
           <button type="button" className="ebol-secondary" onClick={confirmReset}><RotateCcw size={16} /> Reset all mock data</button>
           <div className="rehearsal-presets">
-            {rehearsalPresets.slice(0, 7).map((preset) => <button type="button" key={preset.id} aria-label={preset.title} onClick={() => openPreset(preset.id)}><strong>{preset.title}</strong><small>{preset.detail}</small><code>#{preset.order}</code></button>)}
+            {rehearsalPresets.slice(0, 8).map((preset) => <button type="button" key={preset.id} aria-label={preset.title} onClick={() => openPreset(preset.id)}><strong>{preset.title}</strong><small>{preset.detail}</small><code>#{preset.order}</code></button>)}
           </div>
-          <details className="rehearsal-extra"><summary>Optional photo volume checks</summary><div className="scenario-options scenario-options--two">{rehearsalPresets.slice(7).map((preset) => <button type="button" key={preset.id} onClick={() => openPreset(preset.id)}>{preset.title}</button>)}</div></details>
+          <details className="rehearsal-extra"><summary>Optional photo volume checks</summary><div className="scenario-options scenario-options--two">{rehearsalPresets.slice(8).map((preset) => <button type="button" key={preset.id} onClick={() => openPreset(preset.id)}>{preset.title}</button>)}</div></details>
           {presetError ? <p role="alert">{presetError}</p> : null}
         </section>
 
@@ -121,6 +128,14 @@ export function PrototypeControlsScreen() {
             <button type="button" onClick={() => receiveMockReply(replyOrder)} disabled={!replyOrder}><MessageCircleMore size={17} /> Receive reply</button>
           </div>
           <p>Outbound messages use 17178361039. Incoming replies appear unread in Messages and the related task.</p>
+        </section>
+
+        <section className="scenario-section">
+          <h2>Delivery OTP result</h2>
+          <div className="scenario-options scenario-options--two">
+            {otpOutcomes.map(({ value, label }) => <button type="button" key={value} className={otpOutcome === value ? 'is-active' : ''} aria-pressed={otpOutcome === value} onClick={() => setOtpOutcome(value)}>{label}</button>)}
+          </div>
+          <p>Applies to OTP Delivery. Verification code: <code>{OTP_DEMO_CODE}</code>. Offline mode produces an SMS delivery error.</p>
         </section>
 
         <section className="scenario-section">

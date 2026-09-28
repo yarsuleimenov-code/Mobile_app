@@ -1142,3 +1142,38 @@ textarea { font: inherit; }
   .message-call-action { min-width: 48px; padding: 0; }
   .message-call-action span { display: none; }
 }
+
+/* Delivery recipient OTP. */
+.delivery-otp { margin-top: 12px; display: grid; gap: 13px; }
+.delivery-otp > p { color: var(--cargo-muted); font-size: 12px; line-height: 1.45; }
+.delivery-otp-recipient { padding: 13px; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 9px; border: 1px solid #bfd1e5; border-radius: 10px; background: #f6f9fd; }
+.delivery-otp-recipient > span { min-width: 0; display: grid; gap: 3px; }
+.delivery-otp-recipient strong { font-size: 13px; }
+.delivery-otp-recipient small { color: var(--cargo-muted); font-size: 11px; }
+.delivery-otp-recipient b { padding: 4px 7px; border-radius: 6px; color: var(--cargo-blue); background: #e4effd; font-size: 10px; letter-spacing: .06em; }
+.delivery-otp-send,
+.delivery-otp-verify { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 9px; color: #fff; background: var(--cargo-blue); font: inherit; font-size: 13px; font-weight: 850; cursor: pointer; }
+.delivery-otp-entry { display: grid; gap: 11px; }
+.delivery-otp-sent { display: flex; align-items: center; gap: 8px; color: #12704d; }
+.delivery-otp-sent span { display: grid; gap: 2px; }
+.delivery-otp-sent strong { font-size: 12px; }
+.delivery-otp-sent small { color: var(--cargo-muted); font-size: 10px; }
+.delivery-otp-entry label { display: grid; gap: 6px; color: var(--cargo-muted); font-size: 11px; font-weight: 800; }
+.delivery-otp-entry input { min-height: 54px; padding: 8px 13px; border: 1px solid #aebbc9; border-radius: 9px; color: var(--cargo-navy); background: #fff; font: inherit; font-size: 24px; font-weight: 850; letter-spacing: .28em; text-align: center; }
+.delivery-otp-entry input:focus { outline: 2px solid rgba(34,105,193,.2); border-color: var(--cargo-blue); }
+.delivery-otp-entry input[aria-invalid="true"] { border-color: #c65a53; background: #fff8f7; }
+.delivery-otp-verify:disabled { opacity: .45; cursor: default; }
+.delivery-otp-resend { min-height: 44px; border: 0; color: var(--cargo-blue); background: transparent; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.delivery-otp-resend:disabled { color: #909baa; cursor: default; }
+.delivery-otp-error { display: flex; align-items: center; gap: 7px; color: #a2352e; font-size: 11px; }
+.delivery-otp-problem,
+.delivery-otp-verified { padding: 14px; display: grid; grid-template-columns: 25px minmax(0, 1fr); align-items: start; gap: 9px; border: 1px solid #e2b16e; border-radius: 10px; color: #8b5b08; background: #fff8e8; }
+.delivery-otp-problem > span,
+.delivery-otp-verified > span { display: grid; gap: 4px; }
+.delivery-otp-problem strong,
+.delivery-otp-verified strong { font-size: 13px; }
+.delivery-otp-problem small,
+.delivery-otp-verified small { font-size: 11px; line-height: 1.4; }
+.delivery-otp-problem button { grid-column: 1 / -1; min-height: 44px; border: 1px solid currentColor; border-radius: 8px; color: inherit; background: #fff; font: inherit; font-size: 12px; font-weight: 850; cursor: pointer; }
+.delivery-otp-problem.is-locked { border-color: #dfa6a2; color: #a2352e; background: #fff2f1; }
+.delivery-otp-verified { border-color: #91cfb4; color: #126e4c; background: #edf9f4; }

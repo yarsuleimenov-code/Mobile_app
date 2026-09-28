@@ -92,11 +92,13 @@ export function DeliverySignatureScreen() {
           <section className="signature-card">
             {confirmationInput.contactMethod === 'contactless' ? (
               <div className="contactless-signing-summary"><FileX2 size={22} /><span><strong>Contact signature skipped</strong><small>{confirmationInput.contactlessReason}</small></span></div>
+            ) : confirmationInput.contactMethod === 'otp' ? (
+              <div className="contactless-signing-summary"><ShieldCheck size={22} /><span><strong>Recipient verified by OTP</strong><small>{confirmationInput.contactName} · ••• ••• {confirmationInput.otpPhoneLast4}</small></span></div>
             ) : (
               <div className="signature-prior-confirmation"><CheckCircle2 size={20} /><span>{confirmationInput.contactName} signed</span></div>
             )}
             <div className="signature-role"><UserRound size={25} /><span><strong>Zaberman driver</strong><small>{confirmationInput.driverName}</small></span></div>
-            <p>{confirmationInput.contactMethod === 'contactless' ? 'The driver is the only signer and confirms the selected contactless reason, Delivery evidence and exceptions.' : 'By signing, the driver confirms the same Delivery evidence and documented exceptions.'}</p>
+            <p>{confirmationInput.contactMethod === 'contactless' ? 'The driver is the only signer and confirms the selected contactless reason, Delivery evidence and exceptions.' : confirmationInput.contactMethod === 'otp' ? 'The recipient is already verified. By signing, the driver confirms the Delivery evidence and documented exceptions.' : 'By signing, the driver confirms the same Delivery evidence and documented exceptions.'}</p>
             <SignaturePad key="driver" label="Zaberman driver" onSignedChange={setDriverSigned} />
             {storageError ? <p className="ebol-storage-warning">Browser storage is unavailable. The Delivery snapshot was not locked.</p> : null}
             <button type="button" className="cargo-primary" disabled={!driverSigned} onClick={finishDeliverySigning}>Complete Order eBOL</button>
