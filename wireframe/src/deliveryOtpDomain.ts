@@ -1,4 +1,4 @@
-export type OtpOutcome = 'success' | 'invalid' | 'expired' | 'delivery_error'
+export type OtpOutcome = 'success' | 'expired' | 'delivery_error'
 export type OtpVerificationStatus = 'idle' | 'sent' | 'invalid' | 'expired' | 'delivery_error' | 'verified' | 'locked'
 
 export interface OtpVerificationState {
@@ -12,11 +12,11 @@ export interface OtpRecipient {
   phone: string
 }
 
-export const OTP_DEMO_CODE = '846219'
+export const OTP_INVALID_CODE = '111111'
 export const OTP_MAX_ATTEMPTS = 3
 export const OTP_MAX_SENDS = 3
 
-const requiredOtpOrders: Record<string, OtpRecipient> = {
+const demoOtpRecipients: Record<string, OtpRecipient> = {
   '11155599': { name: 'Michael Reed', phone: '+1 781 555 0198' },
   '99007008': { name: 'Michael Reed', phone: '+1 781 555 0198' },
 }
@@ -24,11 +24,7 @@ const requiredOtpOrders: Record<string, OtpRecipient> = {
 export const initialOtpState: OtpVerificationState = { status: 'idle', attempts: 0, sends: 0 }
 
 export function otpRecipient(orderNumber: string) {
-  return requiredOtpOrders[orderNumber]
-}
-
-export function isOtpRequiredOrder(orderNumber: string) {
-  return Boolean(otpRecipient(orderNumber))
+  return demoOtpRecipients[orderNumber] ?? { name: 'Delivery recipient', phone: '+1 781 555 0198' }
 }
 
 export function maskPhone(phone: string) {
@@ -46,7 +42,7 @@ export function sendOtp(state: OtpVerificationState, outcome: OtpOutcome, offlin
 export function verifyOtp(state: OtpVerificationState, code: string, outcome: OtpOutcome): OtpVerificationState {
   if (state.status === 'locked' || state.status === 'verified') return state
   if (outcome === 'expired') return { ...state, status: 'expired' }
-  if (outcome === 'success' && code === OTP_DEMO_CODE) return { ...state, status: 'verified' }
+  if (code !== OTP_INVALID_CODE && /^\d{6}$/.test(code)) return { ...state, status: 'verified' }
   const attempts = state.attempts + 1
   return { ...state, attempts, status: attempts >= OTP_MAX_ATTEMPTS ? 'locked' : 'invalid' }
 }

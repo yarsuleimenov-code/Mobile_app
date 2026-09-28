@@ -14,8 +14,9 @@ import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { weightText, volumeText } from '../measurementDomain'
 import { OrderDocumentHistory } from '../OrderDocumentHistory'
 import { DeliveryOtpVerification } from '../DeliveryOtpVerification'
-import { isOtpRequiredOrder, otpRecipient } from '../deliveryOtpDomain'
+import { otpRecipient } from '../deliveryOtpDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
+import { useCommunications } from '../communicationStore'
 
 function DeliveryEvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) {
   return (
@@ -38,14 +39,17 @@ function DeliveryEbolContent() {
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
   const { getOrderDetails } = useCargo()
+  const { getThread } = useCommunications()
   const [orderEbol] = useState<OrderEbol | null>(() => withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? null, 'delivery', getOrderDetails(orderNumber)))
-  const otpRequired = isOtpRequiredOrder(orderNumber)
-  const recipient = otpRecipient(orderNumber)
+  const communication = getThread(orderNumber)
+  const recipient = communication?.operation === 'dropoff'
+    ? { name: communication.customerName, phone: communication.customerPhone }
+    : otpRecipient(orderNumber)
   const { otpOutcome, network } = usePrototypeScenario()
   const [contactMethod, setContactMethod] = useState<DeliveryEbolConfirmationInput['contactMethod']>(() => (
-    otpRequired ? 'otp' : orderEbol?.delivery.contact.status === 'contactless' ? 'contactless' : 'signed'
+    orderEbol?.delivery.contact.status === 'otp' ? 'otp' : orderEbol?.delivery.contact.status === 'contactless' ? 'contactless' : 'signed'
   ))
-  const [contactName, setContactName] = useState(orderEbol?.delivery.contact.signerName ?? recipient?.name ?? '')
+  const [contactName, setContactName] = useState(orderEbol?.delivery.contact.signerName ?? '')
   const [otpVerified, setOtpVerified] = useState(orderEbol?.delivery.contact.status === 'otp')
   const [contactlessReason, setContactlessReason] = useState(orderEbol?.delivery.contact.contactlessReason ?? '')
   const [contactlessAcknowledged, setContactlessAcknowledged] = useState(false)
@@ -53,6 +57,11 @@ function DeliveryEbolContent() {
   const [hasDamage, setHasDamage] = useState(orderEbol?.delivery.evidence?.hasDamage ?? false)
   const [exceptionNote, setExceptionNote] = useState(orderEbol?.delivery.evidence?.exceptionNote ?? '')
   const { comments, changeComments, saveError } = useHandoffComments(orderEbol, 'delivery')
+  const chooseContactMethod = (method: DeliveryEbolConfirmationInput['contactMethod']) => {
+    if (method === contactMethod) return
+    setContactMethod(method)
+    setOtpVerified(false)
+  }
 
   if (!orderEbol?.pickup.lockedAt) {
     return (
@@ -77,7 +86,7 @@ function DeliveryEbolContent() {
   const evidence = orderEbol.delivery.evidence
   const confirmationInput: DeliveryEbolConfirmationInput = {
     contactMethod,
-    contactName,
+    contactName: contactMethod === 'otp' ? recipient.name : contactName,
     contactlessReason,
     contactlessAcknowledged,
     driverName,
@@ -85,7 +94,7 @@ function DeliveryEbolContent() {
     exceptionNote,
     contactComment: comments.contact, driverComment: comments.driver,
     otpVerified,
-    otpPhoneLast4: recipient?.phone.replace(/\D/g, '').slice(-4),
+    otpPhoneLast4: recipient.phone.replace(/\D/g, '').slice(-4),
   }
 
   if (orderEbol.delivery.lockedAt) {
@@ -134,22 +143,23 @@ function DeliveryEbolContent() {
 
         <section className="ebol-section">
           <div className="ebol-section-heading"><UserRound size={20} /><h2>Delivery contact</h2></div>
-          {otpRequired && recipient ? <DeliveryOtpVerification recipientName={recipient.name} recipientPhone={recipient.phone} outcome={otpOutcome} offline={network === 'offline'} onVerifiedChange={setOtpVerified} /> : <>
-          <div className="ebol-method" aria-label="Delivery contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => setContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'contactless'} className={contactMethod === 'contactless' ? 'is-active' : ''} onClick={() => setContactMethod('contactless')}>Contactless</button></div>
-          {contactMethod === 'signed' ? <label className="ebol-field">Contact name<input value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Full name" /></label> : (
+          <div className="ebol-method ebol-method--three" aria-label="Delivery contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => chooseContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'otp'} className={contactMethod === 'otp' ? 'is-active' : ''} onClick={() => chooseContactMethod('otp')}>SMS code</button><button type="button" aria-pressed={contactMethod === 'contactless'} className={contactMethod === 'contactless' ? 'is-active' : ''} onClick={() => chooseContactMethod('contactless')}>Contactless</button></div>
+          {contactMethod === 'signed' ? <label className="ebol-field">Contact name<input value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Full name" /></label> : contactMethod === 'otp' ? (
+            <DeliveryOtpVerification recipientName={recipient.name} recipientPhone={recipient.phone} outcome={otpOutcome} offline={network === 'offline'} onVerifiedChange={setOtpVerified} />
+          ) : (
             <div className="contactless-review">
               <label className="ebol-field">Contactless reason<select value={contactlessReason} onChange={(event) => { setContactlessReason(event.target.value); if (event.target.value === 'Contact refused to sign') setHasDamage(true) }}><option value="">Select reason</option><option>Contact unavailable</option><option>Contact refused to sign</option><option>Remote or unattended delivery</option></select></label>
               <div className="contactless-guidance"><AlertTriangle size={20} /><span><strong>Contact signature will be skipped</strong><small>The Zaberman driver must still sign the reviewed Delivery evidence.</small></span></div>
               {contactlessReason === 'Contact refused to sign' ? <p className="ebol-storage-warning">Describe the refusal in the exception details above before continuing.</p> : null}
               <label className="contactless-attestation"><input type="checkbox" checked={contactlessAcknowledged} onChange={(event) => setContactlessAcknowledged(event.target.checked)} /><span>I confirm the selected reason is accurate and the contact signature cannot be collected.</span></label>
             </div>
-          )}</>}
+          )}
         </section>
 
         <section className="ebol-section"><div className="ebol-section-heading"><UserRound size={20} /><h2>Zaberman driver</h2></div><label className="ebol-field">Driver name<input value={driverName} onChange={(event) => setDriverName(event.target.value)} placeholder="Full name" /></label></section>
 
         <HandoffCommentsEditor comments={comments} onChange={changeComments} saveError={saveError} />
-        <div className="flow-action"><button type="button" className="cargo-primary" disabled={(!canLockDeliveryEbol(confirmationInput) || !canReviewOrderEvidence(evidence))} onClick={openSigning}><FileText size={19} /> {otpRequired ? 'Continue to driver signature' : 'Continue to signing'}</button></div>
+        <div className="flow-action"><button type="button" className="cargo-primary" disabled={(!canLockDeliveryEbol(confirmationInput) || !canReviewOrderEvidence(evidence))} onClick={openSigning}><FileText size={19} /> {contactMethod === 'otp' ? 'Continue to driver signature' : 'Continue to signing'}</button></div>
       </main>
       <CargoBottomNav />
     </div>

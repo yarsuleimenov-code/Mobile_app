@@ -479,6 +479,8 @@ textarea { font: inherit; }
 .ebol-acknowledgement { margin-top: 16px; color: #7c4c00; background: #fff5df; }
 .ebol-acknowledgement p { font-size: 13px; line-height: 1.45; }
 .ebol-method { margin-top: 14px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: #eef2f6; border-radius: 9px; }
+.ebol-method--three { grid-template-columns: repeat(3, 1fr); }
+.ebol-method--three button { padding-inline: 5px; font-size: 11px; }
 .ebol-method button { min-height: 42px; border: 0; border-radius: 7px; color: var(--cargo-muted); background: transparent; font-weight: 850; cursor: pointer; }
 .ebol-method button.is-active { color: var(--cargo-blue); background: #fff; box-shadow: 0 2px 7px rgba(7,29,61,.12); }
 .ebol-field { margin-top: 14px; display: block; font-size: 13px; font-weight: 850; }

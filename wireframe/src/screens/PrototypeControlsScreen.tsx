@@ -5,7 +5,7 @@ import { EvidenceQueuePanel } from '../PhotoEvidence'
 import { installRehearsalPreset, rehearsalPresets, type RehearsalPresetId } from '../demoRehearsal'
 import { roleLabels } from '../data'
 import type { Role } from '../domain'
-import { OTP_DEMO_CODE, type OtpOutcome } from '../deliveryOtpDomain'
+import { OTP_INVALID_CODE, type OtpOutcome } from '../deliveryOtpDomain'
 import { useCommunications } from '../communicationStore'
 import {
   usePrototypeScenario,
@@ -34,7 +34,6 @@ const deviceOptions: Array<{ value: DeviceKind; label: string; icon: typeof Came
 ]
 const otpOutcomes: Array<{ value: OtpOutcome; label: string }> = [
   { value: 'success', label: 'Success' },
-  { value: 'invalid', label: 'Invalid code' },
   { value: 'expired', label: 'Expired code' },
   { value: 'delivery_error', label: 'SMS delivery error' },
 ]
@@ -135,7 +134,7 @@ export function PrototypeControlsScreen() {
           <div className="scenario-options scenario-options--two">
             {otpOutcomes.map(({ value, label }) => <button type="button" key={value} className={otpOutcome === value ? 'is-active' : ''} aria-pressed={otpOutcome === value} onClick={() => setOtpOutcome(value)}>{label}</button>)}
           </div>
-          <p>Applies to OTP Delivery. Verification code: <code>{OTP_DEMO_CODE}</code>. Offline mode produces an SMS delivery error.</p>
+          <p>Applies to OTP Delivery. Any 6-digit code succeeds except <code>{OTP_INVALID_CODE}</code>. Offline mode produces an SMS delivery error.</p>
         </section>
 
         <section className="scenario-section">
