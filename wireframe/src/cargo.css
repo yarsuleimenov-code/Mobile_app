@@ -947,11 +947,12 @@ textarea { font: inherit; }
 .message-order-context strong { font-size: 13px; overflow-wrap: anywhere; }
 .message-order-context span { color: var(--cargo-muted); font-size: 11px; }
 .message-order-context a { flex: 0 0 auto; min-height: 44px; padding: 0 10px; display: inline-flex; align-items: center; border-radius: 8px; color: var(--cargo-blue); background: #f1f7ff; font-size: 12px; font-weight: 800; text-decoration: none; }
-.message-sender-identity { margin-top: 9px; padding: 11px 12px; display: grid; grid-template-columns: 22px minmax(0, 1fr); align-items: center; gap: 9px; border-radius: 10px; color: #315d50; background: #e5f4ee; }
+.message-sender-identity { margin-top: 9px; padding: 9px 9px 9px 12px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 9px; border-radius: 10px; color: #315d50; background: #e5f4ee; }
 .message-sender-identity > div { min-width: 0; display: grid; gap: 3px; }
 .message-sender-identity small { font-size: 10px; opacity: .78; }
 .message-sender-identity p { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 12px; }
 .message-sender-identity strong { overflow-wrap: anywhere; }
+.message-call-action { min-width: 72px; min-height: 44px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #8ec4ae; border-radius: 9px; color: #146c4b; background: #fff; font-size: 12px; font-weight: 850; text-decoration: none; }
 .message-offline-banner { margin-top: 9px; padding: 10px 12px; display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: center; gap: 9px; border: 1px solid #e8cb86; border-radius: 10px; color: #765416; background: #fff7e5; }
 .message-offline-banner span { display: grid; gap: 2px; }
 .message-offline-banner strong { font-size: 12px; }
@@ -993,6 +994,42 @@ textarea { font: inherit; }
 .mock-reply-control select { min-width: 0; width: 100%; min-height: 44px; padding: 7px; border: 1px solid var(--cargo-line); border-radius: 8px; background: #fff; }
 .mock-reply-control button { min-height: 44px; padding: 8px 11px; display: flex; align-items: center; gap: 6px; border: 1px solid var(--cargo-blue); border-radius: 8px; color: var(--cargo-blue); background: #fff; font-weight: 800; cursor: pointer; }
 
+/* Order-linked outbound calling. */
+.call-screen { min-height: calc(100dvh - 148px); padding: 30px 20px 116px; display: flex; flex-direction: column; background: linear-gradient(180deg, #f2f7fb 0%, #fff 68%); }
+.call-contact { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.call-avatar { position: relative; width: 92px; height: 92px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(145deg, #315f91, #173f70); box-shadow: 0 12px 28px rgba(23,63,112,.22); }
+.call-avatar.is-active::before,
+.call-avatar.is-active::after { content: ''; position: absolute; inset: -8px; border: 2px solid rgba(34,105,193,.22); border-radius: 50%; animation: call-pulse 1.8s ease-out infinite; }
+.call-avatar.is-active::after { animation-delay: .6s; }
+.call-state { margin-top: 22px; color: var(--cargo-blue); font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.call-state--connected { color: #14805a; }
+.call-state--ended { color: var(--cargo-muted); }
+.call-contact h1 { margin-top: 7px; font-size: 28px; letter-spacing: -.5px; }
+.call-phone { margin-top: 5px; color: #405067; font-size: 16px; font-weight: 750; }
+.call-detail { min-height: 20px; margin-top: 9px; color: var(--cargo-muted); font-size: 12px; line-height: 1.45; }
+.call-identity { margin-top: 28px; padding: 4px 15px; display: grid; border: 1px solid #d7e1eb; border-radius: 12px; background: rgba(255,255,255,.9); box-shadow: 0 5px 16px rgba(7,29,61,.05); }
+.call-identity > span { min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--cargo-line); }
+.call-identity > span:last-child { border-bottom: 0; }
+.call-identity small { color: var(--cargo-muted); font-size: 11px; }
+.call-identity strong { font-size: 12px; text-align: right; }
+.call-controls { margin: 22px auto 0; display: grid; grid-template-columns: repeat(2, 78px); gap: 22px; }
+.call-controls button { min-height: 80px; padding: 9px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 1px solid #d5dee8; border-radius: 18px; color: var(--cargo-navy); background: #fff; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
+.call-controls button.is-active { border-color: #85abd9; color: var(--cargo-blue); background: #eaf3ff; }
+.call-primary-actions { margin-top: auto; padding-top: 28px; display: grid; gap: 10px; }
+.call-primary-actions button,
+.call-primary-actions a { width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 900; cursor: pointer; text-decoration: none; }
+.call-start-button { border: 0; color: #fff; background: #16835c; box-shadow: 0 7px 17px rgba(22,131,92,.2); }
+.call-end-button { border: 0; color: #fff; background: #d7473f; box-shadow: 0 7px 17px rgba(215,71,63,.2); }
+.call-primary-actions a { border: 1px solid #b8c7d8; color: var(--cargo-blue); background: #fff; }
+.call-screen--connected { padding-top: 18px; }
+.call-screen--connected .call-avatar { width: 74px; height: 74px; }
+.call-screen--connected .call-state { margin-top: 15px; }
+.call-screen--connected .call-identity { margin-top: 18px; }
+.call-screen--connected .call-controls { margin-top: 14px; }
+.call-screen--connected .call-primary-actions { padding-top: 18px; }
+@keyframes call-pulse { 0% { transform: scale(.94); opacity: .8; } 80%, 100% { transform: scale(1.16); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .call-avatar.is-active::before, .call-avatar.is-active::after { animation: none; } }
+
 @media (min-width: 700px) {
   .message-composer { bottom: calc(102px + env(safe-area-inset-bottom)); }
   .message-flow:has(.message-composer textarea:focus) .message-composer { bottom: 28px; }
@@ -1003,4 +1040,6 @@ textarea { font: inherit; }
   .communication-thread-list > a { grid-template-columns: 40px minmax(0, 1fr) 20px; padding-inline: 10px; }
   .communication-avatar { width: 40px; height: 40px; }
   .mock-reply-control { grid-template-columns: 1fr; }
+  .message-call-action { min-width: 48px; padding: 0; }
+  .message-call-action span { display: none; }
 }

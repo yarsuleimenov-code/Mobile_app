@@ -139,3 +139,13 @@ export function markThreadRead(thread: CommunicationThread) {
 export function communicationPath(orderNumber: string) {
   return `/orders/${orderNumber}/communications`
 }
+
+export function callPath(orderNumber: string) {
+  return `/orders/${orderNumber}/call`
+}
+
+export function formatCallDuration(totalSeconds: number) {
+  const minutes = Math.floor(Math.max(0, totalSeconds) / 60)
+  const seconds = Math.max(0, totalSeconds) % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}

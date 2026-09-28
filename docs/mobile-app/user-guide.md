@@ -26,7 +26,7 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | Home | Cargo operations — `#/` | Pickup, Dropoff, load route, Order documents |
 | Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Dropoff stop; Order details |
 | Bottom nav | Scan — `#/scan` | Open place or order places |
-| Home / Tasks / Order details | Messages — `#/communications`, `#/orders/{number}/communications` | Send or review customer SMS for an Order |
+| Home / Tasks / Pickup draft / Order details | Messages — `#/communications`, `#/orders/{number}/communications` | Send or review customer SMS; start an Order-linked call |
 | Bottom nav | More — `#/more` | Help & Instructions, Interstate, Cargo places, Sync now, Administration |
 | Home / Tasks | Pickup draft — `#/pickup?order={number}` | Pickup review or place labels |
 | Tasks / Pickup | Order details — `#/orders/{number}/details` | Return to operation |
@@ -65,7 +65,7 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 
 **When to use:** open a Pickup stop from Home/Tasks or choose Pickup on Home, then select the correct order.
 
-1. Check the **Order #**, operational name and **Order details**. If the name or handling details are incomplete, open Order details and fill fields available to your current role.
+1. Check the **Order #**, operational name and **Order details**. If you need to contact the customer without leaving the order, select **SMS** in the order card; an unread badge shows new replies. If the name or handling details are incomplete, open Order details and fill fields available to your current role.
 2. Set Pickup date, responsible manager, packaging and any order comment.
 3. For each **dimension group**, enter **Qty**, L/W/H in inches and weight per place in pounds. Groups represent places with the same attributes; each place retains its own PlaceID. Add or remove groups as needed. If a measurement cannot be supplied, mark it or leave it unknown and record **Reason for unmeasured values**. The screen displays known totals separately from incomplete places.
 4. Inspect **Cargo photos**. Add with **Take photo** or **Choose from gallery**, select a category and review the thumbnails. An individual photo can be previewed and removed while editing. In this wireframe these actions use local sample assets/metadata.
@@ -98,9 +98,18 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 
 The approved process model treats Pickup and Dropoff as separate operations linked to one RouteRun. The active app can show both types of stop on Today's route, but has no routed Same Day progress screen or verified automatic pairing of the two. Complete each stop through its normal Pickup or Dropoff path. Do not assume that finishing Pickup automatically completes or creates a Dropoff task. [Same Day article](../../knowledge-base/mobile-app/same-day.md).
 
-## Customer messages
+## Customer messages and calls
 
-Open **Messages** from Home, or **Message customer** from a task or Order details. Every conversation is tied to one Order and customer contact. The sender identity is the Zaberman corporate SMS number **17178361039**; the employee's personal phone number is not used or shown. Outbound messages show Queued, Sending, Sent or Not sent. Use Retry for a failed message. Offline messages remain Queued until the connection returns. Incoming replies appear as unread in Messages and the related task. In the current wireframe, sending and receiving are local demonstrations; no telephony provider is connected.
+Open **Messages** from Home, **Message customer** from a task or Order details, or **SMS** from the order card in Pickup draft. Every conversation is tied to one Order and customer contact.
+
+1. In **Messages**, search by Order, customer or message text. Use **All** or **Unread** to narrow the inbox.
+2. Open the required conversation and verify the customer, Order and operation in the header. The sender identity is the Zaberman corporate SMS number **17178361039**; the employee's personal phone number is not used or shown.
+3. Select a quick message — **On my way**, **Arrived**, **Running late** or **Please confirm access** — or type a custom message. Review the text and select **Send**.
+4. Check the status: Sending, Sent, Queued until online or Not sent. Offline messages send automatically after the connection returns. For Not sent, use **Retry**.
+5. Incoming replies appear as unread in Messages, the related task and the **SMS** button. Opening the conversation clears its unread count. Use **Open order** to return to the related operation.
+6. To call the same customer, select **Call** in the conversation. Confirm the customer, Order and **Calling from** number, then select **Start call**. During a connected call you can toggle **Mute** or **Speaker** and select **End call**. Use **Call again** or **Back to messages** when it ends.
+
+In the current wireframe, SMS and call states are local demonstrations; no telephony provider, audio connection, webhook, push notification or production communication history is connected.
 
 ## Cargo, Scan and labels
 

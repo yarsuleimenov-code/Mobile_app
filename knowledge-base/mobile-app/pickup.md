@@ -2,7 +2,7 @@
 
 **Use this article when:** you collect cargo for an Order.
 
-1. Open the Pickup stop from **Tasks** or Home. Verify the **Order #** and name; open **Order details** if needed.
+1. Open the Pickup stop from **Tasks** or Home. Verify the **Order #** and name. Use **SMS** in the order card for a quick customer message; select **Call** inside the conversation to start an Order-linked call from the corporate number. Open **Order details** if order information needs review.
 2. Complete Pickup date, responsible manager, packaging and any comment.
 3. For each **dimension group**, enter Qty, L/W/H and weight per place. Add groups for different kinds of places. If a value is unknown, record the reason.
 4. Add at least one **Cargo photo**. You can preview and remove individual photos before signing. Wait for the local draft to show saved.

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   appendInboundMessage,
+  callPath,
   CORPORATE_SMS_NUMBER,
   createOutboundMessage,
   communicationDayLabel,
   filterCommunicationThreads,
+  formatCallDuration,
   initialCommunicationThreads,
   markThreadRead,
   updateMessageStatus,
@@ -52,5 +54,11 @@ describe('Order SMS communications', () => {
     expect(communicationDayLabel('2026-09-25T08:00:00-04:00', now)).toBe('Today')
     expect(communicationDayLabel('2026-09-24T08:00:00-04:00', now)).toBe('Yesterday')
     expect(communicationDayLabel('2026-09-21T08:00:00-04:00', now)).toMatch(/Sep 21/)
+  })
+
+  it('builds the order call route and formats call duration', () => {
+    expect(callPath('23343775')).toBe('/orders/23343775/call')
+    expect(formatCallDuration(0)).toBe('0:00')
+    expect(formatCallDuration(65)).toBe('1:05')
   })
 })

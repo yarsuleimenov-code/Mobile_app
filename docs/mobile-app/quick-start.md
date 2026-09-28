@@ -17,6 +17,12 @@ Open **Cargo operations**. Check that you have the correct Order number before r
 
 In **Tasks**, choose a stop. Check its Order number, scheduled time and address. Use **Order details · Spoke preview** if the order name or handling information needs review. Opening a stop does not complete it.
 
+## Message or call a customer
+
+Open **Messages** from Home, **Message customer** from a task or Order details, or **SMS** in the Pickup draft order card. Confirm the customer and Order, choose a quick message or type your own, then select **Send**. A queued message will send when the connection returns; use **Retry** if it shows **Not sent**. Messages are sent from corporate number **17178361039**, not the employee's personal number.
+
+For a call, open the customer's conversation, select **Call**, confirm the Order and corporate **Calling from** number, then select **Start call**. End with **End call** and return through **Back to messages**. The current build demonstrates the call flow but does not connect audio or a telephony provider.
+
 ## Complete Pickup
 
 1. Confirm the Order number and operational name.

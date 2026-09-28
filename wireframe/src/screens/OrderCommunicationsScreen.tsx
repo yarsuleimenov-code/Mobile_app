@@ -1,8 +1,8 @@
-import { AlertCircle, Check, CheckCheck, Clock3, MessageCircleMore, RotateCw, Send, WifiOff } from 'lucide-react'
+import { AlertCircle, Check, CheckCheck, Clock3, MessageCircleMore, Phone, RotateCw, Send, WifiOff } from 'lucide-react'
 import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
-import { communicationDayLabel, CORPORATE_SMS_NUMBER_LABEL, type SmsMessage } from '../communicationDomain'
+import { callPath, communicationDayLabel, CORPORATE_SMS_NUMBER_LABEL, type SmsMessage } from '../communicationDomain'
 import { useCommunications } from '../communicationStore'
 import { useCargo } from '../cargoStore'
 import { operationalName } from '../orderDetailsDomain'
@@ -64,6 +64,7 @@ export function OrderCommunicationsScreen() {
       <section className="message-sender-identity">
         <MessageCircleMore size={19} />
         <div><small>Corporate conversation</small><p><strong>{CORPORATE_SMS_NUMBER_LABEL}</strong><span aria-hidden="true">→</span><strong>{thread.customerName} {maskedPhone(thread.customerPhone)}</strong></p></div>
+        <Link className="message-call-action" to={callPath(orderNumber)} aria-label={`Call ${thread.customerName}`}><Phone size={18} /><span>Call</span></Link>
       </section>
       {network === 'offline' ? <div className="message-offline-banner" role="status"><WifiOff size={18} /><span><strong>Offline</strong><small>Messages will send automatically when connection returns.</small></span></div> : null}
       <ol className="message-bubbles" aria-label={`Messages with ${thread.customerName}`} aria-live="polite" aria-relevant="additions text">

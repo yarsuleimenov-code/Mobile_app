@@ -1,6 +1,6 @@
 # Реализованный контекст проекта
 
-Дата среза: 2026-09-25
+Дата среза: 2026-09-26
 
 Назначение: единая точка входа перед следующим этапом разработки.
 
@@ -12,7 +12,7 @@
 2. подготовленный, но ещё не применённый PostgreSQL DDL baseline;
 3. собранный NestJS vertical slice `Create CargoPlace` с OpenAPI, unit-тестами и условным PostgreSQL integration-тестом.
 
-Текущая цель — согласование бизнес-прототипа с owner, не создание рабочего приложения. Этапы 3–6 приняты owner; код Этапа 7 включён в `main` коммитом `762ffb5`, но отдельная бизнес-приёмка owner в документах не зафиксирована. Позднее опубликованы вход More → Administration (`8f756a5`) и необязательная email-копия Pickup eBOL (`4f9b552`). [Инструкция Этапа 7](STAGE_7_OWNER_DEMO_REHEARSAL.md) сохраняет сценарии показа, [план](OWNER_DEMO_PLAN.md) — исторические критерии. Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному production-backlog.
+Текущая цель — согласование бизнес-прототипа с owner, не создание рабочего приложения. Этапы 3–6 приняты owner; код Этапа 7 включён в main коммитом 762ffb5, но отдельная бизнес-приёмка owner в документах не зафиксирована. Позднее опубликованы вход More → Administration (8f756a5), необязательная email-копия Pickup eBOL (4f9b552) и Customer SMS с UX-улучшениями и быстрым входом из Pickup draft (9b2dc6f, 99acb2c, 1d8c41e). [Инструкция Этапа 7](STAGE_7_OWNER_DEMO_REHEARSAL.md) сохраняет сценарии показа, [план](OWNER_DEMO_PLAN.md) — исторические критерии. Production mobile client, развёрнутый backend, настоящая identity, интеграции и серверная БД отсутствуют. Runtime PostgreSQL gate относится к отдельному production-backlog.
 
 Правило показа от 2026-09-02 с уточнением owner от 2026-09-03: рабочие экраны выглядят как будущий продукт, без Simulate/demo/mock/prototype-пояснений; о природе wireframe ведущий предупреждает устно. Print и Print history, фото/sync, Scan, подписание и документы приведены к этому правилу. В More восстановлен пункт Administration → существующая служебная панель `#/more/demo`: роль, филиал, сеть, устройства и сценарии. Это исключение из прежнего скрытия входа; остальные рабочие экраны не меняются. Реальные интеграции и новая система прав доступа не добавлены.
 
@@ -27,14 +27,14 @@
 5. [OWNER_DEMO_PLAN.md](OWNER_DEMO_PLAN.md) — текущий scope, нумерация и критерии demo-этапов 3–7; [WIREFRAME_IMPLEMENTATION_PLAN.md](../../WIREFRAME_IMPLEMENTATION_PLAN.md) — сводка плана и исторический каталог;
 6. исходные ТЗ и audit-пакет как исторические источники требований.
 
-Публикационный baseline в `main`: `0b14625` от 2026-09-21. История: Этапы 3–4 — `1d2a2d2`, Этапы 5–6 — `8756a6f`, Этап 7 — `762ffb5`, восстановленный вход Administration — `8f756a5`, email-копия Pickup eBOL — `4f9b552`, единый сайт приложения и документации — `0b14625`. Наличие кода в `main` не подтверждает бизнес-приёмку Этапа 7 owner. Комплект пользовательских документов на [английском](../mobile-app/README.md) и [русском](../mobile-app/ru/README.md) опубликован вместе с прототипом; внутренние Open Questions в публичный Git и Pages artifact не входят.
+Публикационный baseline в main: 1d8c41e от 2026-09-25. История: Этапы 3–4 — 1d2a2d2, Этапы 5–6 — 8756a6f, Этап 7 — 762ffb5, восстановленный вход Administration — 8f756a5, email-копия Pickup eBOL — 4f9b552, единый сайт приложения и документации — 0b14625, Customer SMS — 9b2dc6f, UX-улучшения Messages — 99acb2c, быстрый SMS-вход из Pickup draft — 1d8c41e. Наличие кода в main не подтверждает бизнес-приёмку Этапа 7 owner. Комплект пользовательских документов на [английском](../mobile-app/README.md) и [русском](../mobile-app/ru/README.md) опубликован вместе с прототипом; внутренние Open Questions в публичный Git и Pages artifact не входят.
 
 ## 3. Что фактически реализовано
 
 | Контур | Реализовано | Граница |
 |---|---|---|
 | Навигация | Home | Tasks | Scan | More, Cargo places и secondary Interstate | Часть legacy-экранов в src не подключена к App.tsx |
-| Customer SMS | Messages inbox, Order-thread для 7 mock-заказов, корпоративный sender 17178361039, unread, offline queue, failure/retry и mock incoming reply | Только localStorage и управляемая демонстрация; реальная телефония, SMS API, webhook, push и звонки отсутствуют |
+| Customer communications | Messages inbox с поиском и All/Unread, Order-thread для 7 mock-заказов, входы из Home/Tasks/Order details/Pickup draft, быстрые сообщения, корпоративный sender 17178361039, unread, date groups, offline queue, failure/retry и mock incoming reply; из диалога доступен визуальный исходящий звонок с состояниями ready/calling/connected/ended, Mute/Speaker и повтором | Только локальная управляемая демонстрация; реальная телефония, аудио, SMS API, webhook, push, delivery receipt, call history и missed calls отсутствуют |
 | Pickup/Dropoff | Autosaved/restored Pickup draft, dimension group CRUD с индивидуальными PlaceID, заполненные route mock-заявки, history, Recent Operations edit и mock Dropoff reconcile | Только `localStorage`; нет реальных задач, камеры, файлов и server confirmation |
 | Данные заказа | Trade/internal names, отдельный Qty, source, role-gated edit/audit, Special Cargo, read-only Spoke preview; известные итоги и причины неполных измерений | Локальные fixtures и permissions; Fragile/Oversized и role mapping — demo-допущения |
 | CargoPlace | Prototype PlaceID, `n/N`, labels, current status/location и короткая история | Проекция вычисляется из mock/local state |
@@ -84,7 +84,7 @@
 
 ## 7. Проверенное состояние
 
-Frontend source повторно проверен 2026-09-25: Vitest — 21 файл / 110 тестов, TypeScript `tsc -b` и Vite build проходят. Messages дополнительно проверены в Chrome на 390×844 и 1440×1000: 7 threads, Order navigation и отправка до Sent; console содержит только известный необязательный `favicon.ico` 404. Ниже сохранены подробные результаты проверок этапов от 2026-09-02; backend-результаты остаются от 2026-09-01:
+Frontend source повторно проверен 2026-09-26: Vitest — 21 файл / 112 тестов, TypeScript tsc -b, Vite build и VitePress docs build проходят. Messages проверены в Chrome на 390×844 и 1440×1000: 7 threads, поиск, All/Unread, быстрые сообщения, offline, failure/retry, Order navigation и отправка до Sent. Вход Pickup draft → SMS → Order-thread дополнительно проверен на 430×1240 и 390×844; console содержит только известный необязательный favicon.ico 404. Ниже сохранены подробные результаты проверок этапов от 2026-09-02; backend-результаты остаются от 2026-09-01:
 
 - Vitest: 19 файлов, 102 теста — passed;
 - TypeScript project build — passed;

@@ -3,6 +3,7 @@ import { CargoHomeScreen } from './screens/CargoHomeScreen'
 import { CargoPlaceScreen } from './screens/CargoPlaceScreen'
 import { CommunicationsScreen } from './screens/CommunicationsScreen'
 import { OrderCommunicationsScreen } from './screens/OrderCommunicationsScreen'
+import { OrderCallScreen } from './screens/OrderCallScreen'
 import { CargoPlacesScreen } from './screens/CargoPlacesScreen'
 import { DropoffVerifyScreen } from './screens/DropoffVerifyScreen'
 import { DeliveryEbolScreen } from './screens/DeliveryEbolScreen'
@@ -33,6 +34,7 @@ export function App() {
       <Route path="tasks" element={<TasksScreen />} />
       <Route path="communications" element={<CommunicationsScreen />} />
       <Route path="orders/:orderNumber/communications" element={<OrderCommunicationsScreen />} />
+      <Route path="orders/:orderNumber/call" element={<OrderCallScreen />} />
       <Route path="scan" element={<ScanScreen />} />
       <Route path="more" element={<MoreScreen />} />
       <Route path="more/demo" element={<PrototypeControlsScreen />} />

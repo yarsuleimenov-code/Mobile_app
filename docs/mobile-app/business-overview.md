@@ -49,6 +49,10 @@ flowchart LR
 
 The Pickup draft autosaves. The employee may add, change or remove dimension groups, record quantity, L/W/H, weight per place, reason for unknown measurements, photos, and order context. Saving creates or updates the local Order eBOL draft and a local cargo record. It does **not** lock the Pickup snapshot. Review and signing are separate steps. After locking, the original is read-only; added places use Supplemental Pickup with a new version and confirmations. [Pickup screen](../../wireframe/src/screens/PickupCaptureScreen.tsx), [Pickup review](../../wireframe/src/screens/PickupEbolScreen.tsx), [signing](../../wireframe/src/screens/PickupSignatureScreen.tsx).
 
+### Customer SMS
+
+Customer messaging is Order-scoped rather than a separate operational lifecycle. Employees can enter the same conversation from Home Messages, a task, Order details or the **SMS** action in Pickup draft. The inbox supports search and All/Unread filters; the thread offers quick messages, custom text, explicit delivery states, offline queueing and retry. The visible sender is corporate number **17178361039**, never the employee's personal number. The current implementation is local prototype state; telephony API, inbound webhook, push delivery, retention and audit remain production work.
+
 ### Dropoff and POD
 
 ```mermaid

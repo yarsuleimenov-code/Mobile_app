@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zaberman UX audit prototype</title>
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color:#172033; background:#eef1f5; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:28px 16px 48px; }
+    h1 { max-width:1180px; margin:0 auto 8px; font-size:28px; }
+    .intro { max-width:1180px; margin:0 auto 24px; color:#526079; }
+    .grid { max-width:1180px; margin:auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:24px; }
+    .case { display:grid; gap:12px; }
+    .case h2 { margin:0; font-size:18px; }
+    .phone { width:min(100%,390px); min-height:720px; margin:auto; background:#f8f9fb; border:8px solid #202735; border-radius:32px; overflow:hidden; box-shadow:0 18px 50px #24304726; position:relative; padding-bottom:84px; }
+    .top { padding:18px 18px 12px; background:white; border-bottom:1px solid #dfe4eb; }
+    .context { font-size:12px; color:#647089; display:flex; justify-content:space-between; }
+    .top h3 { margin:12px 0 2px; font-size:24px; }
+    .muted { color:#647089; font-size:14px; }
+    .body { padding:14px; display:grid; gap:12px; }
+    .card { background:white; border:1px solid #dce2ea; border-radius:14px; padding:14px; display:grid; gap:9px; }
+    .card.active { border:2px solid #155bd7; }
+    .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .type { font-size:13px; font-weight:800; letter-spacing:.04em; color:#155bd7; }
+    .type.drop { color:#8b3d9e; }
+    .badge { font-size:12px; padding:4px 8px; border-radius:999px; background:#e8f0ff; color:#124aa8; font-weight:700; }
+    .address { font-size:18px; font-weight:750; line-height:1.25; }
+    .time { font-weight:700; }
+    .meta { color:#647089; font-size:13px; }
+    .btn { min-height:48px; border:0; border-radius:12px; font-size:16px; font-weight:750; padding:12px 16px; background:#155bd7; color:white; width:100%; }
+    .btn.secondary { background:white; color:#155bd7; border:1px solid #155bd7; }
+    .sticky { position:absolute; left:0; right:0; bottom:60px; padding:10px 14px; background:linear-gradient(transparent,#f8f9fb 25%); }
+    .nav { position:absolute; left:0; right:0; bottom:0; height:62px; background:white; border-top:1px solid #dce2ea; display:grid; grid-template-columns:repeat(4,1fr); place-items:center; font-size:12px; color:#68758d; }
+    .nav b { color:#155bd7; }
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+    .step { height:5px; background:#dce2ea; border-radius:9px; }
+    .step.done,.step.now { background:#155bd7; }
+    .summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .metric { background:#f0f4fa; border-radius:10px; padding:10px; text-align:center; }
+    .metric strong { display:block; font-size:20px; }
+    .check { display:flex; gap:10px; align-items:flex-start; }
+    .check i { width:24px; height:24px; border-radius:50%; background:#dff6e8; color:#167244; display:grid; place-items:center; font-style:normal; font-weight:800; flex:0 0 auto; }
+    .status { border-left:4px solid #e3a008; padding:10px 12px; background:#fff8df; border-radius:8px; font-size:14px; }
+    .scan-result { border:2px solid #1d7a4a; background:#effaf4; }
+    .problem { background:#fff1f0; border:1px solid #f2c7c4; padding:10px 12px; border-radius:10px; color:#7c302c; font-size:13px; }
+    .caption { color:#4f5d75; font-size:13px; line-height:1.45; }
+    @media(max-width:720px){ body{padding:18px 8px 40px}.phone{min-height:680px}.grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <h1>AS-IS → proposed TO-BE concepts</h1>
+  <p class="intro">Standalone audit artifact. It demonstrates workflow changes for three high-impact screens; it is not production code and does not add business logic.</p>
+  <main class="grid">
+    <section class="case">
+      <h2>1. Home / Tasks — proposed</h2>
+      <div class="phone">
+        <header class="top"><div class="context"><span>NJ1 · Driver</span><span>Online · Synced</span></div><h3>Today</h3><div class="muted">2 tasks · next at 9:00 AM</div></header>
+        <div class="body">
+          <div class="card active"><div class="row"><span class="type">RESUME PICKUP</span><span class="badge">In progress</span></div><div class="address">725 River Road, Edgewater</div><div class="time">8:30–9:30 AM</div><div class="meta">Acme Studio · Order 104582 · Local</div><button class="btn">Resume Pickup</button></div>
+          <div class="card"><div class="row"><span class="type drop">DROPOFF</span><span class="badge">Next</span></div><div class="address">1200 Market Street, Newark</div><div class="time">11:00 AM–1:00 PM</div><div class="meta">North & Pine · Order 104583 · Same Day</div><button class="btn secondary">View task</button></div>
+          <div class="problem">Change from AS-IS: address, operation and time dominate; only one primary action; metadata is secondary.</div>
+        </div>
+        <nav class="nav"><b>Home</b><span>Tasks</span><span>Scan</span><span>More</span></nav>
+      </div>
+      <p class="caption"><b>Problem solved:</b> equal visual weight and ambiguous next action. The user can identify the physical destination before commercial metadata.</p>
+    </section>
+
+    <section class="case">
+      <h2>2. Pickup progress — proposed</h2>
+      <div class="phone">
+        <header class="top"><div class="context"><span>Pickup · Order 104582</span><span>Saved</span></div><h3>Cargo & evidence</h3><div class="muted">725 River Road</div></header>
+        <div class="body">
+          <div class="steps" aria-label="Step 3 of 4"><span class="step done"></span><span class="step done"></span><span class="step now"></span><span class="step"></span></div>
+          <div class="summary"><div class="metric"><strong>4</strong>places</div><div class="metric"><strong>6/6</strong>photos</div><div class="metric"><strong>4/4</strong>labels</div></div>
+          <div class="card"><div class="check"><i>✓</i><div><b>Order confirmed</b><div class="meta">Address and contact checked</div></div></div><div class="check"><i>✓</i><div><b>Cargo captured</b><div class="meta">2 dimension groups · 4 places</div></div></div><div class="check"><i>✓</i><div><b>Evidence complete</b><div class="meta">Photos and labels ready</div></div></div></div>
+          <div class="status"><b>Sync</b><br>Saved on device · pending upload. You can continue.</div>
+          <div class="problem">Change from AS-IS: operation, evidence and sync are separate. The next action stays reachable after a long list.</div>
+        </div>
+        <div class="sticky"><button class="btn">Review Pickup — 4 places</button></div>
+        <nav class="nav"><span>Home</span><b>Tasks</b><span>Scan</span><span>More</span></nav>
+      </div>
+      <p class="caption"><b>Problem solved:</b> long form and late discovery of missing data. The checklist reflects work, while the sticky CTA drives the next step.</p>
+    </section>
+
+    <section class="case">
+      <h2>3. Scan result — proposed</h2>
+      <div class="phone">
+        <header class="top"><div class="context"><span>Dropoff · Order 104582</span><span>3 of 4</span></div><h3>Scan cargo</h3><div class="muted">Expected 4 · Scanned 3 · Issues 0</div></header>
+        <div class="body" style="padding-top:180px">
+          <div class="card scan-result"><div class="row"><span class="type">ALREADY SCANNED</span><span>✓</span></div><div class="address">Place 3 of 4</div><div class="meta">ZB-104582-03 · count unchanged</div><button class="btn">Scan next</button><button class="btn secondary">View place</button></div>
+          <div class="problem">Change from AS-IS: every result states whether progress changed and offers one dominant action without leaving the scan loop.</div>
+        </div>
+        <nav class="nav"><span>Home</span><span>Tasks</span><b>Scan</b><span>More</span></nav>
+      </div>
+      <p class="caption"><b>Problem solved:</b> duplicate/wrong/unknown results can no longer look like successful progress. Text and icon communicate state without color dependence.</p>
+    </section>
+  </main>
+</body>
+</html>
