@@ -33,7 +33,7 @@
 
 | Контур | Реализовано | Граница |
 |---|---|---|
-| Навигация | Home | Tasks | Scan | More, Cargo places и secondary Interstate | Часть legacy-экранов в src не подключена к App.tsx |
+| Навигация | Home | Tasks | Scan | More, Cargo places, обязательный Pre-trip inspection и secondary Interstate | Часть legacy-экранов в src не подключена к App.tsx |
 | Customer communications | Messages inbox с поиском и All/Unread, Order-thread для 7 mock-заказов, входы из Home/Tasks/Order details/Pickup draft, быстрые сообщения, корпоративный sender 17178361039, unread, date groups, offline queue, failure/retry и mock incoming reply; из диалога доступен визуальный исходящий звонок с состояниями ready/calling/connected/ended, Mute/Speaker и повтором | Только локальная управляемая демонстрация; реальная телефония, аудио, SMS API, webhook, push, delivery receipt, call history и missed calls отсутствуют |
 | Pickup/Dropoff | Autosaved/restored Pickup draft, dimension group CRUD с индивидуальными PlaceID, заполненные route mock-заявки, history, Recent Operations edit и mock Dropoff reconcile | Только `localStorage`; нет реальных задач, камеры, файлов и server confirmation |
 | Данные заказа | Trade/internal names, отдельный Qty, source, role-gated edit/audit, Special Cargo, read-only Spoke preview; известные итоги и причины неполных измерений | Локальные fixtures и permissions; Fragile/Oversized и role mapping — demo-допущения |
@@ -41,6 +41,7 @@
 | Labels / Scan | All/selected/one, preview выбранных Code 128, version filter, mock print/reprint history, printer unavailable, valid/duplicate/unknown и manual lookup | Нет printer SDK или аппаратного scan; Print моделирует результат локально |
 | Order eBOL/POD | Pickup/Delivery review, отдельные comments сторон, locked snapshots, Supplemental versions, read-only история документов, POD, Download/Print/Email/Share dialogs и необязательная email-копия подписанной версии Pickup | Подписи, PDF и отправка email не production/legal artifacts; результат локально имитируется |
 | Фото | Отдельные mock-фото, категории, preview/filter/remove, восстановление Pickup/Delivery, фото своих версий в review/POD | Только metadata и существующие demo-assets; без файлов и upload |
+| Предрейсовый осмотр | Gate перед дневным маршрутом, 7 safety-checks, 4 camera-only ракурса, attestation, блокировка при Issue и сохранение на устройстве | Hi-fi wireframe; без реальной камеры, vehicle assignment, supervisor override, ремонтных задач и server audit |
 | Interstate | Loading review, Trip, immutable loaded manifest в domain model, Unloading draft, BOL archive | Нет authoritative Trip service и atomic server Close |
 | Scenario controls | Роль, филиал, сеть, sync/print/email/SMS outcomes, mock incoming reply, camera/scanner/printer, normal/offline/conflict/40/100-photo presets, reset | Только управляемая демонстрация |
 | Persistence/sync | Versioned `localStorage`, очередь operation/photo с retry, сохранение ошибок, явный Keep local changes для demo-конфликта | Нет SQLite, durable outbox/inbox, реального merge и server sync |

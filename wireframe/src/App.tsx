@@ -26,6 +26,7 @@ import { MoreScreen } from './screens/MoreScreen'
 import { PrototypeControlsScreen } from './screens/PrototypeControlsScreen'
 import { ScanScreen } from './screens/ScanScreen'
 import { TasksScreen } from './screens/TasksScreen'
+import { PreTripInspectionScreen } from './screens/PreTripInspectionScreen'
 
 export function App() {
   return (
@@ -38,6 +39,7 @@ export function App() {
       <Route path="scan" element={<ScanScreen />} />
       <Route path="more" element={<MoreScreen />} />
       <Route path="more/demo" element={<PrototypeControlsScreen />} />
+      <Route path="pre-trip-inspection" element={<PreTripInspectionScreen />} />
       <Route path="places" element={<CargoPlacesScreen />} />
       <Route path="places/:placeId" element={<CargoPlaceScreen />} />
       <Route path="pickup" element={<PickupCaptureScreen />} />

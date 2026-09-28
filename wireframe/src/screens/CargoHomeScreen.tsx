@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FilePenLine, FileText, LoaderCircle, MessageCircleMore, RefreshCw, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FilePenLine, FileText, LoaderCircle, MessageCircleMore, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
@@ -12,11 +12,16 @@ import { getOrderDocumentNavigation } from '../orderEbolNavigation'
 import { readOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts } from '../pickupDraftStore'
 import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
+import { inspectionStatus, preTripChecks, preTripPhotos } from '../preTripInspectionDomain'
+import { usePreTripInspection } from '../preTripInspectionStore'
 
 export function CargoHomeScreen() {
   const navigate = useNavigate()
   const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute, clearSpokeRoute, getOrderDetails, getOrderCargo } = useCargo()
   const { unreadTotal, threads } = useCommunications()
+  const { inspection } = usePreTripInspection()
+  const preTripStatus = inspectionStatus(inspection)
+  const routeUnlocked = preTripStatus === 'passed'
   const [routeQuery, setRouteQuery] = useState('')
   const [recentRecordsExpanded, setRecentRecordsExpanded] = useState(false)
   const [orderEbols] = useState(() => readOrderEbols())
@@ -52,10 +57,16 @@ export function CargoHomeScreen() {
           <ChevronRight size={20} />
         </button>
 
+        <section className={`pretrip-home-card pretrip-home-card--${preTripStatus}`} aria-labelledby="pretrip-home-title">
+          <span className="pretrip-home-icon"><ShieldCheck size={25} /></span>
+          <div><p>{routeUnlocked ? 'VEHICLE CLEARED' : preTripStatus === 'blocked' ? 'ROUTE LOCKED' : 'REQUIRED BEFORE ROUTE'}</p><h2 id="pretrip-home-title">Pre-trip inspection</h2><small>{routeUnlocked ? `Van 08 · ${preTripChecks.length} checks · ${preTripPhotos.length} photos complete` : preTripStatus === 'blocked' ? 'A reported issue must be cleared before departure' : 'Van 08 · Safety checklist and 4 required photos'}</small></div>
+          <button type="button" onClick={() => navigate('/pre-trip-inspection')}>{routeUnlocked ? 'View' : preTripStatus === 'in_progress' || preTripStatus === 'blocked' ? 'Continue' : 'Start'} <ChevronRight size={17} /></button>
+        </section>
+
         {!spokeRoute ? (
           <section className="spoke-import" aria-labelledby="spoke-import-title">
             <div className="spoke-import-heading"><span><CloudDownload size={25} /></span><div><h2 id="spoke-import-title">Today’s Spoke route</h2><p>Load today’s stops. External ID becomes the Zaberman order number.</p></div></div>
-            <button type="button" onClick={loadTodaySpokeRoute} disabled={isSpokeRouteLoading}>{isSpokeRouteLoading ? <LoaderCircle className="is-spinning" size={20} /> : <CloudDownload size={20} />}{isSpokeRouteLoading ? 'Loading route…' : 'Load today’s route'}</button>
+            <button type="button" onClick={loadTodaySpokeRoute} disabled={isSpokeRouteLoading || !routeUnlocked}>{isSpokeRouteLoading ? <LoaderCircle className="is-spinning" size={20} /> : routeUnlocked ? <CloudDownload size={20} /> : <ShieldCheck size={20} />}{isSpokeRouteLoading ? 'Loading route…' : routeUnlocked ? 'Load today’s route' : 'Complete inspection to unlock'}</button>
           </section>
         ) : (
           <section className="spoke-tasks" aria-labelledby="spoke-tasks-title">
@@ -64,7 +75,7 @@ export function CargoHomeScreen() {
             <label className="spoke-task-search"><Search size={19} /><input aria-label="Find stop by External ID" inputMode="numeric" placeholder="Find order by External ID" value={routeQuery} onChange={(event) => setRouteQuery(event.target.value)} /></label>
             <div className="spoke-task-list">
               {visibleTasks.map((task) => (
-                <button type="button" key={task.stopId} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
+                <button type="button" key={task.stopId} disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
                   <span className={`spoke-task-icon spoke-task-icon--${task.operation}`}>{task.operation === 'pickup' ? <ArrowUp size={19} /> : <ArrowDown size={19} />}</span>
                   <span className="spoke-task-main"><strong>#{task.externalId}</strong><small>{String(task.sequence).padStart(2, '0')} · {operationalName(getOrderDetails(task.externalId), task.externalId)}</small><small>Qty {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs · {task.address}</small></span>
                   <span className={`spoke-task-side spoke-task-side--${task.operation}`}><strong>{task.scheduledTime}</strong><small>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</small></span>

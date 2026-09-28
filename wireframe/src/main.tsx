@@ -6,6 +6,7 @@ import { CargoProvider } from './cargoStore'
 import { CommunicationProvider } from './communicationStore'
 import { InterstateProvider } from './interstateStore'
 import { PrototypeScenarioProvider } from './prototypeScenarioStore'
+import { PreTripInspectionProvider } from './preTripInspectionStore'
 import './styles.css'
 import './cargo.css'
 import './interstate.css'
@@ -15,9 +16,11 @@ createRoot(document.getElementById('root')!).render(
     <HashRouter>
       <PrototypeScenarioProvider>
         <CommunicationProvider>
-          <CargoProvider>
-            <InterstateProvider><App /></InterstateProvider>
-          </CargoProvider>
+          <PreTripInspectionProvider>
+            <CargoProvider>
+              <InterstateProvider><App /></InterstateProvider>
+            </CargoProvider>
+          </PreTripInspectionProvider>
         </CommunicationProvider>
       </PrototypeScenarioProvider>
     </HashRouter>
