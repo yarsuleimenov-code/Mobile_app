@@ -479,8 +479,6 @@ textarea { font: inherit; }
 .ebol-acknowledgement { margin-top: 16px; color: #7c4c00; background: #fff5df; }
 .ebol-acknowledgement p { font-size: 13px; line-height: 1.45; }
 .ebol-method { margin-top: 14px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: #eef2f6; border-radius: 9px; }
-.ebol-method--three { grid-template-columns: repeat(3, 1fr); }
-.ebol-method--three button { padding-inline: 5px; font-size: 11px; }
 .ebol-method button { min-height: 42px; border: 0; border-radius: 7px; color: var(--cargo-muted); background: transparent; font-weight: 850; cursor: pointer; }
 .ebol-method button.is-active { color: var(--cargo-blue); background: #fff; box-shadow: 0 2px 7px rgba(7,29,61,.12); }
 .ebol-field { margin-top: 14px; display: block; font-size: 13px; font-weight: 850; }
@@ -567,18 +565,10 @@ textarea { font: inherit; }
 .signature-empty .cargo-primary { display: flex; align-items: center; justify-content: center; }
 @media (prefers-reduced-motion: reduce) { .signature-progress i { transition: none; } }
 
-.contactless-review { margin-top: 2px; }
-.contactless-guidance { margin-top: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 9px; color: #7c4c00; background: #fff5df; border-radius: 8px; }
-.contactless-guidance svg { flex: 0 0 auto; }
-.contactless-guidance span { display: flex; flex-direction: column; gap: 3px; }
-.contactless-guidance small { color: #826e43; line-height: 1.4; }
-.contactless-attestation { margin-top: 12px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; border: 1px solid #e7c981; border-radius: 8px; background: #fffdf7; cursor: pointer; }
-.contactless-attestation input { flex: 0 0 auto; width: 22px; height: 22px; margin: 0; accent-color: var(--cargo-orange); }
-.contactless-attestation span { font-size: 12px; font-weight: 750; line-height: 1.45; }
-.contactless-signing-summary { margin-bottom: 16px; padding: 13px; display: flex; align-items: center; gap: 10px; color: #7c4c00; background: #fff5df; border-radius: 9px; }
-.contactless-signing-summary > svg { flex: 0 0 auto; }
-.contactless-signing-summary span { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.contactless-signing-summary small { color: #826e43; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.otp-signing-summary { margin-bottom: 16px; padding: 13px; display: flex; align-items: center; gap: 10px; color: #126e4c; background: #edf9f4; border-radius: 9px; }
+.otp-signing-summary > svg { flex: 0 0 auto; }
+.otp-signing-summary span { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.otp-signing-summary small { color: #4e7464; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .delivery-ebol-body { padding: 18px 18px 112px; }
 .delivery-ebol-body--action { padding-bottom: 188px; }
 .delivery-ebol-body > .cargo-primary { display: flex; align-items: center; justify-content: center; gap: 8px; }

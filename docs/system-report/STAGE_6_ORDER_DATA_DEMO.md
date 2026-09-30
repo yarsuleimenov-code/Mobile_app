@@ -65,7 +65,7 @@ Owner может сравнить внешнее и рабочее назван�
 - Пройдено: новая группа Qty 2 → частичные размеры/причина → reload → Qty 5 в Tasks/labels → подпись → переименование текущего заказа → неизменные имя и причины original/reprint → Supplemental с новым именем.
 - Проверены первый экран, mobile/desktop screenshots, пять полей в одном ряду, page identity, непустой UI, отсутствие framework overlay, горизонтального overflow и ошибок приложения. Временные QA scripts/screenshots находятся вне репозитория.
 - Interstate browser-регрессия: место с unknown весом → Loading → Review → Trip → BOL сохраняет Not measured, не превращая неизвестное значение в фактический ноль.
-- Регрессия Этапов 4–5: выборочная печать/Scan, comments, Supplemental, Delivery refusal, POD и Download/Print/Email/Share пройдены. Старый тест дополнения адаптирован к новой обязательной причине неполных измерений.
+- Регрессия Этапов 4–5: выборочная печать/Scan, comments, Supplemental, Delivery confirmation/exception, POD и Download/Print/Email/Share пройдены. Старый тест дополнения адаптирован к новой обязательной причине неполных измерений.
 - Реальные Spoke, права пользователей, оборудование и серверная конкурентность не проверяются этим этапом.
 
 ## Приёмка owner и следующий шаг

@@ -40,7 +40,7 @@ export function DeliveryOtpVerification({ recipientName, recipientPhone, outcome
     <div className="delivery-otp">
       <div className="delivery-otp-recipient"><MessageSquareText size={22} /><span><strong>{recipientName}</strong><small>Code will be sent to {maskPhone(recipientPhone)}</small></span><b>SMS</b></div>
 
-      {state.status === 'idle' ? <><p>Ask the recipient for the one-time code before handing over the order.</p><button type="button" className="delivery-otp-send" onClick={requestCode}><MessageSquareText size={18} /> Send verification code</button></> : null}
+      {state.status === 'idle' ? <><p>Ask the contact for the one-time code before completing the handoff.</p><button type="button" className="delivery-otp-send" onClick={requestCode}><MessageSquareText size={18} /> Send verification code</button></> : null}
 
       {['sent', 'invalid'].includes(state.status) ? <div className="delivery-otp-entry">
         <div className="delivery-otp-sent"><Check size={17} /><span><strong>Code sent</strong><small>Expires in 10 minutes · {state.sends}/{OTP_MAX_SENDS} sends</small></span></div>
@@ -53,7 +53,7 @@ export function DeliveryOtpVerification({ recipientName, recipientPhone, outcome
       {state.status === 'expired' ? <div className="delivery-otp-problem"><Clock3 size={23} /><span><strong>Code expired</strong><small>Send a new code to the same registered number.</small></span>{canSendAgain ? <button type="button" onClick={requestCode}>Send new code</button> : null}</div> : null}
       {state.status === 'delivery_error' ? <div className="delivery-otp-problem"><AlertTriangle size={23} /><span><strong>SMS could not be delivered</strong><small>Confirm connectivity or contact the dispatcher. The recipient number cannot be changed here.</small></span>{canSendAgain ? <button type="button" onClick={requestCode}>Retry SMS</button> : null}</div> : null}
       {state.status === 'locked' ? <div className="delivery-otp-problem is-locked"><LockKeyhole size={23} /><span><strong>Verification locked</strong><small>Too many failed attempts. Contact the dispatcher to approve another confirmation method.</small></span></div> : null}
-      {state.status === 'verified' ? <div className="delivery-otp-verified"><ShieldCheck size={23} /><span><strong>Recipient verified</strong><small>OTP confirmation will be recorded in the completed POD.</small></span></div> : null}
+      {state.status === 'verified' ? <div className="delivery-otp-verified"><ShieldCheck size={23} /><span><strong>Recipient verified</strong><small>OTP confirmation will be recorded in the locked eBOL/POD.</small></span></div> : null}
     </div>
   )
 }

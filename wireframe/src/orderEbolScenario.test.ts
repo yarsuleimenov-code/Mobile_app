@@ -9,8 +9,6 @@ import { getOrderDocumentNavigation } from './orderEbolNavigation'
 const signedPickup = {
   contactMethod: 'signed' as const,
   contactName: 'Alex Morgan',
-  contactlessReason: '',
-  contactlessAcknowledged: false,
   driverName: 'John Doe',
   hasDamage: false,
   exceptionNote: '',
@@ -58,14 +56,13 @@ describe('Order eBOL end-to-end scenarios', () => {
     expect(getOrderDocumentNavigation(completed).path).toBe('/orders/11155599/ebol/pod')
   })
 
-  it('completes contactless handoffs with documented damage and required driver signatures', () => {
+  it('completes OTP handoffs with documented damage and required driver signatures', () => {
     const draft = syncPickupOrderEbolDraft(undefined, initialCargoRecords[0])
     const pickupLocked = lockPickupEbol(draft, {
       ...signedPickup,
-      contactMethod: 'contactless',
-      contactName: '',
-      contactlessReason: 'Contact unavailable',
-      contactlessAcknowledged: true,
+      contactMethod: 'otp',
+      otpVerified: true,
+      otpPhoneLast4: '0142',
       hasDamage: true,
       exceptionNote: 'Scratch documented at Pickup',
     })
@@ -76,22 +73,21 @@ describe('Order eBOL end-to-end scenarios', () => {
     })
     const completed = lockDeliveryEbol(deliveryReview, {
       ...signedPickup,
-      contactMethod: 'contactless',
-      contactName: '',
-      contactlessReason: 'Remote or unattended delivery',
-      contactlessAcknowledged: true,
+      contactMethod: 'otp',
+      otpVerified: true,
+      otpPhoneLast4: '0198',
       hasDamage: true,
       exceptionNote: 'Corner dent documented at Delivery',
     })
 
     expect(completed.pickup).toMatchObject({
       evidence: { hasDamage: true, exceptionNote: 'Scratch documented at Pickup' },
-      contact: { status: 'contactless', contactlessReason: 'Contact unavailable' },
+      contact: { status: 'otp', otpPhoneLast4: '0142' },
       driver: { status: 'signed' },
     })
     expect(completed.delivery).toMatchObject({
       evidence: { hasDamage: true, exceptionNote: 'Corner dent documented at Delivery' },
-      contact: { status: 'contactless', contactlessReason: 'Remote or unattended delivery' },
+      contact: { status: 'otp', otpPhoneLast4: '0198' },
       driver: { status: 'signed' },
     })
     expect(isOrderPodAvailable(completed)).toBe(true)

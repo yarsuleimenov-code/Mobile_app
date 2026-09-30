@@ -64,7 +64,7 @@ describe('Selective mock label printing', () => {
 
   it('separates Supplemental labels without modifying the locked original snapshot', () => {
     const record = initialCargoRecords[0]
-    const original = lockPickupEbol(createOrderEbol(record), { contactMethod: 'signed', contactName: 'Demo contact', driverName: 'Demo driver', contactlessReason: '', contactlessAcknowledged: false, hasDamage: false, exceptionNote: '' })
+    const original = lockPickupEbol(createOrderEbol(record), { contactMethod: 'signed', contactName: 'Demo contact', driverName: 'Demo driver', hasDamage: false, exceptionNote: '' })
     const snapshot = structuredClone(original.pickup)
     const draft = addPickupDraftGroup(createPickupDraft(record, 'NJ1', 'supplemental'))
     const addedId = draft.places[0].placeId

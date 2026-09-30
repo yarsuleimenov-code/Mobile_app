@@ -11,7 +11,7 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 - одна модель Order eBOL на один нормализованный Order number;
 - lifecycle от `draft` до `completed` и `correction_requested`;
 - Pickup/Delivery evidence snapshots;
-- четыре позиции подтверждения и contactless-вариант;
+- четыре позиции подтверждения: подпись контакта или OTP и обязательная подпись водителя на каждом этапе;
 - versioned mock-хранилище `localStorage` с безопасным fallback;
 - без UI, подписания, PDF и production-интеграций.
 
@@ -19,7 +19,7 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 
 - CTA перехода из завершённого Pickup в Pickup eBOL review;
 - единый review evidence: pieces, weight, volume, photos и exception;
-- подтверждение внешнего Pickup contact: подпись на устройстве или contactless с обязательной причиной;
+- подтверждение внешнего Pickup contact: подпись на устройстве или проверенный OTP;
 - отдельное подтверждение водителя Zaberman;
 - damage не блокирует handoff, но требует описания;
 - после подтверждения Pickup snapshot блокируется и сохраняется в mock `localStorage`;
@@ -29,7 +29,7 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 
 - отдельный экран Pickup signing после evidence review;
 - последовательность Pickup contact → Zaberman driver;
-- contactless confirmation пропускает подпись внешнего контакта;
+- проверенный OTP заменяет подпись внешнего контакта;
 - signature pad поддерживает pointer drawing, очистку и demo signature;
 - прямое открытие signing без review возвращает пользователя к review;
 - рисунок подписи не сохраняется: модель хранит только signer, method и timestamp;
@@ -38,12 +38,12 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 
 ## Реализовано на Этапе 4
 
-- Contactless доступен как явная альтернатива подписи Pickup contact;
-- обязательны выбранная причина и acknowledgment корректности причины;
-- без acknowledgment переход к signing заблокирован;
-- подпись Pickup contact пропускается, driver signing остаётся обязательным;
-- signing screen показывает отдельный Contact signature skipped summary;
-- locked eBOL явно отличает contactless от обычной подписи;
+- SMS code доступен как явная альтернатива подписи Pickup contact;
+- обязательны отправка и успешная проверка OTP;
+- без успешной проверки OTP переход к signing заблокирован;
+- проверенный OTP заменяет подпись Pickup contact, driver signing остаётся обязательным;
+- signing screen показывает отдельный OTP verified summary;
+- locked eBOL явно отличает OTP от обычной подписи;
 - внешние уведомления, one-time link и production audit trail не добавлены.
 
 ## Реализовано на Этапе 5
@@ -51,8 +51,8 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 - Dropoff сохраняет отдельный Delivery evidence snapshot с фотографиями и состоянием груза;
 - Delivery доступен только после блокировки Pickup snapshot;
 - damage не блокирует Delivery, но требует обязательного описания exception;
-- добавлены Delivery review, подпись Delivery contact и отдельная подпись водителя Zaberman;
-- Contactless Delivery требует причины и acknowledgment, подпись водителя остаётся обязательной;
+- добавлены Delivery review, подтверждение Delivery contact подписью или OTP и отдельная подпись водителя Zaberman;
+- SMS code Delivery требует успешной OTP-проверки, подпись водителя остаётся обязательной;
 - после подписи водителя Delivery snapshot блокируется, а Order eBOL получает статус `completed`;
 - Pickup snapshot при этом не изменяется;
 - POD preview, настоящий PDF, backend и юридически значимая подпись не добавлены.
@@ -60,7 +60,7 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 
 - POD доступен только для Order eBOL со статусом `completed` и двумя locked snapshots;
 - итоговый документ объединяет Pickup и Delivery evidence, фотографии и exceptions;
-- показаны все четыре подтверждения, contactless-причины и timestamps;
+- показаны все четыре подтверждения, способы подтверждения и timestamps;
 - POD остаётся представлением Order eBOL без отдельной модели, номера или lifecycle;
 - добавлены mock-действия Download PDF, Print и Share с явной обратной связью;
 - прямое открытие незавершённого POD показывает корректный blocking state;
@@ -80,7 +80,7 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 - `Save Pickup` создаёт или обновляет Order eBOL draft в versioned mock-хранилище;
 - изменения Pickup evidence синхронизируются до подписания;
 - locked Pickup snapshot не перезаписывается повторным сохранением Pickup;
-- автоматизированы сквозные сценарии signed, contactless, documented damage и переход к POD;
+- автоматизированы сквозные сценарии signed, OTP, documented damage и переход к POD;
 - проверены lifecycle guards, актуальная Home-навигация, storage fallback и все Order eBOL маршруты;
 - unit/integration suite, TypeScript build и HTTP route smoke проходят;
 - rendered end-to-end interaction и визуальная проверка остаются невыполненными из-за недоступности Browser runtime и отсутствия локального `npx/npm`;
@@ -92,9 +92,9 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 
 ## Контекст и источники
 
-- BA weekly от 2026-08-24: согласована идея одного Order eBOL на Pickup/Dropoff с четырьмя подписями.
+- BA weekly от 2026-08-24: согласована идея одного Order eBOL на Pickup/Dropoff с четырьмя позициями подтверждения; текущий способ подтверждения контакта уточнён в BOL-007.
 - BA weekly от 2026-08-31: согласованы редактируемый Pickup, Supplemental Pickup после подписи, отдельные комментарии сторон и требование к сохранённой подписи сотрудника.
-- Официальный uShip eBOL flow: проверка evidence, подписи контакта и перевозчика, блокировка данных после подписания, contactless fallback и итоговый PDF после Delivery.
+- Официальный uShip eBOL flow использован как ориентир для проверки evidence, подписей контакта и перевозчика, блокировки данных после подтверждения и итогового PDF после Delivery; способ подтверждения адаптирован к бизнес-правилу Zaberman.
 - Исходный Zaberman wireframe на Этапе 0 содержал только Interstate BOL, привязанный к Trip manifest.
 
 ## Принятые решения
@@ -104,10 +104,10 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 | BOL-001 | В продуктовой модели используются два независимых документа: Order eBOL и Interstate BOL. | У документов разные объекты, сценарии и участники. |
 | BOL-002 | Order eBOL относится к одному Order и ведётся от Pickup до Dropoff. | Сохраняет непрерывную историю передачи конкретного заказа. |
 | BOL-003 | Interstate BOL относится к одному Interstate Trip и его manifest. | Сохраняет текущую логику межфилиального рейса. |
-| BOL-004 | Order eBOL предусматривает четыре позиции подписи: Pickup contact, Zaberman driver на Pickup, Delivery contact, Zaberman driver на Delivery. | Подтверждает обе точки передачи груза. |
+| BOL-004 | Order eBOL предусматривает четыре позиции подтверждения: Pickup contact, Zaberman driver на Pickup, Delivery contact, Zaberman driver на Delivery. Контакт использует подпись на устройстве или OTP; водитель всегда подписывает. | Подтверждает обе точки передачи груза без неподтверждённой выдачи. |
 | BOL-005 | Подпись означает ознакомление с evidence и исключениями, а не подтверждение отсутствия повреждений. | Позволяет завершать сценарий при документированном damage. |
 | BOL-006 | До подписи данные этапа можно исправлять; после подписи snapshot блокируется. | Снижает риск незаметного изменения подтверждённых данных. |
-| BOL-007 | При невозможности получить подпись контакта допускается contactless confirmation с обязательной причиной. | Покрывает практический fallback без усложнения прототипа. |
+| BOL-007 | Контакт подтверждает передачу подписью на устройстве или шестизначным SMS-кодом; иных способов выдачи нет. | Соответствует фактическому бизнес-процессу и исключает неподтверждённую выдачу. |
 | BOL-008 | Damage не блокирует завершение этапа, если он зафиксирован как exception с evidence. | Отделяет факт передачи от состояния груза. |
 | BOL-009 | POD — итоговое представление завершённого Order eBOL после Dropoff, а не третий независимый lifecycle. | Убирает дублирование документов и статусов. |
 | BOL-010 | Order eBOL не связан с оплатой. | Payment flow не относится к цели согласования BOL. |
@@ -124,7 +124,7 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 - **Pickup snapshot** — заблокированный после подтверждения набор Pickup evidence и исключений.
 - **Delivery snapshot** — заблокированный после подтверждения набор Delivery evidence и исключений.
 - **POD** — итоговое представление завершённого Order eBOL.
-- **Contactless** — fallback без подписи внешнего контакта с обязательной причиной.
+- **OTP** — одноразовый SMS-код, который заменяет подпись внешнего контакта; код в документе не хранится.
 - **Correction requested** — прототипный статус запроса на исправление уже подтверждённого snapshot.
 
 ## Scope первого инкремента Order eBOL
@@ -133,8 +133,8 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 
 - CTA перехода к eBOL после заполнения Pickup;
 - review Pickup/Delivery evidence перед подтверждением;
-- четыре mock-позиции подписи;
-- contactless fallback с причиной;
+- четыре mock-позиции подтверждения;
+- OTP-подтверждение по SMS;
 - locked state подтверждённого snapshot;
 - фиксация damage/exception без блокировки завершения;
 - финальный POD preview;
@@ -155,7 +155,7 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 | ID | Вопрос |
 | --- | --- |
 | OQ-001 | Какой юридический текст подтверждения должен сопровождать подпись? |
-| OQ-002 | Какие подписи обязательны и какие причины contactless допустимы? |
+| OQ-002 | Какой номер телефона является доверенным источником для OTP и кто может изменить его до отправки? |
 | OQ-003 | Как нумеруются и визуально связываются correction, void, Supplemental Pickup и addendum? Product lifecycle уже принят в BOL-013. |
 | OQ-004 | Какая система является источником номера Order eBOL? |
 | OQ-005 | Каковы сроки хранения документа, подписей и evidence? |
@@ -163,7 +163,7 @@ Product baseline дополнен 2026-09-01 по итогам BA weekly от 20
 | OQ-007 | Какие legal/security ограничения применяются к `signed_pending_sync` при production offline signing? |
 | OQ-008 | Какие фотографии и поля обязательны на Pickup и Delivery? |
 | OQ-009 | Кто именно подписывает со стороны Zaberman при работе экипажа? |
-| OQ-010 | Нужна ли внешнему контакту одноразовая ссылка вместо подписи на устройстве водителя? |
+| OQ-010 | Как эскалировать случай, когда недоступны оба разрешённых способа подтверждения контакта, не выдавая груз? |
 | OQ-011 | Кто утверждает и отзывает делегацию на применение сохранённой подписи сотрудника? |
 
 ## Критерии завершения Product Этапа 0

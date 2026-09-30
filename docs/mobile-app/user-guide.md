@@ -6,7 +6,7 @@ This guide describes the **active** Mobile App interface. Buttons can change loc
 
 ![Home with today's stops](images/home.png)
 
-The first screen is **Cargo operations**. Its large Pickup and Dropoff actions open an operation directly. **Load today’s route** displays a simulated Spoke route and its stops. Each stop shows Order number, sequence, scheduled time, operation, quantity and address. Search the loaded stops by External ID. Order documents, saved Pickup drafts and Recent operations appear below when there are corresponding local records.
+The first screen is **Cargo operations**. Its large Pickup and Dropoff actions open an operation directly. The **Pre-trip inspection** card controls access to **Load today’s route**: the route remains locked until the inspection passes. A loaded route displays simulated Spoke stops with Order number, sequence, scheduled time, operation, quantity and address. Search the loaded stops by External ID. Order documents, saved Pickup drafts and Recent operations appear below when there are corresponding local records.
 
 The bottom navigation contains:
 
@@ -15,7 +15,7 @@ The bottom navigation contains:
 | **Home** | Open Pickup/Dropoff, load today's stops, resume a draft or open an Order eBOL. |
 | **Tasks** | Find a loaded stop by Order ID or title; filter All, Pickup, Dropoff; open its operation or Order details. |
 | **Scan** | Look up a PlaceID or Order ID and open the matching cargo record. This tab does not record a loading or delivery event. |
-| **More** | Help & Instructions, Sync now, Cargo places, Interstate operations and Administration. Administration changes simulated role, branch, network and device availability. |
+| **More** | Help & Instructions, Sync now, Cargo places, Interstate operations and Administration. Administration controls role, branch, network, operation outcomes, device availability and local scenario data for demonstrations. |
 
 ### Active screen map
 
@@ -24,6 +24,7 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | Entry | Screen and route | Next useful action |
 | --- | --- | --- |
 | Home | Cargo operations — `#/` | Pickup, Dropoff, load route, Order documents |
+| Home | Pre-trip inspection — `#/pre-trip-inspection` | Complete checklist, four photos and driver attestation |
 | Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Dropoff stop; Order details |
 | Bottom nav | Scan — `#/scan` | Open place or order places |
 | Home / Tasks / Pickup draft / Order details | Messages — `#/communications`, `#/orders/{number}/communications` | Send or review customer SMS; start an Order-linked call |
@@ -46,11 +47,23 @@ All paths below are hash routes under the deployed site. A listed route is inter
 
 The code contains older Home, Pickup, Dropoff and Same Day components that are not in the active route map; do not use their screens as instructions. [Route source](../../wireframe/src/App.tsx).
 
+## Pre-trip inspection
+
+**Purpose:** confirm that the assigned vehicle is safe before loading Today's route.
+
+1. On Home, find the **Pre-trip inspection** card for **Van 08 · Extended Van**. Select **Start** or **Continue**.
+2. Inspect all seven groups: Tires & wheels; Lights & reflectors; Windows, mirrors & wipers; Leaks under vehicle; Body, doors & cargo area; Brakes, steering & horn; Emergency equipment. Select **Pass** or **Issue** for each.
+3. Select **Continue to photos**. Use **Take photo** for Front, Rear, Driver side and Passenger side. Keep the full vehicle and wheels in frame. Gallery upload is intentionally unavailable.
+4. Select **Review inspection**. If every check passes, select **I confirm this vehicle is safe to operate**, then **Complete inspection**.
+5. The result shows **Ready for route**. Return Home; the card shows **Vehicle cleared** and **Load today’s route** is enabled.
+
+Any **Issue** produces **Route locked** and disables completion. Select **Review issues** and change the result only after the physical condition has been resolved. If Camera unavailable appears, camera access must be restored before the inspection can finish. The wireframe stores one local inspection for its sample vehicle and route; it does not create a maintenance task or supervisor override.
+
 ## Tasks and Order details
 
 ![Tasks list](images/tasks.png)
 
-1. On Home, select **Load today’s route** if Today's stops are not shown. This loads a local fixture; it does not connect to Spoke.
+1. After **Vehicle cleared**, select **Load today’s route** on Home if Today's stops are not shown. This loads a local fixture; it does not connect to Spoke.
 2. Open **Tasks**. Search by Order ID or title, or choose All, Pickup or Dropoff.
 3. Select the task card to open the correct operation. Select **Order details · Spoke preview** to see the order name, source, quantity, special cargo information and a read-only preview of the route stop.
 4. Use the screen's own primary action to save or confirm. Opening a task alone does not mark it complete.
@@ -72,8 +85,8 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 5. Wait for the draft status to say saved. The form autosaves locally and can be resumed from Home. Correct any **Order data incomplete** or measurement warnings. **Continue to Pickup review** enables only when the Order number, at least one place, at least one photo and required details are present and the draft saved.
 6. Select **Continue to Pickup review**. The confirmation page says **Pickup draft ready**. You may open **Place labels** first: choose all, selected or one label, check the preview and select **Print**. If the printer is unavailable, continue to review and use the PlaceID check path.
 7. Open **Pickup review**. Check pieces, weight, volume, photos, condition, comments from contact/driver and any exception. If evidence changed after review, return and review it again.
-8. Choose **Sign on device** or **Contactless** for the Pickup contact. Contactless requires a reason and the acknowledgment checkbox. Supply contact or driver names as requested. Documented damage/exception requires its note.
-9. Select **Continue to signing**. For on-device signing, have the contact sign, optionally request an email copy of this document version, and select **Accept contact signature**. Contactless skips only the contact signature. Have the Zaberman driver sign and select **Confirm & lock Pickup snapshot**.
+8. Choose **Sign on device** or **SMS code** for the Pickup contact. For SMS code, select **Send verification code**, enter the six-digit code supplied by the contact and select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`; three invalid attempts lock verification. Supply contact or driver names as requested. Documented damage/exception requires its note.
+9. Select **Continue to signing** for an on-device signature or **Continue to driver signature** after OTP verification. For on-device signing, have the contact sign, optionally request an email copy of this document version, and select **Accept contact signature**. For SMS code, the verified OTP replaces only the contact signature. Have the Zaberman driver sign and select **Confirm & lock Pickup snapshot**.
 
 **Result:** the Pickup snapshot is locked and read-only. An additional place must be entered as **Supplemental Pickup** with a new document version and fresh confirmations. A saved Pickup draft or a “Pickup draft ready” message alone is not the final handoff confirmation. [Pickup source](../../wireframe/src/screens/PickupCaptureScreen.tsx), [review](../../wireframe/src/screens/PickupEbolScreen.tsx), [signing](../../wireframe/src/screens/PickupSignatureScreen.tsx).
 
@@ -88,11 +101,14 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 3. Add **Delivery photos** and compare the cargo against Pickup evidence.
 4. Select **Cargo matches pickup photos** only when the comparison is true. Select **No visible damage**, or choose **Report damage instead** and enter **Damage details**. Documented damage does not block the handoff.
 5. Select **Confirm Dropoff**. This saves the local Dropoff operation and prepares Delivery evidence. If the Pickup snapshot is not locked, use the offered **Open Pickup review** action first.
-6. Open **Delivery review**. Check evidence and comments, choose contact signature or Contactless with a reason and acknowledgment, and enter the driver name.
-7. Select **Continue to signing**. Obtain the contact signature unless Contactless was selected; then obtain the driver signature. Select **Complete Order eBOL**.
-8. Open **View POD**. POD appears only after both Pickup and Delivery snapshots are locked.
+6. Open **Delivery review**. Check evidence and comments, enter the driver name and choose one contact confirmation method:
+   - **Sign on device** — enter the contact name and obtain the contact signature;
+   - **SMS code** — select **Send verification code**, ask the recipient for the code sent to the registered masked number, then select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`; three invalid attempts lock verification;
+7. For SMS code, the signing action remains disabled until **Recipient verified** appears. For Offline, expired-code or delivery-error states, use the offered retry. If verification is locked, contact dispatch and do not choose a bypass method without approval.
+8. Select **Continue to signing** or **Continue to driver signature**. Obtain the required signatures and select **Complete Order eBOL**.
+9. Open **View POD**. With SMS code, POD records OTP verification, the recipient name and only the last four phone digits; it does not store the code.
 
-**Result:** Dropoff is locally confirmed at step 5; the Order eBOL becomes completed at step 7. Its POD is a view of that completed document, not a third document. [Dropoff source](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx).
+**Result:** Dropoff is locally confirmed at step 5; the Order eBOL becomes completed at step 8. Its POD is a view of that completed document, not a third document. [Dropoff source](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx).
 
 ## Same Day
 
@@ -150,6 +166,12 @@ The active prototype has a local Trip and receiving simulation. It does not demo
 | Order not found at Dropoff | Check the number and that Pickup was recorded in this browser state. |
 | Pending Supplemental Pickup | Resume and sign its new version before Dropoff. |
 | Review required | Return to the relevant review screen; direct signing links do not bypass review. |
+| Pre-trip inspection required | Open the Home card and complete all seven checks, four photos and the attestation before loading the route. |
+| Route locked / Issue reported | Do not depart. Review the issue and follow the operating team's escalation process; the wireframe has no supervisor override. |
+| Camera unavailable during Pre-trip | Restore camera availability; gallery upload cannot replace a required inspection photo. |
+| Code not recognized | Recheck the six digits and retry. In the prototype `111111` is always invalid; after three failures contact dispatch. |
+| Code expired / SMS could not be delivered | Send a new code or retry SMS. Check connectivity; the registered contact number cannot be edited on Pickup or Delivery review. |
+| Verification locked | Do not bypass OTP with another method unless dispatch/supervisor approves it. |
 | Camera/scanner/printer unavailable | Use the available manual PlaceID path or continue where the UI offers it. Print and scan hardware are not connected. |
 | Scan code unknown or duplicate | Recheck the label/PlaceID. Lookup does not create cargo or record a movement. |
 | Missing place at unloading | Review the manifest, continue receiving if appropriate, or explicitly confirm the discrepancy before closing. |

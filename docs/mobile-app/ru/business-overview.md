@@ -2,7 +2,7 @@
 
 ## Назначение и границы
 
-Mobile App позволяет сотруднику Zaberman зафиксировать состав и состояние груза при Pickup, сверить его при Dropoff и учитывать каждое место при загрузке и разгрузке Interstate. В приложении показаны документ передачи одного заказа — Order eBOL — и отдельный документ рейса Interstate BOL.
+Mobile App позволяет водителю Zaberman пройти обязательный предрейсовый осмотр до загрузки дневного маршрута, зафиксировать состав и состояние груза при Pickup, сверить его при Dropoff и учитывать каждое место при загрузке и разгрузке Interstate. В приложении показаны документ передачи одного заказа — Order eBOL — и отдельный документ рейса Interstate BOL.
 
 Это интерактивный бизнес-прототип. Записи, загрузка маршрута, фотографии, подписи, результаты печати и синхронизации имитируются в браузере. Приложение не подключено к Spoke, производственной базе данных, камере, сканеру, принтеру или сервису отправки документов. Источники: [README прототипа](../../../wireframe/README.md), [текущее состояние](../../system-report/CURRENT_STATE.md).
 
@@ -16,6 +16,7 @@ Mobile App позволяет сотруднику Zaberman зафиксиров
 | --- | --- |
 | Order | Заказ с номером в интерфейсе. В локальной имитации маршрута External ID остановки Spoke становится номером заказа Zaberman. |
 | Task / Stop | Запланированная остановка Pickup или Dropoff с порядком, временем, адресом и заказом. Отображается в Home и Tasks; отдельного экрана деталей задачи в активном роутере нет. |
+| Pre-trip inspection | Обязательный чек-лист безопасности автомобиля, четыре актуальных фото с камеры и подтверждение водителя. Успешный осмотр открывает загрузку маршрута; любой Issue сохраняет блокировку. |
 | Pickup | Операция фиксации групп размеров, отдельных мест, фото и контекста заказа. Подготавливает Pickup evidence для Order eBOL. |
 | Dropoff | Сверка ранее записанного заказа с Pickup evidence, фиксация фото Delivery, состояния и исключений. Подготавливает Delivery review. |
 | Same Day | Тип перевозки, в котором отдельные Pickup и Dropoff должны связываться через RouteRun согласно принятой продуктовой модели. Старый экран Same Day есть в коде, но не подключён к активной навигации. |
@@ -31,9 +32,22 @@ Mobile App позволяет сотруднику Zaberman зафиксиров
 
 ## Структура приложения
 
-Нижнее меню: **Home | Tasks | Scan | More**. Home содержит быстрый вход в Pickup/Dropoff, маршрут Today’s Spoke route, документы заказа, черновики Pickup и последние операции. Tasks фильтрует остановки по All/Pickup/Dropoff и ищет номер или название заказа. Scan ищет место или заказ. More содержит Help & Instructions, Sync now, Interstate operations, Cargo places, Administration и доступность устройств. [Активные маршруты](../../../wireframe/src/App.tsx). Administration — служебная панель сценариев, а не повседневный шаг операции.
+Нижнее меню: **Home | Tasks | Scan | More**. Home содержит быстрый вход в Pickup/Dropoff, обязательный Pre-trip inspection, маршрут Today’s Spoke route, документы заказа, черновики Pickup и последние операции. Tasks фильтрует остановки по All/Pickup/Dropoff и ищет номер или название заказа. Scan ищет место или заказ. More содержит Help & Instructions, Sync now, Interstate operations, Cargo places, Administration и доступность устройств. [Активные маршруты](../../../wireframe/src/App.tsx). Administration — служебная панель сценариев, а не повседневный шаг операции.
 
 ## Бизнес-процессы
+
+### Предрейсовый осмотр и доступ к маршруту
+
+```mermaid
+flowchart LR
+  A["Home: маршрут заблокирован"] --> B["7 проверок безопасности"]
+  B --> C["4 фото только через камеру"]
+  C --> D["Подтверждение водителя"]
+  D --> E["Vehicle cleared; загрузка маршрута"]
+  B -->|Любой Issue| F["Route locked; проверка проблемы"]
+```
+
+Пример автомобиля — **Van 08 · Extended Van**, филиал NJ1. Каждый пункт требует Pass или Issue; Front, Rear, Driver side и Passenger side снимаются внутри flow, загрузка из галереи не предлагается. Любой Issue или недоступная камера блокируют завершение. Wireframe сохраняет осмотр локально и не содержит сервиса назначения автомобиля, ремонтной задачи, supervisor override или server audit. [Экран Pre-trip](../../../wireframe/src/screens/PreTripInspectionScreen.tsx), [scope](../../system-report/PRE_TRIP_INSPECTION_WIREFRAME.md).
 
 ### Pickup и Order eBOL
 
@@ -42,7 +56,7 @@ flowchart LR
   A["Home или Tasks: Pickup"] --> B["Черновик: заказ, группы, места, фото"]
   B --> C["Continue to Pickup review"]
   C --> D["Проверка evidence и подтверждений"]
-  D --> E["Подпись контакта или причина Contactless"]
+  D --> E["Подпись контакта или проверенный SMS code"]
   E --> F["Подпись водителя Zaberman"]
   F --> G["Pickup snapshot заблокирован"]
   B --> L["Этикетки: печать или продолжение"]
@@ -63,12 +77,12 @@ flowchart LR
   B --> C["Фото Delivery и состояние"]
   C --> D["Confirm Dropoff"]
   D --> E["Delivery review"]
-  E --> F["Подпись контакта или причина Contactless"]
+  E --> F["Подпись контакта или проверенный SMS code"]
   F --> G["Подпись водителя Zaberman"]
   G --> H["Order eBOL завершён; POD доступен"]
 ```
 
-Для Confirm Dropoff нужны сохранённый заказ, отметка совпадения груза, минимум одно фото Delivery и отметка отсутствия видимых повреждений либо описание повреждения. Неподписанный Supplemental Pickup блокирует подтверждение. Сообщение **Dropoff confirmed** означает сохранение операции; подпись Delivery затем блокирует запись и завершает Order eBOL. Если Pickup ещё не заблокирован, интерфейс направляет на Pickup review. [Dropoff](../../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../../wireframe/src/screens/OrderPodScreen.tsx).
+Для Confirm Dropoff нужны сохранённый заказ, отметка совпадения груза, минимум одно фото Delivery и отметка отсутствия видимых повреждений либо описание повреждения. Неподписанный Supplemental Pickup блокирует подтверждение. Сообщение **Dropoff confirmed** означает сохранение операции; Delivery review затем предлагает подпись контакта или SMS code. При SMS code получатель должен быть проверен до подписи водителя; POD сохраняет способ подтверждения и маскированную ссылку на телефон, но не сам код. Подпись Delivery блокирует запись и завершает Order eBOL. Если Pickup ещё не заблокирован, интерфейс направляет на Pickup review. [Dropoff](../../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../../wireframe/src/screens/OrderPodScreen.tsx).
 
 ### Same Day
 
@@ -96,7 +110,7 @@ flowchart LR
 | Продолжить Pickup review можно при наличии номера заказа, минимум одного места и фото, сохранённого черновика, необходимых данных заказа и отсутствии ошибок измерений. Для неизвестных измерений нужна причина. | [Форма Pickup](../../../wireframe/src/screens/PickupCaptureScreen.tsx) — локальная проверка реализована. |
 | Исходный Pickup snapshot после подтверждения водителем становится неизменяемым. Дополнительные места требуют Supplemental Pickup и новых подписей. | [Подписание Pickup](../../../wireframe/src/screens/PickupSignatureScreen.tsx) — локальное состояние реализовано. |
 | Confirm Dropoff требует отметки совпадения груза, фото Delivery, состояния или описанного повреждения и отсутствия неподписанного Supplemental Pickup. | [Форма Dropoff](../../../wireframe/src/screens/DropoffVerifyScreen.tsx) — локальная проверка реализована. |
-| Review требует данных подписантов. Contactless требует причины и подтверждения; водитель всё равно подписывает. Повреждение требует описания исключения. | [Pickup review](../../../wireframe/src/screens/PickupEbolScreen.tsx), [Delivery review](../../../wireframe/src/screens/DeliveryEbolScreen.tsx) — локальная проверка реализована. |
+| Pickup и Delivery review требуют подпись контакта на устройстве либо проверенный SMS code. OTP доступен для каждой передачи и должен быть проверен до подписи водителя. Водитель подписывает всегда. Повреждение требует описания исключения. | [Pickup review](../../../wireframe/src/screens/PickupEbolScreen.tsx), [Delivery review](../../../wireframe/src/screens/DeliveryEbolScreen.tsx) — локальная проверка реализована. |
 | POD доступен после блокировки обеих записей передачи. | [Экран POD](../../../wireframe/src/screens/OrderPodScreen.tsx) — проверка реализована. |
 | Основной Scan только ищет: не добавляет и не перемещает груз. Он различает найденный, повторно считанный, номер заказа и неизвестный код. | [Scan](../../../wireframe/src/screens/ScanScreen.tsx) — симуляция реализована. |
 | Загрузка Interstate выбирает подходящие заказы и фиксирует подтверждённые места в манифесте Trip. | [Логика Interstate](../../../wireframe/src/interstateDomain.ts) — локальное состояние реализовано. |

@@ -8,8 +8,6 @@ import {
 const signedInput: DeliveryEbolConfirmationInput = {
   contactMethod: 'signed',
   contactName: 'Taylor Reed',
-  contactlessReason: '',
-  contactlessAcknowledged: false,
   driverName: 'John Doe',
   hasDamage: false,
   exceptionNote: '',
@@ -20,8 +18,6 @@ function lockedPickup() {
   return lockPickupEbol(draft, {
     contactMethod: 'signed',
     contactName: 'Alex Morgan',
-    contactlessReason: '',
-    contactlessAcknowledged: false,
     driverName: 'John Doe',
     hasDamage: false,
     exceptionNote: '',
@@ -56,30 +52,29 @@ describe('Delivery eBOL confirmation', () => {
     expect(delivery.pickup).toEqual(pickup.pickup)
   })
 
-  it('requires contactless acknowledgment and locks the completed Order eBOL', () => {
+  it('requires verified OTP and locks the completed Order eBOL', () => {
     const delivery = prepareDeliveryEbol(lockedPickup(), initialCargoRecords[0], {
       photoCount: 2,
       hasDamage: false,
       exceptionNote: '',
     })
-    const contactless = {
+    const otp = {
       ...signedInput,
-      contactMethod: 'contactless' as const,
-      contactName: '',
-      contactlessReason: 'Remote or unattended delivery',
+      contactMethod: 'otp' as const,
+      otpPhoneLast4: '0198',
     }
 
-    expect(canLockDeliveryEbol(contactless)).toBe(false)
+    expect(canLockDeliveryEbol(otp)).toBe(false)
     const completed = lockDeliveryEbol(delivery, {
-      ...contactless,
-      contactlessAcknowledged: true,
+      ...otp,
+      otpVerified: true,
     }, '2026-08-25T11:10:00.000Z')
 
     expect(completed).toMatchObject({
       status: 'completed',
       delivery: {
         lockedAt: '2026-08-25T11:10:00.000Z',
-        contact: { status: 'contactless', contactlessReason: 'Remote or unattended delivery' },
+        contact: { status: 'otp', otpPhoneLast4: '0198' },
         driver: { status: 'signed', signerName: 'John Doe' },
       },
     })

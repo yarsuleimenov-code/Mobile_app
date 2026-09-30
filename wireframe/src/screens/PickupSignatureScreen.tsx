@@ -1,4 +1,4 @@
-import { CheckCircle2, FileSignature, FileX2, Mail, ShieldCheck, UserRound } from 'lucide-react'
+import { CheckCircle2, FileSignature, Mail, ShieldCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
@@ -136,14 +136,14 @@ export function PickupSignatureScreen() {
           </section>
         ) : (
           <section className="signature-card">
-            {confirmationInput.contactMethod === 'contactless' ? (
-              <div className="contactless-signing-summary"><FileX2 size={22} /><span><strong>Contact signature skipped</strong><small>{confirmationInput.contactlessReason}</small></span></div>
+            {confirmationInput.contactMethod === 'otp' ? (
+              <div className="otp-signing-summary"><ShieldCheck size={22} /><span><strong>Pickup contact verified by OTP</strong><small>{confirmationInput.contactName} · ••• ••• {confirmationInput.otpPhoneLast4}</small></span></div>
             ) : (
               <div className="signature-prior-confirmation"><CheckCircle2 size={20} /><span>{confirmationInput.contactName} signed</span></div>
             )}
             {startsWithContact ? <div className="pickup-email-summary"><Mail size={20} /><span><strong>{sendEmailCopy ? 'Email copy requested' : 'No email copy requested'}</strong>{sendEmailCopy ? <small>{contactEmail.trim()}</small> : null}</span><button type="button" onClick={() => { setContactSigned(false); setDriverSigned(false); setStep('contact') }}>Change</button></div> : null}
             <div className="signature-role"><UserRound size={25} /><span><strong>Zaberman driver</strong><small>{confirmationInput.driverName}</small></span></div>
-            <p>{confirmationInput.contactMethod === 'contactless' ? 'The driver is the only signer and confirms the selected contactless reason, Pickup evidence and exceptions.' : 'By signing, the driver confirms the same Pickup evidence and documented exceptions.'}</p>
+            <p>{confirmationInput.contactMethod === 'otp' ? 'The Pickup contact is already verified. By signing, the driver confirms the Pickup evidence and documented exceptions.' : 'By signing, the driver confirms the same Pickup evidence and documented exceptions.'}</p>
             <SignaturePad key="driver" label="Zaberman driver" onSignedChange={setDriverSigned} />
             {storageError ? <p className="ebol-storage-warning">Browser storage is unavailable. The Pickup snapshot was not locked.</p> : null}
             <button type="button" className="cargo-primary" disabled={!driverSigned} onClick={finishPickupSigning}>Confirm & lock {supplement ? `version ${supplement.version}` : 'Pickup snapshot'}</button>

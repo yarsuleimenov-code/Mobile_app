@@ -99,7 +99,7 @@ locked → correction_requested → новая version/addendum
 - `contact_comment` — комментарий клиента/внешнего контакта;
 - `zaberman_comment` — комментарий водителя или другого представителя Zaberman;
 - `exception_note` — описание повреждения/отказа/расхождения;
-- `contactless_reason` — отдельный справочный reason, не заменяет комментарий.
+- `otp_verification_sid` и статус проверки — технические атрибуты SMS-подтверждения; сам код в документе не хранится.
 
 Обычные комментарии необязательны. `exception_note` обязателен при damage, refused, disagreement или supervisor override. Перед подписью обеим сторонам показывается итоговый evidence и оба комментария. После подписи поля входят в immutable snapshot.
 

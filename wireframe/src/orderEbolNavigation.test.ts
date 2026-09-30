@@ -6,8 +6,6 @@ import { getOrderDocumentNavigation } from './orderEbolNavigation'
 const confirmation = {
   contactMethod: 'signed' as const,
   contactName: 'Alex Morgan',
-  contactlessReason: '',
-  contactlessAcknowledged: false,
   driverName: 'John Doe',
   hasDamage: false,
   exceptionNote: '',

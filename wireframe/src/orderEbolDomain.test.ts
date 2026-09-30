@@ -55,7 +55,7 @@ describe('Order eBOL model', () => {
     expect(writeOrderEbols([orderEbol], storage)).toBe(true)
     expect(readOrderEbols(storage)).toEqual([orderEbol])
 
-    storage.setItem('zaberman-order-ebols:v1', '{invalid')
+    storage.setItem('zaberman-order-ebols:v2', '{invalid')
     expect(readOrderEbols(storage)).toEqual([])
   })
 })

@@ -1,7 +1,7 @@
 import { normalizeOrderNumber } from './cargoDomain'
 import type { OrderEbol } from './orderEbolDomain'
 
-export const ORDER_EBOLS_STORAGE_KEY = 'zaberman-order-ebols:v1'
+export const ORDER_EBOLS_STORAGE_KEY = 'zaberman-order-ebols:v2'
 
 interface OrderEbolStorage {
   getItem: (key: string) => string | null

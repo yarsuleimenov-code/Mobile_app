@@ -16,6 +16,10 @@ import { pickupReviewNeedsRefresh } from '../pickupReviewState'
 import { readPickupDrafts } from '../pickupDraftStore'
 import { OrderDocumentHistory } from '../OrderDocumentHistory'
 import { PickupEmailDeliveryStatus } from '../PickupEmailDeliveryStatus'
+import { DeliveryOtpVerification } from '../DeliveryOtpVerification'
+import { otpRecipient } from '../deliveryOtpDomain'
+import { usePrototypeScenario } from '../prototypeScenarioStore'
+import { useCommunications } from '../communicationStore'
 
 function EvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) {
   return (
@@ -38,7 +42,13 @@ function PickupEbolContent() {
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
   const { findRecord, getOrderDetails } = useCargo()
+  const { getThread } = useCommunications()
+  const { otpOutcome, network } = usePrototypeScenario()
   const record = findRecord(orderNumber)
+  const communication = getThread(orderNumber)
+  const recipient = communication
+    ? { name: communication.customerName, phone: communication.customerPhone }
+    : otpRecipient(orderNumber)
   const [orderEbol] = useState<OrderEbol | null>(() => {
     const current = findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null)
     return withCurrentOrderDetails(current, findDraftSupplementalPickup(current)?.version ?? 'pickup', getOrderDetails(orderNumber))
@@ -46,15 +56,19 @@ function PickupEbolContent() {
   const supplementalDraft = findDraftSupplementalPickup(orderEbol)
   const confirmationSource = supplementalDraft ?? orderEbol?.pickup
   const [contactMethod, setContactMethod] = useState<PickupEbolConfirmationInput['contactMethod']>(() => (
-    confirmationSource?.contact.status === 'contactless' ? 'contactless' : 'signed'
+    confirmationSource?.contact.status === 'otp' ? 'otp' : 'signed'
   ))
   const [contactName, setContactName] = useState(confirmationSource?.contact.signerName ?? '')
-  const [contactlessReason, setContactlessReason] = useState(confirmationSource?.contact.contactlessReason ?? '')
-  const [contactlessAcknowledged, setContactlessAcknowledged] = useState(false)
+  const [otpVerified, setOtpVerified] = useState(confirmationSource?.contact.status === 'otp')
   const [driverName, setDriverName] = useState(confirmationSource?.driver.signerName ?? '')
   const [hasDamage, setHasDamage] = useState(confirmationSource?.evidence?.hasDamage ?? false)
   const [exceptionNote, setExceptionNote] = useState(confirmationSource?.evidence?.exceptionNote ?? '')
   const { comments, changeComments, saveError } = useHandoffComments(orderEbol, supplementalDraft?.version ?? 'pickup')
+  const chooseContactMethod = (method: PickupEbolConfirmationInput['contactMethod']) => {
+    if (method === contactMethod) return
+    setContactMethod(method)
+    setOtpVerified(false)
+  }
 
   if (!orderEbol?.pickup.evidence) {
     return (
@@ -70,7 +84,8 @@ function PickupEbolContent() {
   const reviewEvidence = supplementalDraft?.evidence ?? evidence
   const isLocked = Boolean(orderEbol.pickup.lockedAt)
   const confirmationInput: PickupEbolConfirmationInput = {
-    contactMethod, contactName, contactlessReason, contactlessAcknowledged, driverName, hasDamage, exceptionNote,
+    contactMethod, contactName: contactMethod === 'otp' ? recipient.name : contactName,
+    otpVerified, otpPhoneLast4: recipient.phone.replace(/\D/g, '').slice(-4), driverName, hasDamage, exceptionNote,
     contactComment: comments.contact, driverComment: comments.driver,
   }
   const needsRefresh = pickupReviewNeedsRefresh(orderEbol, readPickupDrafts())
@@ -81,8 +96,8 @@ function PickupEbolContent() {
   })
 
   if (isLocked && !supplementalDraft) {
-    const contactLabel = orderEbol.pickup.contact.status === 'contactless'
-      ? `Contactless · ${orderEbol.pickup.contact.contactlessReason}`
+    const contactLabel = orderEbol.pickup.contact.status === 'otp'
+      ? `${orderEbol.pickup.contact.signerName} · ••• ••• ${orderEbol.pickup.contact.otpPhoneLast4}`
       : orderEbol.pickup.contact.signerName
     return (
       <div className="cargo-flow">
@@ -90,7 +105,7 @@ function PickupEbolContent() {
         <main className="pickup-ebol-body">
           <section className="ebol-locked-state"><span><LockKeyhole size={30} /></span><h2>Pickup snapshot locked</h2><p>Version 1 and its confirmations cannot be edited.</p></section>
           <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Pickup evidence</h2></div><EvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />{evidence.hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
-          <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'contactless' ? 'Pickup contact · signature skipped' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
+          <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'otp' ? 'Pickup contact · OTP verified' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
           <PickupEmailDeliveryStatus documentNumber={`${orderNumber}-PU-1`} request={orderEbol.pickup.contact.emailCopyRequest} />
           <HandoffCommentsView comments={orderEbol.pickup.comments} />
           <OrderDocumentHistory order={orderEbol} />
@@ -130,14 +145,9 @@ function PickupEbolContent() {
 
         <section className="ebol-section">
           <div className="ebol-section-heading"><UserRound size={20} /><h2>Pickup contact</h2></div>
-          <div className="ebol-method" aria-label="Pickup contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => setContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'contactless'} className={contactMethod === 'contactless' ? 'is-active' : ''} onClick={() => setContactMethod('contactless')}>Contactless</button></div>
+          <div className="ebol-method" aria-label="Pickup contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => chooseContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'otp'} className={contactMethod === 'otp' ? 'is-active' : ''} onClick={() => chooseContactMethod('otp')}>SMS code</button></div>
           {contactMethod === 'signed' ? <label className="ebol-field">Contact name<input value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Full name" /></label> : (
-            <div className="contactless-review">
-              <label className="ebol-field">Contactless reason<select value={contactlessReason} onChange={(event) => { setContactlessReason(event.target.value); if (event.target.value === 'Contact refused to sign') setHasDamage(true) }}><option value="">Select reason</option><option>Contact unavailable</option><option>Contact refused to sign</option><option>Remote or unattended pickup</option></select></label>
-              <div className="contactless-guidance"><AlertTriangle size={20} /><span><strong>Contact signature will be skipped</strong><small>The Zaberman driver must still sign the reviewed Pickup evidence.</small></span></div>
-              {contactlessReason === 'Contact refused to sign' ? <p className="ebol-storage-warning">Describe the refusal in the exception details above before continuing.</p> : null}
-              <label className="contactless-attestation"><input type="checkbox" checked={contactlessAcknowledged} onChange={(event) => setContactlessAcknowledged(event.target.checked)} /><span>I confirm the selected reason is accurate and the contact signature cannot be collected.</span></label>
-            </div>
+            <DeliveryOtpVerification recipientName={recipient.name} recipientPhone={recipient.phone} outcome={otpOutcome} offline={network === 'offline'} onVerifiedChange={setOtpVerified} />
           )}
         </section>
 
@@ -148,7 +158,7 @@ function PickupEbolContent() {
 
         <HandoffCommentsEditor comments={comments} onChange={changeComments} saveError={saveError} />
         {supplementalDraft ? <OrderDocumentHistory order={orderEbol} /> : null}
-        <div className="flow-action"><button type="button" className="cargo-primary" disabled={!canConfirm} onClick={openSigning}><FileText size={19} /> Continue to signing</button></div>
+        <div className="flow-action"><button type="button" className="cargo-primary" disabled={!canConfirm} onClick={openSigning}><FileText size={19} /> {contactMethod === 'otp' ? 'Continue to driver signature' : 'Continue to signing'}</button></div>
       </main>
       <CargoBottomNav />
     </div>

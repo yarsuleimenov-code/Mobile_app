@@ -12,7 +12,7 @@ export type OrderEbolStatus =
   | 'completed'
   | 'correction_requested'
 
-export type OrderEbolContactConfirmationStatus = 'pending' | 'signed' | 'contactless' | 'otp'
+export type OrderEbolContactConfirmationStatus = 'pending' | 'signed' | 'otp'
 export type OrderEbolDriverConfirmationStatus = 'pending' | 'signed'
 
 interface OrderEbolConfirmationDetails {
@@ -22,7 +22,6 @@ interface OrderEbolConfirmationDetails {
 
 export interface OrderEbolContactConfirmation extends OrderEbolConfirmationDetails {
   status: OrderEbolContactConfirmationStatus
-  contactlessReason?: string
   otpPhoneLast4?: string
   emailCopyRequest?: { recipientEmail: string; requestedAt: string }
 }
@@ -138,10 +137,10 @@ export function syncPickupOrderEbolDraft(
 export interface PickupEbolConfirmationInput {
   contactComment?: string
   driverComment?: string
-  contactMethod: 'signed' | 'contactless'
+  contactMethod: 'signed' | 'otp'
   contactName: string
-  contactlessReason: string
-  contactlessAcknowledged: boolean
+  otpVerified?: boolean
+  otpPhoneLast4?: string
   driverName: string
   hasDamage: boolean
   exceptionNote: string
@@ -155,11 +154,10 @@ export function isValidContactEmail(value: string) {
 }
 
 export function canLockPickupEbol(input: PickupEbolConfirmationInput) {
-  const contactIsComplete = input.contactMethod === 'contactless'
-    ? Boolean(input.contactlessReason.trim()) && input.contactlessAcknowledged
+  const contactIsComplete = input.contactMethod === 'otp'
+    ? Boolean(input.contactName.trim()) && Boolean(input.otpVerified) && /^\d{4}$/.test(input.otpPhoneLast4 ?? '')
     : Boolean(input.contactName.trim())
-  const refused = input.contactMethod === 'contactless' && input.contactlessReason === 'Contact refused to sign'
-  const exceptionIsComplete = (!refused || input.hasDamage) && (!input.hasDamage || Boolean(input.exceptionNote.trim()))
+  const exceptionIsComplete = !input.hasDamage || Boolean(input.exceptionNote.trim())
   const emailIsComplete = !input.sendEmailCopy || (input.contactMethod === 'signed' && isValidContactEmail(input.contactEmail ?? ''))
   return contactIsComplete && Boolean(input.driverName.trim()) && exceptionIsComplete && emailIsComplete
 }
@@ -183,8 +181,8 @@ export function lockPickupEbol(
         hasDamage: input.hasDamage,
         exceptionNote: input.hasDamage ? input.exceptionNote.trim() : '',
       } : null,
-      contact: input.contactMethod === 'contactless'
-        ? { status: 'contactless', contactlessReason: input.contactlessReason.trim(), confirmedAt: lockedAt }
+      contact: input.contactMethod === 'otp'
+        ? { status: 'otp', signerName: input.contactName.trim(), otpPhoneLast4: input.otpPhoneLast4, confirmedAt: lockedAt }
         : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt,
           ...(input.sendEmailCopy ? { emailCopyRequest: { recipientEmail: input.contactEmail!.trim(), requestedAt: lockedAt } } : {}) },
       driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
@@ -273,8 +271,8 @@ export function lockSupplementalPickup(
         hasDamage: input.hasDamage,
         exceptionNote: input.hasDamage ? input.exceptionNote.trim() : '',
       },
-      contact: input.contactMethod === 'contactless'
-        ? { status: 'contactless', contactlessReason: input.contactlessReason.trim(), confirmedAt: lockedAt }
+      contact: input.contactMethod === 'otp'
+        ? { status: 'otp', signerName: input.contactName.trim(), otpPhoneLast4: input.otpPhoneLast4, confirmedAt: lockedAt }
         : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt,
           ...(input.sendEmailCopy ? { emailCopyRequest: { recipientEmail: input.contactEmail!.trim(), requestedAt: lockedAt } } : {}) },
       driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
@@ -299,11 +297,7 @@ export interface DeliveryEbolEvidenceInput {
   exceptionNote: string
 }
 
-export interface DeliveryEbolConfirmationInput extends Omit<PickupEbolConfirmationInput, 'contactMethod'> {
-  contactMethod: 'signed' | 'contactless' | 'otp'
-  otpVerified?: boolean
-  otpPhoneLast4?: string
-}
+export type DeliveryEbolConfirmationInput = PickupEbolConfirmationInput
 
 export function prepareDeliveryEbol(
   orderEbol: OrderEbol,
@@ -354,15 +348,7 @@ export function prepareDeliveryEbol(
 }
 
 export function canLockDeliveryEbol(input: DeliveryEbolConfirmationInput) {
-  if (input.contactMethod === 'otp') {
-    const exceptionIsComplete = !input.hasDamage || Boolean(input.exceptionNote.trim())
-    return Boolean(input.contactName.trim())
-      && Boolean(input.driverName.trim())
-      && Boolean(input.otpVerified)
-      && /^\d{4}$/.test(input.otpPhoneLast4 ?? '')
-      && exceptionIsComplete
-  }
-  return canLockPickupEbol({ ...input, contactMethod: input.contactMethod })
+  return canLockPickupEbol(input)
 }
 
 export function lockDeliveryEbol(
@@ -386,11 +372,9 @@ export function lockDeliveryEbol(
         hasDamage: input.hasDamage,
         exceptionNote: input.hasDamage ? input.exceptionNote.trim() : '',
       },
-      contact: input.contactMethod === 'contactless'
-        ? { status: 'contactless', contactlessReason: input.contactlessReason.trim(), confirmedAt: lockedAt }
-        : input.contactMethod === 'otp'
-          ? { status: 'otp', signerName: input.contactName.trim(), otpPhoneLast4: input.otpPhoneLast4, confirmedAt: lockedAt }
-          : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt },
+      contact: input.contactMethod === 'otp'
+        ? { status: 'otp', signerName: input.contactName.trim(), otpPhoneLast4: input.otpPhoneLast4, confirmedAt: lockedAt }
+        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt },
       driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
       lockedAt,
     },

@@ -301,7 +301,7 @@ Critical checks before implementation:
 - Error text is linked to the field and announced; focus moves to the first invalid field on submit.
 - Status uses text + icon + optional color.
 - Active/disabled/completed states differ by label and affordance, not opacity alone.
-- Signature canvas has a contactless/non-drawn alternative defined by business rules.
+- Signature canvas has an OTP alternative defined by business rules.
 
 **Unverified in this session:** measured contrast, DOM accessible names, focus order, screen-reader announcements, reduced motion, and actual target sizes. Treat these as acceptance tests, not confirmed defects.
 
@@ -577,7 +577,7 @@ One route overview links two independent operations. No Loading, Unloading, mani
 
 1. Is Same Day part of the next MVP or intentionally deferred? If included, what system assigns RouteRun and sequence?
 2. Which fields block Pickup/Dropoff completion versus create a warning?
-3. Is recipient signature required, optional, or replaceable by contactless evidence per branch/customer?
+3. Is recipient signature required, or may it be replaced by a verified OTP per branch/customer?
 4. Who may complete Partial/Refused and who may override wrong-trip/extra cargo?
 5. What is the authoritative source for task time windows and changes during a route?
 6. Which photo categories are required by operation/customer/service type?

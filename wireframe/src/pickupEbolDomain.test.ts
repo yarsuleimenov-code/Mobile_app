@@ -5,8 +5,6 @@ import { canLockPickupEbol, createOrderEbol, lockPickupEbol, lockSupplementalPic
 const signedInput: PickupEbolConfirmationInput = {
   contactMethod: 'signed',
   contactName: 'Alex Morgan',
-  contactlessReason: '',
-  contactlessAcknowledged: false,
   driverName: 'John Doe',
   hasDamage: false,
   exceptionNote: '',
@@ -19,10 +17,10 @@ describe('Pickup eBOL confirmation', () => {
     expect(canLockPickupEbol({ ...signedInput, hasDamage: true, exceptionNote: 'Scratch on left panel' })).toBe(true)
   })
 
-  it('requires a reason and acknowledgment for contactless confirmation', () => {
-    expect(canLockPickupEbol({ ...signedInput, contactMethod: 'contactless', contactName: '', contactlessReason: '' })).toBe(false)
-    expect(canLockPickupEbol({ ...signedInput, contactMethod: 'contactless', contactName: '', contactlessReason: 'Contact unavailable' })).toBe(false)
-    expect(canLockPickupEbol({ ...signedInput, contactMethod: 'contactless', contactName: '', contactlessReason: 'Contact unavailable', contactlessAcknowledged: true })).toBe(true)
+  it('requires a verified OTP and the recipient phone suffix', () => {
+    expect(canLockPickupEbol({ ...signedInput, contactMethod: 'otp', otpVerified: false, otpPhoneLast4: '0198' })).toBe(false)
+    expect(canLockPickupEbol({ ...signedInput, contactMethod: 'otp', otpVerified: true, otpPhoneLast4: '' })).toBe(false)
+    expect(canLockPickupEbol({ ...signedInput, contactMethod: 'otp', otpVerified: true, otpPhoneLast4: '0198' })).toBe(true)
   })
 
   it('locks the Pickup snapshot without changing Delivery', () => {
@@ -45,7 +43,7 @@ describe('Pickup eBOL confirmation', () => {
     expect(canLockPickupEbol({ ...signedInput, sendEmailCopy: true })).toBe(false)
     expect(canLockPickupEbol({ ...signedInput, sendEmailCopy: true, contactEmail: 'wrong-address' })).toBe(false)
     expect(canLockPickupEbol({ ...signedInput, sendEmailCopy: true, contactEmail: ' contact@example.com ' })).toBe(true)
-    expect(canLockPickupEbol({ ...signedInput, contactMethod: 'contactless', contactlessReason: 'Contact unavailable', contactlessAcknowledged: true, sendEmailCopy: true, contactEmail: 'contact@example.com' })).toBe(false)
+    expect(canLockPickupEbol({ ...signedInput, contactMethod: 'otp', otpVerified: true, otpPhoneLast4: '0198', sendEmailCopy: true, contactEmail: 'contact@example.com' })).toBe(false)
   })
 
   it('records the recipient only on the signed Pickup version that requested a copy', () => {

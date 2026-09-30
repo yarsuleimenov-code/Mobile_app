@@ -14,7 +14,7 @@ export const rehearsalPresets = [
   { id: 'multiple', order: '99007002', source: '23343778', title: 'Multiple dimension groups', detail: '2 · Edit Qty, add and remove groups; verify labels', start: 'pickup' },
   { id: 'offline', order: '99003002', source: '23343775', title: 'Offline + photo error', detail: '3 · Save → reopen → Online → Retry → Success', start: 'pickup' },
   { id: 'printer', order: '99007004', source: '23343775', title: 'Printer unavailable', detail: '4 · Preview retained selection; enable printer for print/reprint', start: 'labels' },
-  { id: 'damage', order: '99007005', source: '23343782', title: 'Damage + contactless', detail: '5 · Review damage and comments; choose contactless reason', start: 'review' },
+  { id: 'damage', order: '99007005', source: '23343782', title: 'Damage + OTP', detail: '5 · Review damage and comments; verify the contact by SMS code', start: 'review' },
   { id: 'supplemental', order: '99007006', source: '23343775', title: 'Locked Pickup + Supplemental', detail: '6 · Original is already signed; add places with fresh signatures', start: 'locked' },
   { id: 'otp', order: '99007008', source: '23343775', title: 'OTP Delivery', detail: '7 · Verify recipient by SMS code → driver signature → POD', start: 'otp' },
   { id: 'conflict', order: '99003003', source: '23343775', title: 'Draft conflict', detail: '8 · Sync → compare → Keep local changes; inspect order data', start: 'pickup' },
@@ -43,14 +43,12 @@ export function buildRehearsalPreset(id: RehearsalPresetId) {
   }
   // Historical fixture only. New operations still require explicit signatures.
   if (orderEbol && id === 'supplemental') orderEbol = lockPickupEbol(orderEbol, {
-    contactMethod: 'signed', contactName: 'Morgan Lee', driverName: 'Chris Adams', contactlessReason: '',
-    contactlessAcknowledged: false, hasDamage: false, exceptionNote: '',
+    contactMethod: 'signed', contactName: 'Morgan Lee', driverName: 'Chris Adams', hasDamage: false, exceptionNote: '',
     contactComment: 'Three chairs handed over.', driverComment: 'Count and packing checked.',
   }, at)
   if (orderEbol && id === 'otp') {
     orderEbol = lockPickupEbol(orderEbol, {
-      contactMethod: 'signed', contactName: 'Michael Reed', driverName: 'Chris Adams', contactlessReason: '',
-      contactlessAcknowledged: false, hasDamage: false, exceptionNote: '',
+      contactMethod: 'signed', contactName: 'Michael Reed', driverName: 'Chris Adams', hasDamage: false, exceptionNote: '',
       contactComment: 'Cargo released for delivery.', driverComment: 'Pickup count and condition confirmed.',
     }, at)
     orderEbol = prepareDeliveryEbol(orderEbol, record, {

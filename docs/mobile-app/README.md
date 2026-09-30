@@ -2,7 +2,7 @@
 
 [Русская версия](ru/README.md)
 
-Zaberman Mobile App is a business prototype for recording cargo at Pickup, verifying it at Dropoff, and handling Interstate loading, receiving, and documents. The active interface uses Home, Tasks, Scan, and More. All current operational data and actions in the wireframe are local simulations; this is not a production system.
+Zaberman Mobile App is a business prototype for completing a required vehicle Pre-trip inspection, recording cargo at Pickup, verifying it at Dropoff, and handling Interstate loading, receiving, and documents. The active interface uses Home, Tasks, Scan, and More. All current operational data and actions in the wireframe are local simulations; this is not a production system.
 
 ## Reading order
 
@@ -23,4 +23,4 @@ Zaberman Mobile App is a business prototype for recording cargo at Pickup, verif
 
 These pages describe the active routes in `wireframe/src/App.tsx` and the behavior in the connected screens and domain modules. Product decisions in `docs/system-report/STAGE_0_PRODUCT_DECISIONS.md` are identified as future design where the active UI does not implement them. Legacy components outside the active router are not user workflows. **Implemented** means interactive in the browser; **Simulated** means the UI changes local mock state; **Planned** means a documented target without an active route; **Unknown** means the available evidence does not establish the behavior.
 
-The deployed site publishes `wireframe/`. The current pages were checked against the active route map, screen source and a Chrome walkthrough of the deployed build at 390 px. Screenshots in [the User Guide](user-guide.md) show the deployed interface. The browser check covered Home → Tasks → Scan → More, a complete simulated Pickup → Dropoff → POD path, Scan lookup, and Interstate loading → Trip/BOL plus incoming unloading with missing-place confirmation. No JavaScript page errors appeared in those paths.
+The deployed site publishes `wireframe/`. The current pages were checked against the active route map and screen source. Earlier Chrome walkthroughs covered Home → Tasks → Scan → More, Pickup → Dropoff → POD, Scan lookup, and Interstate loading → Trip/BOL plus incoming unloading. Pre-trip and Pickup/Delivery OTP are documented from the active source and automated checks; their rendered walkthrough remains pending in the current environment.

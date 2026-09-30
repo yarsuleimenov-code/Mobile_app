@@ -10,7 +10,7 @@ import { readOrderEbols, writeOrderEbols } from './orderEbolStore'
 
 const record = initialCargoRecords[0]
 const input: PickupEbolConfirmationInput = {
-  contactMethod: 'signed', contactName: 'Morgan Lee', contactlessReason: '', contactlessAcknowledged: false,
+  contactMethod: 'signed', contactName: 'Morgan Lee',
   driverName: 'Chris Adams', hasDamage: false, exceptionNote: '',
 }
 const comments = { contact: 'Protect the top panel', driver: 'Corners padded before loading' }
@@ -26,12 +26,12 @@ describe('Order eBOL comments and document versions', () => {
     expect(canLockDeliveryEbol({ ...input, hasDamage: true, driverComment: 'See comments' })).toBe(false)
   })
 
-  it('requires an exception note as well as an acknowledged reason for refusal', () => {
-    const refusal = { ...input, contactMethod: 'contactless' as const, contactlessReason: 'Contact refused to sign', contactlessAcknowledged: true }
-    expect(canLockPickupEbol(refusal)).toBe(false)
-    expect(canLockDeliveryEbol({ ...refusal, hasDamage: true })).toBe(false)
-    expect(canLockDeliveryEbol({ ...refusal, hasDamage: true, exceptionNote: 'Recipient disputes packaging condition' })).toBe(true)
-    expect(canLockPickupEbol({ ...refusal, contactlessReason: 'Contact unavailable' })).toBe(true)
+  it('requires verified OTP and a separate exception note for damage', () => {
+    const otp = { ...input, contactMethod: 'otp' as const, otpPhoneLast4: '0198' }
+    expect(canLockPickupEbol(otp)).toBe(false)
+    expect(canLockDeliveryEbol({ ...otp, otpVerified: true, hasDamage: true })).toBe(false)
+    expect(canLockDeliveryEbol({ ...otp, otpVerified: true, hasDamage: true, exceptionNote: 'Recipient disputes packaging condition' })).toBe(true)
+    expect(canLockPickupEbol({ ...otp, otpVerified: true })).toBe(true)
   })
 
   it('updates only unsigned target comments and restores them from storage', () => {

@@ -1,23 +1,23 @@
-# MOB — подтверждение доставки OTP
+# MOB — подтверждение передачи OTP
 
-Дата: 2026-09-28  
+Дата: 2026-09-30
 Статус: hi-fi wireframe для бизнес-валидации; production-интеграция не реализована.
 
 ## Цель и scope
 
-Получатель может подтвердить выдачу любого Dropoff одноразовым SMS-кодом. После проверки OTP водитель подписывает Delivery snapshot, затем Order eBOL закрывается и POD показывает факт OTP-проверки.
+Контакт может подтвердить любой Pickup или Delivery одноразовым SMS-кодом. После проверки OTP водитель подписывает соответствующий snapshot; eBOL/POD показывает факт OTP-проверки.
 
 Минимальный сценарий:
 
-1. На Delivery review приложение показывает зарегистрированного получателя и маскированный номер.
-2. Водитель отправляет код; номер нельзя изменить на экране доставки.
-3. Получатель сообщает шестизначный код водителю.
+1. На Pickup или Delivery review приложение показывает зарегистрированный контакт и маскированный номер.
+2. Водитель отправляет код; номер нельзя изменить на экране передачи.
+3. Контакт сообщает шестизначный код водителю.
 4. После успешной проверки доступна подпись водителя.
-5. POD хранит способ подтверждения, получателя, последние 4 цифры номера и время; сам OTP не хранится и не показывается.
+5. eBOL/POD хранит способ подтверждения, контакт, последние 4 цифры номера и время; сам OTP не хранится и не показывается.
 
 ## Принятые правила
 
-- OTP доступен в каждом Delivery/Dropoff как один из способов подтверждения наряду с Sign on device и Contactless.
+- OTP доступен в каждом Pickup и Delivery/Dropoff как один из двух способов подтверждения наряду с Sign on device.
 - В wireframe успешен любой шестизначный код, кроме `111111`. Код `111111` зарезервирован для демонстрации ошибки.
 - Код: 6 цифр, срок действия в целевой реализации — 10 минут.
 - Максимум 3 попытки ввода. После этого проверка блокируется; дальнейшее решение принимает диспетчер/супервайзер.
@@ -39,20 +39,33 @@ Preset `OTP Delivery`, заказ `#99007008`:
 
 ## Production gate: Twilio
 
-До передачи функции в production-разработку необходимо отдельно оформить и настроить Twilio:
+Отдельные OTP-коды регистрировать не требуется. Регистрируются владелец аккаунта/компания, Twilio Verify Service и при необходимости SMS template или sender.
 
-1. Создать production Twilio account/subaccount и **Verify Service** для OTP; выбрать 6-digit token, срок действия, бренд и шаблоны сообщений.
-2. Подтвердить поддерживаемые страны, sender/origination identity и требования регистрации для каждого рынка. Для США отдельно согласовать маршрут с Twilio: при использовании только verification-сообщений рекомендуемый вариант — Twilio Verify; при отправке через Programmable Messaging с 10DLC необходимы Brand/Campaign registration и соответствующие consent/opt-out процессы.
-3. Зафиксировать основание получения SMS и текст согласия получателя; проверить локальные требования privacy и messaging compliance.
-4. Хранить Twilio credentials только на backend. Мобильный клиент передаёт запрос `send/check`; OTP и секреты не сохраняются в приложении.
-5. Сохранять audit-события send/check, verification SID, outcome, actor и timestamps; не логировать полный номер и введённый код.
-6. Настроить rate limits, fraud protection, мониторинг delivery failures и операционный процесс supervisor override.
+### Порядок регистрации
 
-Справка: [Twilio Verify](https://www.twilio.com/docs/verify/api), [Verify Service rate limits](https://www.twilio.com/docs/verify/api/service-rate-limits), [US A2P 10DLC registration](https://www.twilio.com/docs/messaging/compliance/a2p-10dlc).
+1. Создать корпоративный Twilio account на служебную почту, подключить billing и назначить владельца и резервного администратора. Trial разрешает отправку только на заранее подтверждённые номера.
+2. В `Communications → Trust Hub → Profiles` создать **Primary Business Compliance Profile** и отправить его на проверку. Подготовить юридическое название и адрес, страну, регистрационный номер/EIN/DUNS, сайт, отрасль, данные и контакты уполномоченного представителя, notification email и запрошенные документы. До отправки на любые номера дождаться `Twilio Approved`.
+3. В `Verify → Services` создать production **Verify Service**: friendly name `Zaberman Handoff`, SMS channel, code length 6, стандартный TTL 10 минут, Fraud Guard enabled. `Do not share` warning должен быть выключен, потому что контакт передаёт код уполномоченному водителю.
+4. Выбрать pre-approved template либо запросить custom template: `Your Zaberman handoff code is: {code}. Give this code only to the Zaberman driver.` Custom template используется только после одобрения Twilio.
+5. В `Verify → Settings → Geo permissions` разрешить только фактические страны доставки и отключить остальные направления.
+6. До отправки получить явное согласие получателя на одноразовое transactional SMS и хранить номер, timestamp, источник и версию текста согласия. Для США/Канады форма согласия должна содержать сведения о message/data rates, ссылки на Terms и Privacy Policy, HELP/STOP и контакт поддержки.
+7. Создать restricted API Key/Secret и сохранить вместе с Verify Service SID только в backend secret storage. Мобильный клиент вызывает собственные backend endpoints `send/check` и не получает Twilio credentials.
+8. Настроить лимиты по заказу, телефону, сотруднику, устройству и IP, максимум три отправки/проверки в handoff, мониторинг затрат и delivery failures, audit и supervisor override.
+
+### Нужна ли A2P 10DLC
+
+- Для OTP-only через Twilio Verify отдельная A2P 10DLC Campaign обычно не нужна; Verify сам выбирает маршрут, и отдельный Twilio phone number для стандартного сценария не требуется.
+- Если коды отправляются с корпоративного US 10DLC номера через Programmable Messaging, необходимо дополнительно зарегистрировать Brand и Campaign, привязать номер к Messaging Service и дождаться carrier approval.
+
+### Граница прототипа
+
+Правило wireframe «любой шестизначный код, кроме `111111`» существует только для демонстрации. Production backend должен передавать введённый код в Twilio Verification Check и принимать только фактически сгенерированный Twilio код. Хранятся verification SID, outcome, actor и timestamps; полный номер и введённый код не логируются.
+
+Справка: [Twilio Verify](https://www.twilio.com/docs/verify/api), [Primary Compliance Profile](https://www.twilio.com/docs/trust-hub/profiles/primary-compliance-profiles), [Consent and opt-in](https://www.twilio.com/docs/verify/consent-opt-in), [Verification templates](https://www.twilio.com/docs/verify/verification-templates), [Fraud prevention](https://www.twilio.com/docs/verify/preventing-toll-fraud), [US A2P 10DLC](https://www.twilio.com/docs/messaging/compliance/a2p-10dlc).
 
 ## Критерии готовности wireframe
 
-- Happy path проходит от Delivery review до completed POD.
+- Happy path проходит для Pickup и Delivery: review → OTP → подпись водителя → locked eBOL/POD.
 - При выбранном SMS code до успешного OTP кнопка перехода к подписи заблокирована.
 - Invalid, expired, delivery error, offline и lock after 3 attempts доступны для показа.
 - Рабочие экраны не содержат demo/mock-пояснений; код и переключатели сценариев находятся только в Administration.

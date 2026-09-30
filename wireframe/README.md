@@ -32,7 +32,7 @@ pnpm docs:preview
 
 Локальный preview после сборки: `http://127.0.0.1:4174/Mobile_app/help/`. Конфигурация и статус реализации описаны в [`DOCUMENTATION_SITE_IMPLEMENTATION.md`](../docs/system-report/DOCUMENTATION_SITE_IMPLEMENTATION.md).
 
-Срез 2026-09-21: публикационный baseline приложения и RU/EN документации в `main` — `0b14625`. Этап 7 включён в `main` коммитом `762ffb5`; затем восстановлен вход More → Administration (`8f756a5`) и добавлен необязательный запрос email-копии Pickup eBOL (`4f9b552`). Этапы 3–6 приняты owner; отдельная бизнес-приёмка Этапа 7 документально не подтверждена. Повторная проверка frontend: 20 test-файлов / 106 тестов, TypeScript и Vite build проходят. Исторические две репетиции 7/7 на 320/390/1440 px описаны в [Этапе 7](../docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md).
+Срез 2026-09-30: текущий source включает Pre-trip inspection и подтверждение контакта подписью или OTP во всех Pickup и Delivery. Этапы 3–6 приняты owner; отдельная бизнес-приёмка Этапа 7 документально не подтверждена. Повторная проверка frontend: 23 test-файла / 123 теста, TypeScript и Vite build проходят. Исторические две репетиции 7/7 на 320/390/1440 px описаны в [Этапе 7](../docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md).
 
 ## Что оценивать
 
@@ -42,7 +42,7 @@ pnpm docs:preview
 - Фото: отдельные ID, пять категорий, фильтр/preview и удаление конкретного фото; mock camera/gallery, локальная очередь с persisted retry/conflict. Фото original/supplemental/Delivery отображаются отдельно в review/POD.
 - Dropoff: поиск заказа, сравнение Pickup evidence, Delivery-фотографии и фиксация damage/exception без блокировки передачи.
 - Нижнее меню: `Home | Tasks | Scan | More`; Pickup и Dropoff открываются из Home/Tasks, Interstate — из More.
-- Prototype controls (`#/more/demo`) (`DEV ONLY`): роль/филиал, online/offline/slow, результат следующей синхронизации, доступность camera/scanner/printer и полный сброс mock-данных.
+- Administration (`#/more/demo`): роль/филиал, online/offline/slow, результаты sync/print/email/SMS/OTP, доступность camera/scanner/printer и полный сброс локальных данных.
 - More → Cargo places: стабильный `PlaceID`, Order и `n/N`, размеры/источник веса, label, current location/status и короткая event history для каждого места.
 - Labels: all/selected/one, отдельные Original/Supplemental filters, точный preview и история mock print/reprint. Scan различает valid/duplicate/unknown и поддерживает ручной PlaceID/OrderID.
 - Interstate: выбор направления и truck, загрузка конкретных мест, review manifest, создание Trip и `Interstate BOL`.
@@ -57,7 +57,7 @@ Home → Load today’s route → Pickup: заявки `23343775`, `23343778`, `
 
 Сохранённые правки имеют приоритет перед шаблоном. Служебный блок с `Load demo data` не отображается в форме; автоматическое заполнение новых черновиков сохранено. Для повторной демонстрации с чистыми данными доступен полный reset через Prototype controls (удаляет текущие локальные изменения). Подписи не проставляются автоматически; после подписания доступны только новые группы через Supplemental Pickup. Фото используют общий mock-набор и не являются реальным evidence конкретной заявки.
 
-Prototype controls (`#/more/demo`) содержит семь отдельных сценариев: Normal Pickup, Multiple dimension groups, Offline + photo error, Printer unavailable, Damage + contactless, Locked Pickup + Supplemental, Draft conflict. 40/100 mock photos — в Optional photo volume checks. Пресеты переоткрывают сохранённые демо-черновики без потери правок. Для retry: Online → Retry → Sync now → Success → Retry sync. Для конфликта: Sync now → Keep local changes → Sync now. Offline моделирует состояние уже загруженного приложения, не запуск без сети. [Этап 3: реализация и проверки](../docs/system-report/STAGE_3_PHOTO_OFFLINE_DEMO.md).
+Prototype controls (`#/more/demo`) содержит восемь отдельных сценариев: Normal Pickup, Multiple dimension groups, Offline + photo error, Printer unavailable, Damage + OTP, Locked Pickup + Supplemental, OTP Delivery, Draft conflict. 40/100 mock photos — в Optional photo volume checks. Пресеты переоткрывают сохранённые демо-черновики без потери правок. Для retry: Online → Retry → Sync now → Success → Retry sync. Для конфликта: Sync now → Keep local changes → Sync now. Offline моделирует состояние уже загруженного приложения, не запуск без сети. [Этап 3: реализация и проверки](../docs/system-report/STAGE_3_PHOTO_OFFLINE_DEMO.md).
 
 ## Документы BOL
 

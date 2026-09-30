@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-The active Mobile App wireframe lets a Zaberman employee record the physical composition and condition of cargo at Pickup, verify it at Dropoff, and account for individual places during Interstate loading and unloading. It also presents the Order eBOL handoff record and the separate Interstate BOL. The app is an interactive business prototype: records, route import, photos, signatures, print results, and sync results are simulated locally in the browser. It is not connected to Spoke, a production database, camera, scanner, printer, or document delivery service. [Source: wireframe README](../../wireframe/README.md), [current state](../system-report/CURRENT_STATE.md).
+The active Mobile App wireframe lets a Zaberman driver complete a required vehicle Pre-trip inspection before loading the daily route, record cargo at Pickup, verify it at Dropoff, and account for individual places during Interstate loading and unloading. It also presents the Order eBOL handoff record and the separate Interstate BOL. The app is an interactive business prototype: records, route import, photos, signatures, print results, and sync results are simulated locally in the browser. It is not connected to Spoke, a production database, camera, scanner, printer, or document delivery service. [Source: wireframe README](../../wireframe/README.md), [current state](../system-report/CURRENT_STATE.md).
 
 ## Users
 
@@ -14,6 +14,7 @@ The workflow is designed for the crew that records Pickup and Delivery evidence,
 | --- | --- |
 | Order | Shipment identified in the UI by an order number. A loaded Spoke stop's External ID becomes that number in the local route simulation. |
 | Task / Stop | A scheduled Pickup or Dropoff row on Today's Spoke route, with sequence, time, address and Order. Tasks are displayed in Home and Tasks. The active router has no separate task detail screen. |
+| Pre-trip inspection | Required vehicle safety checklist, four current camera photos and driver attestation. A passed inspection unlocks loading Today's route; any Issue keeps it locked. |
 | Pickup | An operation that records dimension groups, individual cargo places, photos and order context; it prepares Pickup evidence for Order eBOL review. |
 | Dropoff | Verification of a previously recorded order against Pickup evidence, with Delivery photos and condition/exception; it prepares Delivery review. |
 | Same Day | A movement type whose Pickup and Dropoff are intended to be connected through a RouteRun in the approved product model. An older Same Day screen exists in source but is not routed in the active app. |
@@ -29,9 +30,22 @@ The target product model gives CargoPlace an opaque UUIDv7 primary ID and treats
 
 ## Application structure
 
-The active bottom navigation is **Home | Tasks | Scan | More**. Home offers Pickup, Dropoff, Today's Spoke route, Order documents, Pickup drafts and Recent operations. Tasks filters the loaded route by All, Pickup or Dropoff and searches Order ID/title. Scan looks up a place or an order. More contains Help & Instructions, Sync now, Interstate operations, Cargo places, Administration and device availability. The active hash routes are listed in [App.tsx](../../wireframe/src/App.tsx). Administration is a scenario control surface, not an everyday operational step.
+The active bottom navigation is **Home | Tasks | Scan | More**. Home offers Pickup, Dropoff, the required Pre-trip inspection, Today's Spoke route, Order documents, Pickup drafts and Recent operations. Tasks filters the loaded route by All, Pickup or Dropoff and searches Order ID/title. Scan looks up a place or an order. More contains Help & Instructions, Sync now, Interstate operations, Cargo places, Administration and device availability. The active hash routes are listed in [App.tsx](../../wireframe/src/App.tsx). Administration is a scenario control surface, not an everyday operational step.
 
 ## Business workflows
+
+### Pre-trip inspection and route gate
+
+```mermaid
+flowchart LR
+  A["Home: route locked"] --> B["7 safety checks"]
+  B --> C["4 camera-only photos"]
+  C --> D["Driver attestation"]
+  D --> E["Vehicle cleared; load route"]
+  B -->|Any Issue| F["Route locked; review issue"]
+```
+
+The sample vehicle is **Van 08 · Extended Van** at NJ1. Every check needs Pass or Issue, and Front, Rear, Driver side and Passenger side photos must be taken in the flow. Gallery upload is not offered. Any Issue or unavailable camera prevents completion. The active wireframe persists the inspection locally and has no assignment service, maintenance task, supervisor override or server audit. [Pre-trip source](../../wireframe/src/screens/PreTripInspectionScreen.tsx), [documented scope](../system-report/PRE_TRIP_INSPECTION_WIREFRAME.md).
 
 ### Pickup and Order eBOL
 
@@ -40,7 +54,7 @@ flowchart LR
   A["Home or Tasks: Pickup"] --> B["Pickup draft: order, groups, places, photos"]
   B --> C["Continue to Pickup review"]
   C --> D["Review evidence and confirmations"]
-  D --> E["Contact signature or contactless reason"]
+  D --> E["Contact signature or verified SMS code"]
   E --> F["Zaberman driver signature"]
   F --> G["Pickup snapshot locked"]
   B --> L["Place labels: print or continue"]
@@ -61,12 +75,12 @@ flowchart LR
   B --> C["Delivery photos and condition"]
   C --> D["Confirm Dropoff"]
   D --> E["Delivery review"]
-  E --> F["Contact signature or contactless reason"]
+  E --> F["Contact signature or verified SMS code"]
   F --> G["Zaberman driver signature"]
   G --> H["Order eBOL completed; POD available"]
 ```
 
-The Dropoff screen requires a recorded order, matching cargo, at least one Delivery photo, and either no visible damage or a damage report with details. An unsigned Supplemental Pickup blocks confirmation. “Dropoff confirmed” records the operation; Delivery signing later locks the Delivery snapshot and completes the Order eBOL. If Pickup is not yet locked, the app directs the user to Pickup review before Delivery signing. [Dropoff screen](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../wireframe/src/screens/OrderPodScreen.tsx).
+The Dropoff screen requires a recorded order, matching cargo, at least one Delivery photo, and either no visible damage or a damage report with details. An unsigned Supplemental Pickup blocks confirmation. “Dropoff confirmed” records the operation; Delivery review then offers contact signature or SMS code. SMS code must be verified before the driver can sign; POD stores the confirmation method and masked phone reference, not the code. Delivery signing locks the snapshot and completes the Order eBOL. If Pickup is not yet locked, the app directs the user to Pickup review first. [Dropoff screen](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../wireframe/src/screens/OrderPodScreen.tsx).
 
 ### Same Day
 
@@ -94,7 +108,7 @@ Only Pickup-recorded orders matching the selected direction are eligible for loa
 | A Pickup can continue to review only with an Order number, at least one place, at least one photo, saved draft, complete order details, and no measurement issues. Unknown measurements need a reason. | [Pickup form](../../wireframe/src/screens/PickupCaptureScreen.tsx) — Implemented local validation. |
 | The original Pickup snapshot becomes read-only after the driver confirmation. Additional places use Supplemental Pickup and new confirmations. | [Pickup signing](../../wireframe/src/screens/PickupSignatureScreen.tsx) — Implemented local state. |
 | A Dropoff confirmation requires cargo matches, at least one Delivery photo, condition or documented damage, and no unsigned Supplemental Pickup. | [Dropoff form](../../wireframe/src/screens/DropoffVerifyScreen.tsx) — Implemented local validation. |
-| Pickup and Delivery reviews require signer details. Contactless requires a reason and acknowledgment; the driver still signs. Damage requires an exception note. | [Pickup review](../../wireframe/src/screens/PickupEbolScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx) — Implemented local validation. |
+| Pickup and Delivery reviews require either an on-device contact signature or a verified SMS code. OTP is available for every handoff and must be verified before driver signing. The driver always signs. Damage requires an exception note. | [Pickup review](../../wireframe/src/screens/PickupEbolScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx) — Implemented local validation. |
 | POD is available only after both snapshots are locked. | [POD screen](../../wireframe/src/screens/OrderPodScreen.tsx) — Implemented local guard. |
 | Main Scan is lookup only: scanning does not add or move cargo. It distinguishes found, repeat during the current visit, order match, and unknown code. | [Scan screen](../../wireframe/src/screens/ScanScreen.tsx), [scan domain](../../wireframe/src/placeScanDomain.ts) — Implemented simulation. |
 | Interstate loading uses eligible recorded orders and freezes only confirmed selected places into the Trip manifest. | [Interstate domain](../../wireframe/src/interstateDomain.ts), [review screen](../../wireframe/src/screens/InterstateReviewScreen.tsx) — Implemented local state. |

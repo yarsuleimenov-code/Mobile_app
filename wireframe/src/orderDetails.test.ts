@@ -10,7 +10,7 @@ import { createPlaceLabels } from './placeLabelsDomain'
 import { readPickupDrafts, writePickupDrafts } from './pickupDraftStore'
 
 const signature = { contactMethod: 'signed' as const, contactName: 'Morgan Lee', driverName: 'Chris Adams',
-  contactlessReason: '', contactlessAcknowledged: false, hasDamage: false, exceptionNote: '' }
+  hasDamage: false, exceptionNote: '' }
 
 describe('Stage 6 order data', () => {
   it('keeps a full external name, short operational name and separate quantities', () => {

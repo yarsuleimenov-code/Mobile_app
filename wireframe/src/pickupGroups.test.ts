@@ -82,7 +82,7 @@ describe('Pickup dimension groups and demo orders', () => {
   it('keeps the locked original while a new dimension group requires separate signatures', () => {
     const record = findPickupDemoRecord('23343775')!
     const signature = { contactMethod: 'signed' as const, contactName: 'Demo Customer', driverName: 'John Doe',
-      contactlessReason: '', contactlessAcknowledged: false, hasDamage: false, exceptionNote: '' }
+      hasDamage: false, exceptionNote: '' }
     const locked = lockPickupEbol(syncPickupOrderEbolDraft(undefined, record), signature)
     const snapshot = structuredClone(locked.pickup)
     let draft = addPickupDraftGroup(createPickupDraft(record, 'NJ1', 'supplemental'))

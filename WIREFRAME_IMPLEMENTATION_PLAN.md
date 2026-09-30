@@ -681,11 +681,11 @@ Order eBOL и Interstate BOL не заменяют друг друга. Зака
 
 Основной сценарий:
 
-`Draft → Pickup review → Pickup signed/locked → In transit → Delivery review → Completed / POD available`.
+`Draft → Pickup review → Pickup confirmed/locked → In transit → Delivery review → Completed / POD available`.
 
-Дополнительные mock-состояния: `Contactless`, `Damage documented`, `Correction requested`.
+Дополнительные mock-состояния: `OTP verified`, `Damage documented`, `Correction requested`.
 
-На каждом этапе передачи предусмотрены две позиции подписи: внешний контакт и водитель Zaberman. При отсутствии внешнего контакта используется contactless fallback с обязательной причиной. Подпись подтверждает ознакомление с evidence и исключениями; наличие damage не блокирует завершение этапа.
+На каждом этапе передачи внешний контакт подтверждает передачу подписью на устройстве или SMS-кодом; водитель Zaberman подписывает всегда. Подтверждение означает ознакомление с evidence и исключениями; наличие damage не блокирует завершение этапа при заполненном описании.
 
 После подтверждения Pickup или Delivery соответствующий snapshot блокируется. Новые места после подтверждённого Pickup оформляются отдельным mock `Supplemental Pickup`: новая document version содержит только добавленные PlaceID и требует новые подтверждения, не меняя исходный snapshot.
 
@@ -695,8 +695,8 @@ Order eBOL и Interstate BOL не заменяют друг друга. Зака
 
 - переход к Order eBOL из Pickup/Dropoff;
 - review evidence и исключений;
-- четыре mock-позиции подписи;
-- contactless fallback;
+- четыре mock-позиции подтверждения;
+- OTP-подтверждение по SMS;
 - locked snapshot;
 - документированный damage без блокировки завершения;
 - POD preview и mock-действия View, Print, Download, Share.

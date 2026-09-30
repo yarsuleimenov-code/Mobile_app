@@ -4,7 +4,17 @@ Use this as a short guide to the current Mobile App interface. The deployed buil
 
 ## Before you start
 
-Open **Cargo operations**. Check that you have the correct Order number before recording anything. Select **Load today’s route** to show the sample stops, or open Pickup/Dropoff directly. A loaded Spoke route is a local fixture, not a live dispatch assignment.
+Open **Cargo operations**. Before **Load today’s route** becomes available, complete the required **Pre-trip inspection**. Pickup and Dropoff can still be opened directly in the wireframe. A loaded Spoke route is a local fixture, not a live dispatch assignment.
+
+## Complete the Pre-trip inspection
+
+1. On Home, select **Start** in the Pre-trip inspection card for **Van 08 · Extended Van**.
+2. Answer all seven safety checks with **Pass** or **Issue**.
+3. Select **Continue to photos** and take the required Front, Rear, Driver side and Passenger side photos. Gallery upload is not available.
+4. Review the inspection and confirm **I confirm this vehicle is safe to operate**.
+5. Select **Complete inspection**. Home shows **Vehicle cleared**, and the route can be loaded.
+
+Any **Issue** keeps the route locked. Use **Review issues**, correct the answer only after the condition is resolved, or follow the operating team's escalation process. Camera unavailable also prevents completion.
 
 ## Main navigation
 
@@ -29,8 +39,8 @@ For a call, open the customer's conversation, select **Call**, confirm the Order
 2. Enter each dimension group's **Qty**, L/W/H and weight per place. Add a reason for unknown measurements.
 3. Add at least one cargo photo. Wait for the draft to save.
 4. Select **Continue to Pickup review**. Print/check place labels if needed.
-5. Review evidence and comments. Choose contact signature or Contactless with a reason and acknowledgment.
-6. Complete contact confirmation, then the Zaberman driver signature. Select **Confirm & lock Pickup snapshot**.
+5. Review evidence and comments. Choose **Sign on device** or **SMS code**. For SMS code, select **Send verification code**, enter the contact's six-digit code and select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`.
+6. Complete the contact confirmation. Select **Continue to signing** for an on-device signature or **Continue to driver signature** after OTP verification. Obtain the Zaberman driver signature and select **Confirm & lock Pickup snapshot**.
 
 The first confirmation screen means the draft is ready; the Pickup handoff is locked only after signing.
 
@@ -40,7 +50,8 @@ The first confirmation screen means the draft is ready; the Pickup handoff is lo
 2. Compare places and Pickup photos with delivered cargo.
 3. Add at least one Delivery photo. Mark **Cargo matches pickup photos** and either **No visible damage** or **Report damage instead** with details.
 4. Select **Confirm Dropoff**, then **Open Delivery review**. If prompted, lock Pickup first.
-5. Review evidence; obtain contact confirmation and driver signature. Select **Complete Order eBOL** and open POD.
+5. Review evidence and choose **Sign on device** or **SMS code** for the contact. For SMS code, send the code to the displayed masked number and enter the recipient's code. In the prototype, every six-digit code succeeds except `111111`, which demonstrates an invalid code.
+6. Obtain the driver signature, select **Complete Order eBOL** and open POD.
 
 ## Scan cargo
 

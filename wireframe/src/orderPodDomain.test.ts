@@ -7,8 +7,6 @@ import {
 const pickupInput = {
   contactMethod: 'signed' as const,
   contactName: 'Alex Morgan',
-  contactlessReason: '',
-  contactlessAcknowledged: false,
   driverName: 'John Doe',
   hasDamage: false,
   exceptionNote: '',

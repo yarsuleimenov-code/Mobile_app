@@ -7,8 +7,8 @@
 3. Add at least one **Delivery photo**.
 4. Select **Cargo matches pickup photos** only when it does. Choose **No visible damage**, or **Report damage instead** and enter details.
 5. Select **Confirm Dropoff**. Open **Delivery review**; if Pickup is not locked, complete Pickup review/signing first.
-6. Review Delivery evidence and comments. Choose contact signature or Contactless with its reason and acknowledgment; provide the driver name.
-7. Complete contact confirmation if applicable, then the Zaberman driver signature. Select **Complete Order eBOL** and open **View POD**.
+6. Review Delivery evidence and comments. Choose **Sign on device** or **SMS code** and provide the driver name. For SMS code, verify the six-digit code before continuing; in the prototype `111111` is always invalid.
+7. Complete the contact confirmation, obtain the Zaberman driver signature, select **Complete Order eBOL** and open **View POD**.
 
 **Expected result:** the local Dropoff is confirmed, both document snapshots are locked, and POD is available.
 

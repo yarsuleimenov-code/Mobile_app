@@ -14,7 +14,7 @@ const operation = (id = 'pickup:11155599:standard'): EvidenceOperation => ({
   id, orderNumber: '11155599', handoff: 'pickup', photos: demoPhotos('11155599', 'pickup', 3), detail: '3 photos', fingerprint: 'draft-1',
 })
 const signed = { contactMethod: 'signed' as const, contactName: 'Demo contact', driverName: 'Demo driver',
-  contactlessReason: '', contactlessAcknowledged: false, hasDamage: false, exceptionNote: '' }
+  hasDamage: false, exceptionNote: '' }
 
 describe('Mock photo evidence', () => {
   it('migrates count-only evidence deterministically and preserves an explicitly empty collection', () => {

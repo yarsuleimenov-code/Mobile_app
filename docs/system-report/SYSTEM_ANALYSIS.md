@@ -75,7 +75,7 @@ Production-реализацию не следует строить поверх 
 - автоматический расчёт количества мест и объёма;
 - стабильные prototype Place IDs `ZB-{ORDER_NUMBER}-{NN}`;
 - Code 128 labels и browser print;
-- Order eBOL: Pickup/Delivery evidence, contact/contactless, locked snapshots, Supplemental Pickup versions и отдельные повторные mock-подписи;
+- Order eBOL: Pickup/Delivery evidence, подтверждение контакта подписью или OTP, locked snapshots, Supplemental Pickup versions и отдельные повторные mock-подписи;
 - POD как представление завершённого Order eBOL;
 - Interstate: направление, truck, выбор и ввод Place ID, review, Trip, unloading draft и архив Interstate BOL;
 - mock offline/pending через `localStorage` и `navigator.onLine`;
@@ -84,7 +84,7 @@ Production-реализацию не следует строить поверх 
 - PostgreSQL schema/RLS migrations как неподключённый design baseline;
 - NestJS `Create CargoPlace`: validation, branch permission, idempotency, optimistic version check, events и transactional outbox;
 - 10 backend unit-тестов и TypeScript build проходят; PostgreSQL integration-тест подготовлен и skipped без test DB;
-- Повторная проверка frontend 2026-09-18: 20 test-файлов, 106 тестов; TypeScript `tsc -b` и Vite production build проходят. Исторические результаты 2026-09-01 сохранены в документах соответствующих этапов.
+- Повторная проверка frontend 2026-09-30: 23 test-файла, 123 теста; TypeScript `tsc -b`, Vite production build и VitePress docs build проходят. Исторические результаты сохранены в документах соответствующих этапов.
 
 ### 3.3 Что отсутствует или только имитируется
 
@@ -368,7 +368,7 @@ Retention для photos, signatures, POD/BOL и audit events должен быт
 
 ## 16. Проверка отчёта
 
-Результаты ниже относятся к исходному системному анализу от 2026-09-01. Повторная проверка frontend 2026-09-18: 20 файлов / 106 тестов, TypeScript и Vite build прошли; backend и PostgreSQL runtime повторно не проверялись.
+Результаты ниже относятся к исходному системному анализу от 2026-09-01. Повторная проверка frontend 2026-09-30: 23 файла / 123 теста, TypeScript, Vite и VitePress builds прошли; backend и PostgreSQL runtime повторно не проверялись.
 
 - Прочитаны оба DOCX структурно; визуальный DOCX-render не выполнен, так как LibreOffice отсутствует в локальной среде.
 - Сопоставлены audit-пакет, implementation plan, decision log и активный router/domain/store код.

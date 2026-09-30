@@ -1,6 +1,6 @@
 # Системный отчёт Zaberman Mobile
 
-Статус на 2026-09-21: приложение и публичная RU/EN документация опубликованы единым GitHub Pages deployment (`0b14625`); код Этапа 7, вход More → Administration и email-копия Pickup eBOL находятся в `main`. Этапы 3–6 приняты owner; отдельное решение owner по Этапу 7 в проектных документах не зафиксировано. Подробный AS-IS срез — [CURRENT_STATE.md](CURRENT_STATE.md).
+Статус на 2026-09-30: текущий source и публичная RU/EN документация синхронизированы с обязательным Pre-trip inspection и двумя допустимыми способами подтверждения контакта во всех Pickup/Delivery — подписью на устройстве или OTP. Опубликованный baseline в `main` и история коммитов зафиксированы в [CURRENT_STATE.md](CURRENT_STATE.md). Этапы 3–6 приняты owner; отдельное решение owner по Этапу 7 в проектных документах не зафиксировано.
 
 ## Рекомендуемый вывод
 
@@ -23,6 +23,8 @@
 - [STAGE_6_ORDER_DATA_DEMO.md](STAGE_6_ORDER_DATA_DEMO.md) — названия, Qty, Special Cargo, неизвестные измерения, Spoke preview и локальные ролевые правила.
 - [STAGE_7_OWNER_DEMO_REHEARSAL.md](STAGE_7_OWNER_DEMO_REHEARSAL.md) — инструкция ведущему, семь пресетов, две репетиции, UX-защиты и ожидаемые решения owner.
 - [PICKUP_EMAIL_COPY_WIREFRAME.md](PICKUP_EMAIL_COPY_WIREFRAME.md) — необязательный запрос email-копии подписанной версии Pickup eBOL, локальные статусы и ограничения отправки.
+- [PRE_TRIP_INSPECTION_WIREFRAME.md](PRE_TRIP_INSPECTION_WIREFRAME.md) — обязательный осмотр автомобиля, фото, route gate и границы production-реализации.
+- [DELIVERY_OTP_WIREFRAME.md](DELIVERY_OTP_WIREFRAME.md) — OTP-подтверждение Pickup/Delivery, демонстрационные правила и production gate для Twilio Verify.
 - [SYSTEM_ANALYSIS.md](SYSTEM_ANALYSIS.md) — текущее состояние, бизнес-контекст, scope, процессы, требования, разрывы, риски и этапы.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — контекстная, контейнерная, data и sync-схемы; источники истины и API boundary.
 - [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) — PostgreSQL ER-модель, таблицы, инварианты, транзакции, безопасность и rollout.
