@@ -85,4 +85,23 @@ describe('post-trip vehicle cycle', () => {
     expect(postTripPhotos.map((item) => item.id)).toHaveLength(5)
     expect(new Set(postTripPhotos.map((item) => item.id)).size).toBe(5)
   })
+
+  it('requires equipment confirmation and fresh attestation for an old active pre-trip', () => {
+    const state = ready()
+    delete state.inspection.answers.equipment
+    const restored = restoreVehicleInspection(JSON.stringify(state), null)
+    expect(restored.inspection.completedAt).toBeNull()
+    expect(restored.inspection.attested).toBe(false)
+    expect(restored.inspection.answers.equipment).toBeUndefined()
+    expect(restored.inspection.photos).toHaveLength(5)
+  })
+
+  it('preserves historical seven-check pre-trips without duplicating post-trip equipment', () => {
+    const state = finishPostTrip(ready(), 0, false, '2026-10-05T18:00:00Z')
+    delete state.inspection.answers.equipment
+    const archived = startNextVehicleCycle(state)
+    expect(restoreVehicleInspection(JSON.stringify(archived), null).history[0]).toEqual(archived.history[0])
+    expect(postTripChecks).toHaveLength(8)
+    expect(postTripChecks.filter((item) => item.id === 'equipment')).toHaveLength(1)
+  })
 })

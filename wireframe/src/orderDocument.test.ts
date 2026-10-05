@@ -19,6 +19,22 @@ const deliveryInput = { photoCount: 2, hasDamage: false, exceptionNote: '' }
 const pickup = () => lockPickupEbol(createOrderEbol(record), { ...input, contactComment: comments.contact, driverComment: comments.driver })
 
 describe('Order eBOL comments and document versions', () => {
+  it.each(['pickup', 'delivery', 2] as const)('keeps sequential party comments on target %s through signing and refresh', (target) => {
+    const original = target === 'pickup' ? createOrderEbol(record) : target === 'delivery' ? prepareDeliveryEbol(pickup(), record, deliveryInput) : prepareSupplementalPickup(pickup(), supplementInput)
+    const first = updateHandoffComments(original, target, { contact: 'Contact wrote this', driver: '' })
+    const second = updateHandoffComments(first, target, { contact: 'Contact wrote this', driver: 'Driver wrote this' })
+    const confirmation = { ...input, contactComment: 'Contact wrote this', driverComment: 'Driver wrote this' }
+    const locked = target === 'pickup' ? lockPickupEbol(second, confirmation) : target === 'delivery' ? lockDeliveryEbol(second, confirmation) : lockSupplementalPickup(second, target, confirmation)
+    const version = orderDocumentVersions(locked).find((item) => item.key === (target === 'pickup' ? 'pickup-1' : target === 'delivery' ? 'delivery' : 'pickup-2'))!
+    expect(version.snapshot.comments).toEqual({ contact: 'Contact wrote this', driver: 'Driver wrote this' })
+    expect(updateHandoffComments(locked, target, { contact: 'Overwrite', driver: 'Overwrite' })).toBe(locked)
+    if (target !== 'pickup') expect(locked.pickup).toEqual(original.pickup)
+    let stored = ''
+    const storage = { getItem: () => stored, setItem: (_key: string, value: string) => { stored = value } }
+    expect(writeOrderEbols([locked], storage)).toBe(true)
+    expect(orderDocumentVersions(readOrderEbols(storage)[0])).toEqual(orderDocumentVersions(locked))
+  })
+
   it('keeps ordinary comments optional and does not substitute them for exception details', () => {
     expect(canLockPickupEbol(input)).toBe(true)
     expect(canLockDeliveryEbol(input)).toBe(true)

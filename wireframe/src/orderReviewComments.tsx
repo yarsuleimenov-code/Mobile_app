@@ -7,25 +7,32 @@ export function useHandoffComments(orderEbol: OrderEbol | null, target: HandoffT
   const [saveError, setSaveError] = useState(false)
   const changeComments = (next: HandoffComments) => {
     setComments(next)
-    if (!orderEbol) return
+    if (!orderEbol) { setSaveError(true); return false }
     const documents = readOrderEbols()
     const current = findOrderEbol(documents, orderEbol.orderNumber) ?? orderEbol
     const updated = updateHandoffComments(current, target, next)
-    setSaveError(updated === current || !writeOrderEbols(upsertOrderEbol(documents, updated)))
+    const saved = updated !== current && writeOrderEbols(upsertOrderEbol(documents, updated))
+    setSaveError(!saved)
+    return saved
   }
   return { comments, changeComments, saveError }
 }
 
-export function HandoffCommentsEditor({ comments, onChange, saveError }: {
-  comments: HandoffComments; onChange: (comments: HandoffComments) => void; saveError: boolean
+export function HandoffCommentEditor({ party, value, onChange, disabled = false, reported = false }: {
+  party: keyof HandoffComments; value: string; onChange: (value: string) => void; disabled?: boolean; reported?: boolean
 }) {
-  return <section className="ebol-section handoff-comments-editor">
-    <h2>Comments from both parties</h2>
-    <p>Optional. Comments belong to this document version. Document damage or disagreement separately under exceptions.</p>
-    <label className="ebol-field">Contact comment<textarea rows={3} maxLength={1000} value={comments.contact} onChange={(event) => onChange({ ...comments, contact: event.target.value })} placeholder="Contact’s observations or instructions" /></label>
-    <label className="ebol-field">Driver comment<textarea rows={3} maxLength={1000} value={comments.driver} onChange={(event) => onChange({ ...comments, driver: event.target.value })} placeholder="Driver’s observations or handoff notes" /></label>
-    {saveError ? <p className="ebol-storage-warning" role="alert">Comments could not be saved. Keep this page open and check device storage before leaving.</p> : null}
-  </section>
+  return <div className="handoff-comment-editor">
+    <label className="ebol-field">{reported ? 'Contact comment (reported)' : 'Your comment'}<textarea rows={3} maxLength={1000} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} placeholder={party === 'contact' ? 'Contact’s observations or instructions' : 'Driver’s observations or handoff notes'} /></label>
+    <p>{reported ? 'Optional. Record the contact’s words before verifying the code.' : 'Optional. This comment belongs to your confirmation.'} Document damage or disagreement separately under exceptions.</p>
+  </div>
+}
+
+export function ContactCommentView({ value }: { value: string }) {
+  return <dl className="handoff-comments"><div><dt>Contact comment</dt><dd>{value.trim() || 'No comment recorded'}</dd></div></dl>
+}
+
+export function HandoffCommentSaveError({ visible }: { visible: boolean }) {
+  return visible ? <p className="ebol-storage-warning" role="alert">Comments could not be saved. Keep this page open, check device storage and retry before confirming.</p> : null
 }
 
 export function HandoffCommentsView({ comments }: { comments?: Partial<HandoffComments> }) {

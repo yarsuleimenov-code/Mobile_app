@@ -53,7 +53,7 @@ The code contains older Home, Pickup, Dropoff and Same Day components that are n
 **Purpose:** confirm that the assigned vehicle is safe before loading Today's route.
 
 1. On Home, find the **Pre-trip inspection** card for **Van 08 · Extended Van**. Select **Start** or **Continue**.
-2. Inspect all seven groups: Tires & wheels; Lights & reflectors; Windows, mirrors & wipers; Leaks under vehicle; Body, doors & cargo area; Brakes, steering & horn; Emergency equipment. Select **Pass** or **Issue** for each.
+2. Inspect all eight groups: Tires & wheels; Lights & reflectors; Windows, mirrors & wipers; Leaks under vehicle; Body, doors & cargo area; Brakes, steering & horn; Emergency equipment; Company equipment & tools. Select **Pass** or **Issue** for each.
 3. Select **Continue to photos**. Use **Take photo** for Front, Rear, Driver side, Passenger side and Dashboard. Keep the full vehicle and wheels in frame. Gallery upload is intentionally unavailable.
 4. Select **Review inspection**. If every check passes, select **I confirm this vehicle is safe to operate**, then **Complete inspection**.
 5. The result shows **Ready for route**. Return Home; the card shows **Vehicle cleared** and **Load today’s route** is enabled.
@@ -69,7 +69,7 @@ Any **Issue** produces **Route locked** and disables completion. Select **Review
 5. Select **Complete Post-trip**. An Issue does not prevent submission: the result shows **Completed — issues reported** and **Vehicle needs attention**. Report defects to dispatch; the inspection does not send a message or close orders.
 6. **Back to Home** → **Start next vehicle cycle** opens a fresh Pre-trip. The previous pair remains in **Previous vehicle inspections**. A warning reminds you of defects in the previous Post-trip; beginning a new cycle does not confirm repairs.
 
-Drafts and read-only results survive refresh. If saving fails, check device storage and retry; do not leave until the action succeeds. Photos are local capture markers, not real images. Inspection timestamps do not calculate working hours. Pre-trip requires five photos including Dashboard; its company equipment extension is a separate next task.
+Drafts and read-only results survive refresh. If saving fails, check device storage and retry; do not leave until the action succeeds. Photos are local capture markers, not real images. Inspection timestamps do not calculate working hours. Pre-trip requires five photos including Dashboard; company equipment is a separate required check from emergency equipment.
 
 ## Tasks and Order details
 
@@ -96,7 +96,7 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 4. Inspect **Cargo photos**. Add with **Take photo** or **Choose from gallery**, select a category and review the thumbnails. An individual photo can be previewed and removed while editing. In this wireframe these actions use local sample assets/metadata.
 5. Wait for the draft status to say saved. The form autosaves locally and can be resumed from Home. Correct any **Order data incomplete** or measurement warnings. **Continue to Pickup review** enables only when the Order number, at least one place, at least one photo and required details are present and the draft saved.
 6. Select **Continue to Pickup review**. The confirmation page says **Pickup draft ready**. You may open **Place labels** first: choose all, selected or one label, check the preview and select **Print**. If the printer is unavailable, continue to review and use the PlaceID check path.
-7. Open **Pickup review**. Check pieces, weight, volume, photos, condition, comments from contact/driver and any exception. If evidence changed after review, return and review it again.
+7. Open **Pickup review**. Check pieces, weight, volume, photos, condition and any exception. Comments are entered during confirmation, not on Review. If evidence changed after review, return and review it again.
 8. Choose **Sign on device** or **SMS code** for the Pickup contact. For SMS code, select **Send verification code**, enter the six-digit code supplied by the contact and select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`; three invalid attempts lock verification. Supply contact or driver names as requested. Documented damage/exception requires its note.
 9. Select **Continue to signing** for an on-device signature or **Continue to driver signature** after OTP verification. For on-device signing, have the contact sign, optionally request an email copy of this document version, and select **Accept contact signature**. For SMS code, the verified OTP replaces only the contact signature. Have the Zaberman driver sign and select **Confirm & lock Pickup snapshot**.
 
@@ -113,7 +113,7 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 3. Add **Delivery photos** and compare the cargo against Pickup evidence.
 4. Select **Cargo matches pickup photos** only when the comparison is true. Select **No visible damage**, or choose **Report damage instead** and enter **Damage details**. Documented damage does not block the handoff.
 5. Select **Confirm Dropoff**. This saves the local Dropoff operation and prepares Delivery evidence. If the Pickup snapshot is not locked, use the offered **Open Pickup review** action first.
-6. Open **Delivery review**. Check evidence and comments, enter the driver name and choose one contact confirmation method:
+6. Open **Delivery review**. Check evidence and exceptions, enter the driver name and choose one contact confirmation method:
    - **Sign on device** — enter the contact name and obtain the contact signature;
    - **SMS code** — select **Send verification code**, ask the recipient for the code sent to the registered masked number, then select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`; three invalid attempts lock verification;
 7. For SMS code, the signing action remains disabled until **Recipient verified** appears. For Offline, expired-code or delivery-error states, use the offered retry. If verification is locked, contact dispatch and do not choose a bypass method without approval.
@@ -121,6 +121,16 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 9. Open **View POD**. With SMS code, POD records OTP verification, the recipient name and only the last four phone digits; it does not store the code.
 
 **Result:** Dropoff is locally confirmed at step 5; the Order eBOL becomes completed at step 8. Its POD is a view of that completed document, not a third document. [Dropoff source](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx).
+
+## Comments during signing
+
+These rules apply to Pickup, Supplemental Pickup and Delivery:
+
+- The contact enters an optional **Your comment** on the contact signing screen, before signing. The driver enters their own **Your comment** on the driver signing screen; the contact's comment is read-only there.
+- Changing your comment clears your signature: sign again. **Edit contact comment · sign again** returns to the contact step and requires both signatures again.
+- With **SMS code**, enter any words relayed by the contact in **Contact comment (reported)** before verifying the code. After verification the field is locked. **Edit contact comment · verify again**, or changing an exception, requires a fresh OTP check. The driver adds their own comment before signing.
+- Both fields are optional, up to 1,000 characters each. Drafts save locally; after a refresh the text remains, but on-device signatures must be collected again. If saving fails, keep the screen open and retry before continuing.
+- Comments belong only to this document version and become read-only after completion. Damage or disagreement must still be recorded separately as an exception.
 
 ## Same Day
 
@@ -178,7 +188,7 @@ The active prototype has a local Trip and receiving simulation. It does not demo
 | Order not found at Dropoff | Check the number and that Pickup was recorded in this browser state. |
 | Pending Supplemental Pickup | Resume and sign its new version before Dropoff. |
 | Review required | Return to the relevant review screen; direct signing links do not bypass review. |
-| Pre-trip inspection required | Open the Home card and complete all seven checks, five photos including Dashboard and the attestation before loading the route. |
+| Pre-trip inspection required | Open the Home card and complete all eight checks, five photos including Dashboard and the attestation before loading the route. |
 | Route locked / Issue reported | Do not depart. Review the issue and follow the operating team's escalation process; the wireframe has no supervisor override. |
 | Camera unavailable during Pre-trip | Restore camera availability; gallery upload cannot replace a required inspection photo. |
 | Code not recognized | Recheck the six digits and retry. In the prototype `111111` is always invalid; after three failures contact dispatch. |

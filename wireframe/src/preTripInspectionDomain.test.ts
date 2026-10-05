@@ -48,6 +48,16 @@ describe('pre-trip inspection', () => {
     expect(inspectionCanComplete({ ...inspection, photos: [...inspection.photos, 'dashboard'] })).toBe(true)
   })
 
+  it('requires company equipment separately from emergency equipment and blocks an issue', () => {
+    const inspection = completeInspection({ answers: { ...completeInspection().answers, equipment: undefined } })
+    expect(inspectionChecklistComplete(inspection)).toBe(false)
+    expect(inspectionCanComplete(inspection)).toBe(false)
+    expect(inspectionCanComplete({ ...inspection, answers: { ...inspection.answers, equipment: 'pass' } })).toBe(true)
+    const issue = { ...inspection, answers: { ...inspection.answers, equipment: 'issue' as const } }
+    expect(inspectionCanComplete(issue)).toBe(false)
+    expect(inspectionStatus(issue)).toBe('blocked')
+  })
+
   it('allows a fully passed and attested inspection', () => {
     const inspection = completeInspection()
     expect(inspectionCanComplete(inspection)).toBe(true)

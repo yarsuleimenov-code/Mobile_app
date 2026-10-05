@@ -8,7 +8,7 @@ import {
   type DeliveryEbolConfirmationInput, type OrderEbol, type OrderEbolEvidenceSnapshot,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
-import { HandoffCommentsEditor, HandoffCommentsView, useHandoffComments } from '../orderReviewComments'
+import { HandoffCommentEditor, HandoffCommentSaveError, HandoffCommentsView, useHandoffComments } from '../orderReviewComments'
 import { useCargo } from '../cargoStore'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { weightText, volumeText } from '../measurementDomain'
@@ -51,6 +51,8 @@ function DeliveryEbolContent() {
   ))
   const [contactName, setContactName] = useState(orderEbol?.delivery.contact.signerName ?? '')
   const [otpVerified, setOtpVerified] = useState(orderEbol?.delivery.contact.status === 'otp')
+  const [otpRevision, setOtpRevision] = useState(0)
+  const invalidateOtp = () => { if (otpVerified) { setOtpVerified(false); setOtpRevision((revision) => revision + 1) } }
   const [driverName, setDriverName] = useState(orderEbol?.delivery.driver.signerName ?? '')
   const [hasDamage, setHasDamage] = useState(orderEbol?.delivery.evidence?.hasDamage ?? false)
   const [exceptionNote, setExceptionNote] = useState(orderEbol?.delivery.evidence?.exceptionNote ?? '')
@@ -115,9 +117,10 @@ function DeliveryEbolContent() {
     )
   }
 
-  const openSigning = () => navigate(`/orders/${orderNumber}/ebol/delivery/sign`, {
-    state: { confirmationInput },
-  })
+  const openSigning = () => {
+    if (!changeComments(comments)) return
+    navigate(`/orders/${orderNumber}/ebol/delivery/sign`, { state: { confirmationInput } })
+  }
 
   return (
     <div className="cargo-flow">
@@ -130,8 +133,8 @@ function DeliveryEbolContent() {
         <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Delivery evidence</h2></div><DeliveryEvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />{hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{exceptionNote || 'Add exception details below'}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
 
         <section className="ebol-section ebol-exception-editor">
-          <label><input type="checkbox" checked={hasDamage} disabled={evidence.hasDamage} onChange={(event) => setHasDamage(event.target.checked)} /><span><strong>Damage, disagreement or other exception</strong><small>Recorded delivery exceptions remain part of this handoff.</small></span></label>
-          {hasDamage ? <textarea aria-label="Damage or exception details" rows={3} value={exceptionNote} onChange={(event) => setExceptionNote(event.target.value)} placeholder="Describe damage, refusal or disagreement" /> : null}
+          <label><input type="checkbox" checked={hasDamage} disabled={evidence.hasDamage} onChange={(event) => { invalidateOtp(); setHasDamage(event.target.checked) }} /><span><strong>Damage, disagreement or other exception</strong><small>Recorded delivery exceptions remain part of this handoff.</small></span></label>
+          {hasDamage ? <textarea aria-label="Damage or exception details" rows={3} value={exceptionNote} onChange={(event) => { invalidateOtp(); setExceptionNote(event.target.value) }} placeholder="Describe damage, refusal or disagreement" /> : null}
         </section>
         <div className="ebol-acknowledgement"><AlertTriangle size={20} /><p>Confirmations acknowledge review of the evidence and exceptions. They do not confirm absence of damage.</p></div>
 
@@ -139,13 +142,17 @@ function DeliveryEbolContent() {
           <div className="ebol-section-heading"><UserRound size={20} /><h2>Delivery contact</h2></div>
           <div className="ebol-method" aria-label="Delivery contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => chooseContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'otp'} className={contactMethod === 'otp' ? 'is-active' : ''} onClick={() => chooseContactMethod('otp')}>SMS code</button></div>
           {contactMethod === 'signed' ? <label className="ebol-field">Contact name<input value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Full name" /></label> : (
-            <DeliveryOtpVerification recipientName={recipient.name} recipientPhone={recipient.phone} outcome={otpOutcome} offline={network === 'offline'} onVerifiedChange={setOtpVerified} />
+            <>
+              <HandoffCommentEditor party="contact" reported value={comments.contact} disabled={otpVerified} onChange={(value) => changeComments({ ...comments, contact: value })} />
+              {otpVerified ? <button type="button" className="ebol-secondary" onClick={invalidateOtp}>Edit contact comment · verify again</button> : null}
+              <DeliveryOtpVerification key={otpRevision} recipientName={recipient.name} recipientPhone={recipient.phone} outcome={otpOutcome} offline={network === 'offline'} onVerifiedChange={setOtpVerified} />
+            </>
           )}
         </section>
 
         <section className="ebol-section"><div className="ebol-section-heading"><UserRound size={20} /><h2>Zaberman driver</h2></div><label className="ebol-field">Driver name<input value={driverName} onChange={(event) => setDriverName(event.target.value)} placeholder="Full name" /></label></section>
 
-        <HandoffCommentsEditor comments={comments} onChange={changeComments} saveError={saveError} />
+        <HandoffCommentSaveError visible={saveError} />
         <div className="flow-action"><button type="button" className="cargo-primary" disabled={(!canLockDeliveryEbol(confirmationInput) || !canReviewOrderEvidence(evidence))} onClick={openSigning}><FileText size={19} /> {contactMethod === 'otp' ? 'Continue to driver signature' : 'Continue to signing'}</button></div>
       </main>
       <CargoBottomNav />

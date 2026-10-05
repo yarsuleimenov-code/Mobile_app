@@ -74,7 +74,7 @@ Order eBOL draft создаётся при продолжении из Pickup, �
 
 ## Этап 5: комментарии и документы
 
-Pickup/Delivery review содержит отдельные Contact comment / Driver comment с автосохранением. Оба комментария видны перед подписью, в locked snapshot и POD; Supplemental хранит собственные комментарии. Отказ от подписи требует причины, acknowledgment и отдельного exception note.
+Комментарии перенесены из общего Pickup/Delivery Review на экран подписания соответствующей стороны; Supplemental использует ту же логику. При OTP слова контакта записываются до проверки кода. Изменение комментария очищает подпись соответствующей стороны; изменение OTP-комментария требует повторной проверки. Оба комментария сохраняются в locked snapshot и POD. [Актуальная спецификация](../docs/system-report/HANDOFF_COMMENTS_SIGNING_WIREFRAME.md).
 
 Из Document versions доступны read-only original, Supplemental и Delivery с номером, PlaceID, signer, временем и комментариями. Download/Print/Email/Share открывают диалог с выбранным документом, параметрами/адресатом и результатом. Реальной внешней отправки или PDF-файла нет. Продуктовые подписи в UI сохранены; ограничения раскрываются устно и в документации. [Реализация и проверки](../docs/system-report/STAGE_5_EBOL_POD_DEMO.md).
 

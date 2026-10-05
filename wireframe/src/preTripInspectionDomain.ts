@@ -6,6 +6,7 @@ export type PreTripCheckId =
   | 'body'
   | 'controls'
   | 'emergency'
+  | 'equipment'
 
 export type PreTripPhotoId = 'front' | 'rear' | 'driver_side' | 'passenger_side' | 'dashboard'
 export type PreTripAnswer = 'pass' | 'issue'
@@ -25,6 +26,7 @@ export const preTripChecks: Array<{ id: PreTripCheckId; label: string; detail: s
   { id: 'body', label: 'Body, doors & cargo area', detail: 'Doors latch, body is secure and cargo area is clear' },
   { id: 'controls', label: 'Brakes, steering & horn', detail: 'Controls respond normally with no warning indicators' },
   { id: 'emergency', label: 'Emergency equipment', detail: 'Extinguisher, warning devices and first-aid kit present' },
+  { id: 'equipment', label: 'Company equipment & tools', detail: 'Confirm assigned tools and moving equipment are present before departure' },
 ]
 
 export const preTripPhotos: Array<{ id: PreTripPhotoId; label: string; detail: string }> = [

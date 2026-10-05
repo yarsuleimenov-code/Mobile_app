@@ -39,7 +39,7 @@ The active bottom navigation is **Home | Tasks | Scan | More**. Home offers Pick
 
 ```mermaid
 flowchart LR
-  A["Home: route locked"] --> B["7 safety checks"]
+  A["Home: route locked"] --> B["8 safety/equipment checks"]
   B --> C["5 camera-only photos"]
   C --> D["Driver attestation"]
   D --> E["Vehicle cleared; load route"]

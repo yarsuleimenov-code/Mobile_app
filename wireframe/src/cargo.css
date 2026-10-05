@@ -1172,3 +1172,4 @@ textarea { font: inherit; }
 .posttrip-issue { flex-basis: 100%; width: 100%; }
 .pretrip-flow a.ebol-secondary { margin-top: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
 .pretrip-flow .posttrip-record-note { margin-top: 14px; color: var(--cargo-muted); font-size: 12px; line-height: 1.5; }
+.handoff-comment-editor > p { margin-top: 8px; color: var(--cargo-muted); font-size: 11px; line-height: 1.4; }

@@ -9,7 +9,7 @@ Open **Cargo operations**. Before **Load today’s route** becomes available, co
 ## Complete the Pre-trip inspection
 
 1. On Home, select **Start** in the Pre-trip inspection card for **Van 08 · Extended Van**.
-2. Answer all seven safety checks with **Pass** or **Issue**.
+2. Answer all eight safety checks with **Pass** or **Issue**.
 3. Select **Continue to photos** and take the required Front, Rear, Driver side, Passenger side and Dashboard photos. Gallery upload is not available.
 4. Review the inspection and confirm **I confirm this vehicle is safe to operate**.
 5. Select **Complete inspection**. Home shows **Vehicle cleared**, and the route can be loaded.
@@ -43,7 +43,7 @@ For a call, open the customer's conversation, select **Call**, confirm the Order
 2. Enter each dimension group's **Qty**, L/W/H and weight per place. Add a reason for unknown measurements.
 3. Add at least one cargo photo. Wait for the draft to save.
 4. Select **Continue to Pickup review**. Print/check place labels if needed.
-5. Review evidence and comments. Choose **Sign on device** or **SMS code**. For SMS code, select **Send verification code**, enter the contact's six-digit code and select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`.
+5. Review evidence and exceptions. Choose **Sign on device** or **SMS code**. Each party adds an optional **Your comment** on their own signing screen. With SMS code, record **Contact comment (reported)** before verification; the driver comments on their signing screen. Select **Send verification code**, enter the contact's six-digit code and select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`.
 6. Complete the contact confirmation. Select **Continue to signing** for an on-device signature or **Continue to driver signature** after OTP verification. Obtain the Zaberman driver signature and select **Confirm & lock Pickup snapshot**.
 
 The first confirmation screen means the draft is ready; the Pickup handoff is locked only after signing.

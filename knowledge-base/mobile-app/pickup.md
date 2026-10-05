@@ -7,7 +7,7 @@
 3. For each **dimension group**, enter Qty, L/W/H and weight per place. Add groups for different kinds of places. If a value is unknown, record the reason.
 4. Add at least one **Cargo photo**. You can preview and remove individual photos before signing. Wait for the local draft to show saved.
 5. Select **Continue to Pickup review**. If labels are needed, open **Place labels**, choose all/selected/one, review the preview and Print; then return to Pickup review.
-6. Check evidence, photos, comments and exceptions. Choose **Sign on device** or **SMS code** for the Pickup contact. For SMS code, send and verify the six-digit code before the driver signs; in the prototype `111111` is always invalid.
+6. Check evidence, photos and exceptions. Choose **Sign on device** or **SMS code**. Each party enters an optional **Your comment** on their own signing screen. For SMS code, enter **Contact comment (reported)** before verifying the six-digit code; the driver comments before their signature. In the prototype `111111` is always invalid.
 7. Select **Continue to signing** for an on-device signature or **Continue to driver signature** after OTP verification. Complete the contact confirmation, obtain the Zaberman driver signature and select **Confirm & lock Pickup snapshot**.
 
 **Expected result:** the Pickup snapshot is locked in the Order eBOL. The saved draft alone is not the final confirmation.

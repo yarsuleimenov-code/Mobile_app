@@ -9,7 +9,7 @@ import {
   type OrderEbol, type OrderEbolEvidenceSnapshot, type PickupEbolConfirmationInput,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
-import { HandoffCommentsEditor, HandoffCommentsView, useHandoffComments } from '../orderReviewComments'
+import { HandoffCommentEditor, HandoffCommentSaveError, HandoffCommentsView, useHandoffComments } from '../orderReviewComments'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { weightText, volumeText } from '../measurementDomain'
 import { pickupReviewNeedsRefresh } from '../pickupReviewState'
@@ -60,6 +60,8 @@ function PickupEbolContent() {
   ))
   const [contactName, setContactName] = useState(confirmationSource?.contact.signerName ?? '')
   const [otpVerified, setOtpVerified] = useState(confirmationSource?.contact.status === 'otp')
+  const [otpRevision, setOtpRevision] = useState(0)
+  const invalidateOtp = () => { if (otpVerified) { setOtpVerified(false); setOtpRevision((revision) => revision + 1) } }
   const [driverName, setDriverName] = useState(confirmationSource?.driver.signerName ?? '')
   const [hasDamage, setHasDamage] = useState(confirmationSource?.evidence?.hasDamage ?? false)
   const [exceptionNote, setExceptionNote] = useState(confirmationSource?.evidence?.exceptionNote ?? '')
@@ -91,9 +93,10 @@ function PickupEbolContent() {
   const needsRefresh = pickupReviewNeedsRefresh(orderEbol, readPickupDrafts())
   const canConfirm = !needsRefresh && canLockPickupEbol(confirmationInput) && canReviewOrderEvidence(reviewEvidence)
 
-  const openSigning = () => navigate(`/orders/${orderNumber}/ebol/pickup/sign`, {
-    state: { confirmationInput, supplementVersion: supplementalDraft?.version },
-  })
+  const openSigning = () => {
+    if (!changeComments(comments)) return
+    navigate(`/orders/${orderNumber}/ebol/pickup/sign`, { state: { confirmationInput, supplementVersion: supplementalDraft?.version } })
+  }
 
   if (isLocked && !supplementalDraft) {
     const contactLabel = orderEbol.pickup.contact.status === 'otp'
@@ -137,8 +140,8 @@ function PickupEbolContent() {
         <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>{supplementalDraft ? `Version ${supplementalDraft.version} evidence` : 'Pickup evidence'}</h2></div><EvidenceSummary evidence={reviewEvidence} /><EvidenceGallery count={reviewEvidence.photoCount} photos={reviewEvidence.photos} />{supplementalDraft ? <div className="supplemental-place-ids">{supplementalDraft.addedPlaceIds.map((placeId) => <code key={placeId}>{placeId}</code>)}</div> : null}</section>
 
         <section className="ebol-section ebol-exception-editor">
-          <label><input type="checkbox" checked={hasDamage} onChange={(event) => setHasDamage(event.target.checked)} /><span><strong>Damage, disagreement or other exception</strong><small>Damage does not block handoff when it is documented.</small></span></label>
-          {hasDamage ? <textarea aria-label="Damage or exception details" rows={3} value={exceptionNote} onChange={(event) => setExceptionNote(event.target.value)} placeholder="Describe damage, packaging issue or other exception" /> : null}
+          <label><input type="checkbox" checked={hasDamage} onChange={(event) => { invalidateOtp(); setHasDamage(event.target.checked) }} /><span><strong>Damage, disagreement or other exception</strong><small>Damage does not block handoff when it is documented.</small></span></label>
+          {hasDamage ? <textarea aria-label="Damage or exception details" rows={3} value={exceptionNote} onChange={(event) => { invalidateOtp(); setExceptionNote(event.target.value) }} placeholder="Describe damage, packaging issue or other exception" /> : null}
         </section>
 
         <div className="ebol-acknowledgement"><AlertTriangle size={20} /><p>Confirmations acknowledge review of the evidence and exceptions. They do not confirm absence of damage.</p></div>
@@ -147,7 +150,11 @@ function PickupEbolContent() {
           <div className="ebol-section-heading"><UserRound size={20} /><h2>Pickup contact</h2></div>
           <div className="ebol-method" aria-label="Pickup contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => chooseContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'otp'} className={contactMethod === 'otp' ? 'is-active' : ''} onClick={() => chooseContactMethod('otp')}>SMS code</button></div>
           {contactMethod === 'signed' ? <label className="ebol-field">Contact name<input value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Full name" /></label> : (
-            <DeliveryOtpVerification recipientName={recipient.name} recipientPhone={recipient.phone} outcome={otpOutcome} offline={network === 'offline'} onVerifiedChange={setOtpVerified} />
+            <>
+              <HandoffCommentEditor party="contact" reported value={comments.contact} disabled={otpVerified} onChange={(value) => changeComments({ ...comments, contact: value })} />
+              {otpVerified ? <button type="button" className="ebol-secondary" onClick={invalidateOtp}>Edit contact comment · verify again</button> : null}
+              <DeliveryOtpVerification key={otpRevision} recipientName={recipient.name} recipientPhone={recipient.phone} outcome={otpOutcome} offline={network === 'offline'} onVerifiedChange={setOtpVerified} />
+            </>
           )}
         </section>
 
@@ -156,7 +163,7 @@ function PickupEbolContent() {
           <label className="ebol-field">Driver name<input value={driverName} onChange={(event) => setDriverName(event.target.value)} placeholder="Full name" /></label>
         </section>
 
-        <HandoffCommentsEditor comments={comments} onChange={changeComments} saveError={saveError} />
+        <HandoffCommentSaveError visible={saveError} />
         {supplementalDraft ? <OrderDocumentHistory order={orderEbol} /> : null}
         <div className="flow-action"><button type="button" className="cargo-primary" disabled={!canConfirm} onClick={openSigning}><FileText size={19} /> {contactMethod === 'otp' ? 'Continue to driver signature' : 'Continue to signing'}</button></div>
       </main>

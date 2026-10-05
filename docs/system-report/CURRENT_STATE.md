@@ -2,7 +2,7 @@
 
 Дата среза: 2026-10-05
 
-Принято owner 2026-10-05: [Post-trip inspection](POST_TRIP_INSPECTION_WIREFRAME.md), история пар осмотров и новый цикл с обязательным Pre-trip. Post-trip: восемь проверок, пять фото-маркеров с Dashboard, обязательные описания Issue, подтверждение незавершённых остановок и read-only итог. Pre-trip пока семь проверок/пять фото, включая Dashboard; остальные задачи принятого плана ещё не реализованы.
+Принято owner 2026-10-05: [Post-trip inspection](POST_TRIP_INSPECTION_WIREFRAME.md), история пар осмотров и новый цикл с обязательным Pre-trip; Dashboard и Company equipment & tools в обоих осмотрах. Осмотры содержат восемь проверок и пять фото-маркеров. [Комментарии каждой стороны на её экране](HANDOFF_COMMENTS_SIGNING_WIREFRAME.md) реализованы и приняты owner; push комментариев и дополнения equipment в main разрешён. Контакты заказа и внешняя навигация ещё не реализованы.
 
 Назначение: единая точка входа перед следующим этапом разработки.
 
@@ -41,9 +41,9 @@
 | Данные заказа | Trade/internal names, отдельный Qty, source, role-gated edit/audit, Special Cargo, read-only Spoke preview; известные итоги и причины неполных измерений | Локальные fixtures и permissions; Fragile/Oversized и role mapping — demo-допущения |
 | CargoPlace | Prototype PlaceID, `n/N`, labels, current status/location и короткая история | Проекция вычисляется из mock/local state |
 | Labels / Scan | All/selected/one, preview выбранных Code 128, version filter, mock print/reprint history, printer unavailable, valid/duplicate/unknown и manual lookup | Нет printer SDK или аппаратного scan; Print моделирует результат локально |
-| Order eBOL/POD | Pickup/Delivery review, отдельные comments сторон, locked snapshots, Supplemental versions, read-only история документов, POD, Download/Print/Email/Share dialogs и необязательная email-копия подписанной версии Pickup | Подписи, PDF и отправка email не production/legal artifacts; результат локально имитируется |
+| Order eBOL/POD | Pickup/Delivery review; comments на шаге каждой стороны (локальное изменение), locked snapshots, Supplemental versions, read-only история документов, POD, Download/Print/Email/Share dialogs и необязательная email-копия подписанной версии Pickup | Подписи, PDF и отправка email не production/legal artifacts; результат локально имитируется |
 | Фото | Отдельные mock-фото, категории, preview/filter/remove, восстановление Pickup/Delivery, фото своих версий в review/POD | Только metadata и существующие demo-assets; без файлов и upload |
-| Предрейсовый осмотр | Gate перед дневным маршрутом, 7 safety-checks, 5 camera-only ракурса, attestation, блокировка при Issue и сохранение на устройстве | Hi-fi wireframe; без реальной камеры, vehicle assignment, supervisor override, ремонтных задач и server audit |
+| Предрейсовый осмотр | Gate перед дневным маршрутом, 8 safety/equipment-checks, 5 camera-only ракурса, attestation, блокировка при Issue и сохранение на устройстве | Hi-fi wireframe; без реальной камеры, vehicle assignment, supervisor override, ремонтных задач и server audit |
 | Handoff OTP | Доступен во всех Pickup и Delivery/Dropoff: SMS на неизменяемый маскированный номер, 6 цифр, `111111` как ошибочный код, 3 попытки/отправки, expired/delivery error/offline/locked, затем подпись водителя и OTP marker в eBOL/POD | Hi-fi wireframe; Twilio Verify, регистрация sender/compliance, backend verification, audit и supervisor override отсутствуют. См. [DELIVERY_OTP_WIREFRAME.md](DELIVERY_OTP_WIREFRAME.md) |
 | Interstate | Loading review, Trip, immutable loaded manifest в domain model, Unloading draft, BOL archive | Нет authoritative Trip service и atomic server Close |
 | Scenario controls | Роль, филиал, сеть, sync/print/email/SMS outcomes, UI-контрол `Delivery OTP result`, который сейчас применяется к Pickup и Delivery OTP, mock incoming reply, camera/scanner/printer, normal/offline/conflict/OTP/40/100-photo presets, reset | Только управляемая демонстрация; название OTP-контрола уже его фактического scope |
