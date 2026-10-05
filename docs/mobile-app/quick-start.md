@@ -31,6 +31,10 @@ Home → **Post-trip inspection** → eight checks (describe every Issue) → fi
 
 In **Tasks**, choose a stop. Check its Order number, scheduled time and address. Use **Order details · Spoke preview** if the order name or handling information needs review. Opening a stop does not complete it.
 
+## Team contacts
+
+Open **Team contacts** in Pickup/Dropoff or **Order details** in Tasks. Check the order/stop, select **Copy order summary**, then paste into a message. Open the required Dispatcher/Broker/Manager **@nickname** in Telegram; nothing is sent automatically. If Clipboard is blocked, copy the displayed text manually. Sample Telegram recipients must be agreed before external demonstrations.
+
 ## Message or call a customer
 
 Open **Messages** from Home, **Message customer** from a task or Order details, or **SMS** in the Pickup draft order card. Confirm the customer and Order, choose a quick message or type your own, then select **Send**. A queued message will send when the connection returns; use **Retry** if it shows **Not sent**. Messages are sent from corporate number **17178361039**, not the employee's personal number.

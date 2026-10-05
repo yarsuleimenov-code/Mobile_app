@@ -2,7 +2,7 @@
 
 Дата среза: 2026-10-05
 
-Принято owner 2026-10-05: [Post-trip inspection](POST_TRIP_INSPECTION_WIREFRAME.md), история пар осмотров и новый цикл с обязательным Pre-trip; Dashboard и Company equipment & tools в обоих осмотрах. Осмотры содержат восемь проверок и пять фото-маркеров. [Комментарии каждой стороны на её экране](HANDOFF_COMMENTS_SIGNING_WIREFRAME.md) реализованы и приняты owner; push комментариев и дополнения equipment в main разрешён. Контакты заказа и внешняя навигация ещё не реализованы.
+Принято owner 2026-10-05: [Post-trip inspection](POST_TRIP_INSPECTION_WIREFRAME.md), история пар осмотров и новый цикл с обязательным Pre-trip; Dashboard и Company equipment & tools в обоих осмотрах. Осмотры содержат восемь проверок и пять фото-маркеров. [Комментарии каждой стороны на её экране](HANDOFF_COMMENTS_SIGNING_WIREFRAME.md) и equipment опубликованы в main коммитом 7580cd2. [Team contacts](TEAM_CONTACTS_WIREFRAME.md) с контекстом заказа, копированием, сокращёнными handles и полными адресами реализован и принят owner; push в main разрешён. Внешняя навигация ещё не реализована.
 
 Назначение: единая точка входа перед следующим этапом разработки.
 

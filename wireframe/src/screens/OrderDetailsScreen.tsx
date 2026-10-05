@@ -1,6 +1,6 @@
 import { MessageCircleMore } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { calculatePieces, normalizeOrderNumber } from '../cargoDomain'
 import { communicationPath } from '../communicationDomain'
@@ -9,10 +9,13 @@ import { useCargo } from '../cargoStore'
 import { canEditInternalName, operationalName, orderDetailsIssues, specialCargoLabels, type OrderDetailsEdit } from '../orderDetailsDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { mockTodaySpokeRoute, spokeTaskPath } from '../spokeDomain'
+import { TeamContactsCard } from '../TeamContactsCard'
+import { orderContextTasks } from '../teamContactsDomain'
 
 export function OrderDetailsScreen() {
   const { orderNumber = '' } = useParams()
-  return <OrderDetailsForm key={orderNumber} order={normalizeOrderNumber(orderNumber)} />
+  const [params] = useSearchParams()
+  return <OrderDetailsForm key={`${orderNumber}:${params}`} order={normalizeOrderNumber(orderNumber)} />
 }
 function OrderDetailsForm({ order }: { order: string }) {
   const { getOrderDetails, saveOrderDetails, getOrderCargo, spokeRoute } = useCargo()
@@ -21,7 +24,11 @@ function OrderDetailsForm({ order }: { order: string }) {
   const current = getOrderDetails(order)
   const cargo = getOrderCargo(order)
   const route = spokeRoute ?? mockTodaySpokeRoute
-  const task = route.tasks.find((item) => item.externalId === order)
+  const [params, setParams] = useSearchParams()
+  const operation = params.get('operation') === 'pickup' ? 'pickup' : params.get('operation') === 'dropoff' ? 'dropoff' : undefined
+  const tasks = orderContextTasks(route.tasks, order, operation)
+  const matching = orderContextTasks(tasks, order, operation, params.get('stop') || undefined)
+  const task = matching.length === 1 ? matching[0] : undefined
   const [edit, setEdit] = useState<OrderDetailsEdit>(() => ({ internal_name: current.internal_name,
     special_cargo_type: current.special_cargo_type, special_cargo_details: current.special_cargo_details }))
   const [message, setMessage] = useState('')
@@ -45,6 +52,9 @@ function OrderDetailsForm({ order }: { order: string }) {
     <CargoFlowHeader title="Order details" subtitle={`Order #${order}`} />
     <main className="pickup-form order-details-body">
       <section className="order-name-summary"><strong>{operationalName(current, order)}</strong><span>Qty <b>{quantity ?? '—'}</b> pcs</span></section>
+      <TeamContactsCard context={{ order, name: operationalName(current, order), quantity, task, workDate: route.workDate,
+        handling: current.special_cargo_type ? `${specialCargoLabels[current.special_cargo_type]} · ${current.special_cargo_details}` : '', comment: cargo?.orderComment ?? '' }}
+        tasks={tasks} onSelectStop={(stopId) => { const next = new URLSearchParams(params); if (stopId) next.set('stop', stopId); else next.delete('stop'); setParams(next, { replace: true }) }} />
       <section className="order-detail-card">
         <h2>Names</h2>
         <dl className="order-detail-values"><div><dt>External name</dt><dd>{current.trade_name || 'Not received'}</dd></div><div><dt>Source</dt><dd>{current.name_source} · read-only</dd></div></dl>
@@ -78,7 +88,7 @@ function OrderDetailsForm({ order }: { order: string }) {
       </details>
       <p className="order-role-note">Changes apply to current order data. Previously signed document versions remain unchanged.</p>
       <Link className="order-message-action" to={communicationPath(order)}><MessageCircleMore size={19} /><span><strong>Message customer</strong><small>{thread?.customerName ?? 'Customer contact'} · {thread?.unreadCount ? `${thread.unreadCount} unread` : 'Corporate SMS'}</small></span></Link>
-      <Link className="ebol-secondary" to={task ? spokeTaskPath(task, route.workDate) : `/pickup?order=${order}`}>Open {task?.operation === 'dropoff' ? 'Dropoff' : 'Pickup'}</Link>
+      <Link className="ebol-secondary" to={task ? spokeTaskPath(task, route.workDate) : `/${operation === 'dropoff' ? 'dropoff' : 'pickup'}?order=${order}`}>Open {(task?.operation ?? operation) === 'dropoff' ? 'Dropoff' : 'Pickup'}</Link>
     </main><CargoBottomNav />
   </div>
 }

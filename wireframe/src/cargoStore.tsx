@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CARGO_RECORDS_STORAGE_KEY, initialCargoRecords, normalizeOrderNumber, type CargoRecord } from './cargoDomain'
 import { usePrototypeScenario } from './prototypeScenarioStore'
-import { mockTodaySpokeRoute, type SpokeRoute } from './spokeDomain'
+import { mockTodaySpokeRoute, refreshDemoRouteAddresses, type SpokeRoute } from './spokeDomain'
 import { useEvidenceSync } from './useEvidenceSync'
 import { editOrderDetails, initialOrderDetails, ORDER_DETAILS_STORAGE_KEY, readOrderDetails, type OrderDetails, type OrderDetailsEdit } from './orderDetailsDomain'
 import { findPickupDemoRecord } from './pickupDemoData'
@@ -45,7 +45,7 @@ function readRecords() {
 function readSpokeRoute() {
   try {
     const stored = localStorage.getItem(SPOKE_ROUTE_STORAGE_KEY)
-    return stored ? JSON.parse(stored) as SpokeRoute : undefined
+    return stored ? refreshDemoRouteAddresses(JSON.parse(stored) as SpokeRoute) : undefined
   } catch {
     return undefined
   }
