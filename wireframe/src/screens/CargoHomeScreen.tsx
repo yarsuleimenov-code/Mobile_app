@@ -39,13 +39,16 @@ export function CargoHomeScreen() {
     <CargoShell>
       <div className="cargo-home">
         <h1>Cargo operations</h1>
-        <section className="cargo-actions" aria-label="Choose an operation">
+        <section className="cargo-manual-operations" aria-labelledby="manual-operations-title">
+          <h2 id="manual-operations-title">Manual operations</h2>
+          <div className="cargo-actions">
           <button type="button" className="cargo-action cargo-action--pickup" onClick={() => navigate('/pickup')}>
-            <ArrowUp size={46} /><strong>Pickup</strong><small>Record & start Order eBOL</small>
+            <ArrowUp size={20} aria-hidden="true" /><strong>Pickup</strong>
           </button>
           <button type="button" className="cargo-action cargo-action--dropoff" onClick={() => navigate('/dropoff')}>
-            <ArrowDown size={46} /><strong>Dropoff</strong><small>Verify & complete delivery</small>
+            <ArrowDown size={20} aria-hidden="true" /><strong>Dropoff</strong>
           </button>
+          </div>
         </section>
 
         <button type="button" className="home-messages-card" onClick={() => navigate('/communications')}>

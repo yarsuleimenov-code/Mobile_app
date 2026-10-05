@@ -6,6 +6,8 @@
 
 Назначение: единая точка входа перед следующим этапом разработки.
 
+P2 — компактные ручные Pickup/Dropoff реализованы по запросу owner с публикацией сразу в main: Home → Manual operations, две кнопки высотой 48 px вместо крупных плиток. Additional pickup сохранён через Recent operations → Add places и Pickup drafts → Supplemental Pickup; правила signed versions и Pre-trip gate не менялись. Подробности и проверки — [план BA weekly](BA_WEEKLY_2026_10_05_MOBILE_PLAN.md#p2-компактные-ручные-pickupdropoff-реализовано).
+
 ## 1. Текущий вывод
 
 Проект состоит из трёх разных по зрелости контуров:

@@ -52,25 +52,28 @@ textarea { font: inherit; }
 .cargo-home { padding: 24px 20px 112px; }
 .cargo-nav-screen { padding: 24px 20px 112px; }
 .cargo-home > h1 { font-size: 27px; letter-spacing: -.7px; }
-.cargo-actions { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cargo-manual-operations { margin-top: 14px; }
+.cargo-manual-operations > h2 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--cargo-muted); }
+.cargo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cargo-action {
-  min-height: 158px;
-  padding: 22px 16px 18px;
+  min-height: 48px;
+  padding: 10px 12px;
   display: flex;
-  flex-direction: column;
+  gap: 8px;
   align-items: center;
   justify-content: center;
-  border: 0;
-  border-radius: 13px;
-  color: #fff;
+  border: 1px solid var(--cargo-line);
+  border-radius: 8px;
+  background: #fff;
   cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform .15s ease;
 }
 .cargo-action:active { transform: scale(.98); }
-.cargo-action--pickup { background: var(--cargo-orange); box-shadow: 0 10px 24px rgba(255, 75, 10, .19); }
-.cargo-action--dropoff { background: var(--cargo-navy); box-shadow: 0 10px 24px rgba(7, 29, 61, .16); }
-.cargo-action strong { margin-top: 14px; font-size: 24px; }
-.cargo-action small { margin-top: 5px; color: rgba(255,255,255,.78); font-size: 12px; }
+.cargo-action--pickup { color: var(--cargo-orange); }
+.cargo-action--dropoff { color: var(--cargo-navy); }
+.cargo-action strong { font-size: 16px; }
+.cargo-action:hover { background: #f3f7fc; }
+.cargo-action:focus-visible { outline: 2px solid var(--cargo-blue); outline-offset: 2px; }
 
 .recent-records { margin-top: 38px; }
 .recent-records-toggle {
@@ -423,8 +426,7 @@ textarea { font: inherit; }
   .cargo-brand-logo { width: 122px; }
   .cargo-home { padding-inline: 14px; }
   .cargo-actions { gap: 9px; }
-  .cargo-action { min-height: 145px; padding-inline: 9px; }
-  .cargo-action strong { font-size: 21px; }
+  .cargo-action { padding-inline: 9px; }
   .record-status { display: none; }
   .recent-records-list > button { grid-template-columns: 34px minmax(0, 1fr) 18px; }
   .home-stop-with-directions > button { grid-template-columns: 34px minmax(0, 1fr) 18px; }

@@ -6,7 +6,7 @@ This guide describes the **active** Mobile App interface. Buttons can change loc
 
 ![Home with today's stops](images/home.png)
 
-The first screen is **Cargo operations**. Its large Pickup and Dropoff actions open an operation directly. The **Pre-trip inspection** card controls access to **Load today’s route**: the route remains locked until the inspection passes. A loaded route displays simulated Spoke stops with Order number, sequence, scheduled time, operation, quantity and address. Search the loaded stops by External ID. Order documents, saved Pickup drafts and Recent operations appear below when there are corresponding local records.
+The first screen is **Cargo operations**. The compact **Manual operations** row contains **Pickup** and **Dropoff** for opening an operation directly, even without a loaded route. For additional places on a signed Pickup, use **Recent operations → Add places** or resume **Supplemental Pickup** from **Pickup drafts**; the original signed version remains locked. The **Pre-trip inspection** card controls access to **Load today’s route**: the route remains locked until the inspection passes. A loaded route displays simulated Spoke stops with Order number, sequence, scheduled time, operation, quantity and address. Search the loaded stops by External ID. Order documents, saved Pickup drafts and Recent operations appear below when there are corresponding local records.
 
 The bottom navigation contains:
 

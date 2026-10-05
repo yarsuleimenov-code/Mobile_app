@@ -22,7 +22,7 @@ Home → **Post-trip inspection** → eight checks (describe every Issue) → fi
 
 ## Main navigation
 
-- **Home:** Pickup, Dropoff, Today's stops, drafts and Order documents.
+- **Home:** compact **Manual operations → Pickup / Dropoff**, Today's stops, drafts and Order documents. For additional places on a signed Pickup, use **Recent operations → Add places** or resume **Supplemental Pickup** from **Pickup drafts**.
 - **Tasks:** search by Order ID/title; filter Pickup or Dropoff; open the correct stop.
 - **Scan:** look up a cargo PlaceID or Order ID.
 - **More:** Help & Instructions, Cargo places, Interstate operations and local sync status.

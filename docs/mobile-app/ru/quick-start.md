@@ -22,7 +22,7 @@ Home → **Post-trip inspection** → восемь проверок (кажды�
 
 ## Основное меню
 
-- **Home:** Pickup, Dropoff, Today's stops, черновики и Order documents.
+- **Home:** компактный блок **Manual operations → Pickup / Dropoff**, Today's stops, черновики и Order documents. Дополнительные места к подписанному Pickup: **Recent operations → Add places** или продолжение **Supplemental Pickup** из **Pickup drafts**.
 - **Tasks:** поиск по номеру/названию заказа, фильтр Pickup/Dropoff и открытие остановки.
 - **Scan:** поиск PlaceID или Order ID.
 - **More:** Help & Instructions, Cargo places, Interstate operations и статус локальной синхронизации.
