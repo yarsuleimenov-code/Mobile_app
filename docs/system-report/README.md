@@ -10,10 +10,11 @@
 
 ## Состав
 
+- [EXTERNAL_NAVIGATION_WIREFRAME.md](EXTERNAL_NAVIGATION_WIREFRAME.md) — принятые Navigate/Copy address и UI/UX-улучшения, точное назначение, сохранность черновиков и границы device QA.
 - [TEAM_CONTACTS_WIREFRAME.md](TEAM_CONTACTS_WIREFRAME.md) — принятая owner карточка команды заказа, точный контекст остановки, Copy order summary и проверки.
 - [HANDOFF_COMMENTS_SIGNING_WIREFRAME.md](HANDOFF_COMMENTS_SIGNING_WIREFRAME.md) — принятый owner перенос комментариев на шаг каждой стороны, сброс подписи/OTP и проверки.
 - [POST_TRIP_INSPECTION_WIREFRAME.md](POST_TRIP_INSPECTION_WIREFRAME.md) — принятый owner Post-trip, история пар, новый цикл и границы проверок.
-- [BA_WEEKLY_2026_10_05_MOBILE_PLAN.md](BA_WEEKLY_2026_10_05_MOBILE_PLAN.md) — осмотры, комментарии и контакты заказа реализованы и приняты; внешняя навигация — следующая задача.
+- [BA_WEEKLY_2026_10_05_MOBILE_PLAN.md](BA_WEEKLY_2026_10_05_MOBILE_PLAN.md) — осмотры, комментарии, контакты заказа и внешняя навигация реализованы и приняты.
 - [CURRENT_STATE.md](CURRENT_STATE.md) — фактически реализованный контекст, актуальный Git-срез, границы проверки и следующие решения.
 - [DOCUMENTATION_SITE_IMPLEMENTATION.md](DOCUMENTATION_SITE_IMPLEMENTATION.md) — целевые URL, критерии готовности, зафиксированная база и правила публикации пользовательской документации вместе с прототипом.
 - [Mobile App: руководство на русском](../mobile-app/ru/README.md) и [на английском](../mobile-app/README.md) — бизнес-обзор, пользовательские инструкции, Quick Start и база знаний.

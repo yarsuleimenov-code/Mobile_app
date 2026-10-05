@@ -31,6 +31,10 @@ Home → **Post-trip inspection** → eight checks (describe every Issue) → fi
 
 In **Tasks**, choose a stop. Check its Order number, scheduled time and address. Use **Order details · Spoke preview** if the order name or handling information needs review. Opening a stop does not complete it.
 
+## Navigate
+
+Check the stop's full address on Home, Tasks, Pickup/Dropoff or Order details and select **Navigate** to open Google Maps. **Copy address** copies only the address; a manual-copy field appears if Clipboard is blocked. Select the stop first if several are available. Opening Maps does not complete the stop. If draft saving fails, retry before leaving the form. Driving directions do not guarantee truck-safe routing.
+
 ## Team contacts
 
 Open **Team contacts** in Pickup/Dropoff or **Order details** in Tasks. Check the order/stop, select **Copy order summary**, then paste into a message. Open the required Dispatcher/Broker/Manager **@nickname** in Telegram; nothing is sent automatically. If Clipboard is blocked, copy the displayed text manually. Sample Telegram recipients must be agreed before external demonstrations.

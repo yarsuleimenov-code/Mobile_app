@@ -9,6 +9,7 @@ import { operationalName } from '../orderDetailsDomain'
 import { useCargo } from '../cargoStore'
 import { filterSpokeTasks, mockTodaySpokeRoute, spokeTaskPath, type SpokeOperation } from '../spokeDomain'
 import { teamContactsPath } from '../teamContactsDomain'
+import { StopNavigation } from '../StopNavigation'
 
 type Filter = 'all' | SpokeOperation
 
@@ -39,11 +40,11 @@ export function TasksScreen() {
               <div className={`task-card-mark task-card-mark--${task.operation}`} />
               <div className="task-card-main">
                 <span className="task-card-top"><strong>#{task.externalId}</strong><time>{task.scheduledTime}</time></span>
-                <span>{task.title}</span><small>{task.address}</small>
+                <span>{task.title}</span>
                 <div><span className={`task-type task-type--${task.operation}`}>{task.operation}</span><span className="movement">Stop {task.sequence}</span><span className="task-quantity">Qty {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</span></div>
               </div>
               <ChevronRight size={20} />
-            </Link><div className="task-secondary-actions"><Link className="task-details-link" to={teamContactsPath(task.externalId, task.operation, task.stopId)}>Order details</Link><Link className="task-message-link" to={communicationPath(task.externalId)}><MessageCircleMore size={16} /> Message customer{thread?.unreadCount ? <b>{thread.unreadCount}</b> : null}</Link></div></div>
+            </Link><StopNavigation task={task} compact /><div className="task-secondary-actions"><Link className="task-details-link" to={teamContactsPath(task.externalId, task.operation, task.stopId)}>Order details</Link><Link className="task-message-link" to={communicationPath(task.externalId)}><MessageCircleMore size={16} /> Message customer{thread?.unreadCount ? <b>{thread.unreadCount}</b> : null}</Link></div></div>
           })}
           {!visible.length ? <p className="spoke-task-empty">No tasks match the current filters.</p> : null}
         </div>

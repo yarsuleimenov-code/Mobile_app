@@ -14,6 +14,7 @@ import { readPickupDrafts } from '../pickupDraftStore'
 import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
 import { inspectionStatus, preTripChecks, preTripPhotos } from '../preTripInspectionDomain'
 import { usePreTripInspection } from '../preTripInspectionStore'
+import { StopNavigation } from '../StopNavigation'
 
 export function CargoHomeScreen() {
   const navigate = useNavigate()
@@ -80,12 +81,12 @@ export function CargoHomeScreen() {
             <label className="spoke-task-search"><Search size={19} /><input aria-label="Find stop by External ID" inputMode="numeric" placeholder="Find order by External ID" value={routeQuery} onChange={(event) => setRouteQuery(event.target.value)} /></label>
             <div className="spoke-task-list">
               {visibleTasks.map((task) => (
-                <button type="button" key={task.stopId} disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
+                <div className="home-stop-with-directions" key={task.stopId}><button type="button" disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
                   <span className={`spoke-task-icon spoke-task-icon--${task.operation}`}>{task.operation === 'pickup' ? <ArrowUp size={19} /> : <ArrowDown size={19} />}</span>
-                  <span className="spoke-task-main"><strong>#{task.externalId}</strong><small>{String(task.sequence).padStart(2, '0')} · {operationalName(getOrderDetails(task.externalId), task.externalId)}</small><small>Qty {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs · {task.address}</small></span>
+                  <span className="spoke-task-main"><strong>#{task.externalId}</strong><small>{String(task.sequence).padStart(2, '0')} · {operationalName(getOrderDetails(task.externalId), task.externalId)}</small><small>Qty {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</small></span>
                   <span className={`spoke-task-side spoke-task-side--${task.operation}`}><strong>{task.scheduledTime}</strong><small>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</small></span>
                   <ChevronRight size={19} />
-                </button>
+                </button><StopNavigation task={task} compact blockedMessage={!routeUnlocked ? 'Complete Pre-trip inspection before departure' : undefined} /></div>
               ))}
               {!visibleTasks.length ? <div className="spoke-task-empty">No stop found for this External ID.</div> : null}
             </div>

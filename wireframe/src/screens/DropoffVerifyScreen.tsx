@@ -6,6 +6,7 @@ import { calculatePieces, calculateVolume, normalizeOrderNumber, type CargoRecor
 import { dimensionText, summarizeMeasurements, weightText, volumeText } from '../measurementDomain'
 import { operationalName } from '../orderDetailsDomain'
 import { teamContactsPath } from '../teamContactsDomain'
+import { OrderStopNavigation } from '../StopNavigation'
 import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { useCargo } from '../cargoStore'
 import { findDraftSupplementalPickup, prepareDeliveryEbol } from '../orderEbolDomain'
@@ -81,6 +82,13 @@ function DropoffVerifyForm() {
     && deliveryPhotoCount > 0
     && (noDamage || (damageReported && Boolean(damageNote.trim())))
 
+  const saveBeforeNavigation = () => {
+    if (!record || deliveryLocked) return true
+    const saved = writeDeliveryDraft(record.orderNumber, { photos: deliveryPhotos, matches, noDamage, damageReported, damageNote })
+    setStorageError(!saved)
+    return saved
+  }
+
   const confirmDropoff = () => {
     if (!canConfirm || !record) return
     setDocumentSaveError('')
@@ -132,8 +140,9 @@ function DropoffVerifyForm() {
         {record ? (
           <>
             {changingOrder ? <p className="measurement-warning">The evidence below belongs to #{record.orderNumber}. Press Search to open the selected order.</p> : null}
+            <OrderStopNavigation order={record.orderNumber} operation="dropoff" stopId={record.orderNumber === normalizeOrderNumber(params.get('order') ?? '') ? params.get('stop') ?? undefined : undefined} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Press Search to open the selected order before navigating' : undefined} />
             {pendingSupplement ? <div className="measurement-warning"><p>Finish the Supplemental Pickup and its signatures before confirming Delivery.</p><button type="button" onClick={() => navigate(`/pickup?order=${record.orderNumber}&supplemental=1`)}>Resume Supplemental Pickup</button></div> : null}
-            <section className="order-name-summary"><strong>{operationalName(getOrderDetails(record.orderNumber), record.orderNumber)}</strong><div className="order-summary-actions"><button type="button" onClick={() => navigate(teamContactsPath(record.orderNumber, 'dropoff', record.orderNumber === normalizeOrderNumber(params.get('order') ?? '') ? params.get('stop') ?? undefined : undefined))}>Order details</button><button type="button" onClick={() => navigate(teamContactsPath(record.orderNumber, 'dropoff', record.orderNumber === normalizeOrderNumber(params.get('order') ?? '') ? params.get('stop') ?? undefined : undefined))}>Team contacts</button></div></section>
+            <section className="order-name-summary"><strong>{operationalName(getOrderDetails(record.orderNumber), record.orderNumber)}</strong><div className="order-summary-actions"><button type="button" onClick={() => navigate(teamContactsPath(record.orderNumber, 'dropoff', record.orderNumber === normalizeOrderNumber(params.get('order') ?? '') ? params.get('stop') ?? undefined : undefined))}>Order details</button><button type="button" onClick={() => navigate(teamContactsPath(record.orderNumber, 'dropoff', record.orderNumber === normalizeOrderNumber(params.get('order') ?? '') ? params.get('stop') ?? undefined : undefined, true))}>Team contacts</button></div></section>
             <section className="found-summary">
               <div><Box size={22} /><strong>{calculatePieces(record.dimensionGroups)} pcs</strong></div>
               <div><Weight size={22} /><strong>{weightText(record.totalWeight, summarizeMeasurements(record.dimensionGroups))}</strong></div>

@@ -22,6 +22,10 @@ describe('order team contacts', () => {
     expect(orderContextTasks(tasks, pickup.externalId, undefined, 'later')).toEqual([dropoff])
     expect(teamContactsPath(pickup.externalId, 'pickup', pickup.stopId)).toBe('/orders/23343775/details?operation=pickup&stop=spoke-01')
   })
+  it('opens contacts directly without losing the order and stop context', () => {
+    expect(teamContactsPath('23343775', 'pickup', 'spoke-01', true)).toBe('/orders/23343775/details?operation=pickup&stop=spoke-01&focus=team')
+    expect(teamContactsPath('999999', undefined, undefined, true)).toBe('/orders/999999/details?focus=team')
+  })
   it('copies the visible order context, not customer/private contact details', () => {
     const text = orderSummaryText({ order: '23343775', name: 'Dining Chair', quantity: 3, task: mockTodaySpokeRoute.tasks[0], workDate: '08/21/2026', handling: 'Fragile', comment: 'Call on arrival' })
     expect(text).toContain('Order #23343775\nName: Dining Chair\nQuantity: 3 pcs\nPickup · Stop 1\nAddress: 455 Concord Avenue, Belmont, MA 02478, USA')

@@ -1,5 +1,5 @@
 import { MessageCircleMore } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { calculatePieces, normalizeOrderNumber } from '../cargoDomain'
@@ -25,6 +25,9 @@ function OrderDetailsForm({ order }: { order: string }) {
   const cargo = getOrderCargo(order)
   const route = spokeRoute ?? mockTodaySpokeRoute
   const [params, setParams] = useSearchParams()
+  useEffect(() => {
+    if (params.get('focus') !== 'team') window.scrollTo({ top: 0 })
+  }, [params])
   const operation = params.get('operation') === 'pickup' ? 'pickup' : params.get('operation') === 'dropoff' ? 'dropoff' : undefined
   const tasks = orderContextTasks(route.tasks, order, operation)
   const matching = orderContextTasks(tasks, order, operation, params.get('stop') || undefined)
@@ -54,7 +57,7 @@ function OrderDetailsForm({ order }: { order: string }) {
       <section className="order-name-summary"><strong>{operationalName(current, order)}</strong><span>Qty <b>{quantity ?? '—'}</b> pcs</span></section>
       <TeamContactsCard context={{ order, name: operationalName(current, order), quantity, task, workDate: route.workDate,
         handling: current.special_cargo_type ? `${specialCargoLabels[current.special_cargo_type]} · ${current.special_cargo_details}` : '', comment: cargo?.orderComment ?? '' }}
-        tasks={tasks} onSelectStop={(stopId) => { const next = new URLSearchParams(params); if (stopId) next.set('stop', stopId); else next.delete('stop'); setParams(next, { replace: true }) }} />
+        tasks={tasks} focusContacts={params.get('focus') === 'team'} onSelectStop={(stopId) => { const next = new URLSearchParams(params); next.delete('focus'); if (stopId) next.set('stop', stopId); else next.delete('stop'); setParams(next, { replace: true }) }} />
       <section className="order-detail-card">
         <h2>Names</h2>
         <dl className="order-detail-values"><div><dt>External name</dt><dd>{current.trade_name || 'Not received'}</dd></div><div><dt>Source</dt><dd>{current.name_source} · read-only</dd></div></dl>

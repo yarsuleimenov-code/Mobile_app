@@ -24,10 +24,11 @@ export function orderContextTasks(tasks: SpokeTask[], order: string, operation?:
   return tasks.filter((task) => task.externalId === order && (!operation || task.operation === operation)
     && (!stopId || task.stopId === stopId))
 }
-export function teamContactsPath(order: string, operation?: SpokeOperation, stopId?: string) {
+export function teamContactsPath(order: string, operation?: SpokeOperation, stopId?: string, focusContacts = false) {
   const params = new URLSearchParams()
   if (operation) params.set('operation', operation)
   if (stopId) params.set('stop', stopId)
+  if (focusContacts) params.set('focus', 'team')
   return `/orders/${encodeURIComponent(order)}/details${params.size ? `?${params}` : ''}`
 }
 export interface TeamOrderContext {
