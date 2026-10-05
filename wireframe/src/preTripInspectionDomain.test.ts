@@ -41,6 +41,13 @@ describe('pre-trip inspection', () => {
     expect(inspectionCanComplete(inspection)).toBe(false)
   })
 
+  it('requires dashboard even when all four exterior photos are captured', () => {
+    const inspection = completeInspection({ photos: preTripPhotos.filter((item) => item.id !== 'dashboard').map((item) => item.id) })
+    expect(inspectionPhotosComplete(inspection)).toBe(false)
+    expect(inspectionCanComplete(inspection)).toBe(false)
+    expect(inspectionCanComplete({ ...inspection, photos: [...inspection.photos, 'dashboard'] })).toBe(true)
+  })
+
   it('allows a fully passed and attested inspection', () => {
     const inspection = completeInspection()
     expect(inspectionCanComplete(inspection)).toBe(true)

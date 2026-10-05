@@ -1,12 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 import {
-  emptyPreTripInspection,
   inspectionCanComplete,
   type PreTripAnswer,
   type PreTripCheckId,
   type PreTripInspectionState,
   type PreTripPhotoId,
 } from './preTripInspectionDomain'
+import { emptyVehicleInspection, finishPostTrip, restoreVehicleInspection, startNextVehicleCycle, type PostTripInspectionState, type VehicleInspectionState } from './postTripInspectionDomain'
 
 interface PreTripInspectionContextValue {
   inspection: PreTripInspectionState
@@ -15,54 +15,57 @@ interface PreTripInspectionContextValue {
   setAttested: (attested: boolean) => void
   completeInspection: () => boolean
   resetInspection: () => void
+  vehicle: string
+  postTrip: PostTripInspectionState
+  history: VehicleInspectionState['history']
+  saveError: boolean
+  updatePostTrip: (patch: Partial<PostTripInspectionState>) => void
+  completePostTrip: (unfinishedStops: number, acknowledged: boolean) => boolean
+  startNextCycle: () => boolean
 }
 
-const STORAGE_KEY = 'zaberman-pre-trip-inspection:v1'
+const STORAGE_KEY = 'zaberman-vehicle-inspections:v1'
 const PreTripInspectionContext = createContext<PreTripInspectionContextValue | null>(null)
 
-function readInspection(): PreTripInspectionState {
+function readInspection(): VehicleInspectionState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return emptyPreTripInspection
-    const parsed = JSON.parse(raw) as Partial<PreTripInspectionState>
-    return {
-      answers: parsed.answers ?? {},
-      photos: Array.isArray(parsed.photos) ? parsed.photos : [],
-      attested: Boolean(parsed.attested),
-      completedAt: typeof parsed.completedAt === 'string' ? parsed.completedAt : null,
-    }
+    return restoreVehicleInspection(localStorage.getItem(STORAGE_KEY), localStorage.getItem('zaberman-pre-trip-inspection:v1'))
   } catch {
-    return emptyPreTripInspection
+    return emptyVehicleInspection
   }
 }
 
 export function PreTripInspectionProvider({ children }: { children: ReactNode }) {
-  const [inspection, setInspection] = useState<PreTripInspectionState>(readInspection)
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(inspection))
-  }, [inspection])
-
-  const value = useMemo<PreTripInspectionContextValue>(() => ({
-    inspection,
-    answerCheck: (id, answer) => setInspection((current) => ({
-      ...current,
-      answers: { ...current.answers, [id]: answer },
-      completedAt: null,
-    })),
-    capturePhoto: (id) => setInspection((current) => ({
-      ...current,
-      photos: current.photos.includes(id) ? current.photos : [...current.photos, id],
-      completedAt: null,
-    })),
-    setAttested: (attested) => setInspection((current) => ({ ...current, attested, completedAt: null })),
+  const [state, setState] = useState(readInspection)
+  const [saveError, setSaveError] = useState(false)
+  const save = (next: VehicleInspectionState) => {
+    if (next === state) return false
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      setState(next); setSaveError(false); return true
+    } catch { setSaveError(true); return false }
+  }
+  const changePre = (patch: Partial<PreTripInspectionState>) => {
+    if (state.inspection.completedAt || state.postTrip.completedAt) return
+    save({ ...state, inspection: { ...state.inspection, ...patch, attested: patch.attested ?? false } })
+  }
+  const value: PreTripInspectionContextValue = {
+    ...state, saveError,
+    answerCheck: (id, answer) => changePre({ answers: { ...state.inspection.answers, [id]: answer } }),
+    capturePhoto: (id) => changePre({ photos: [...new Set([...state.inspection.photos, id])] }),
+    setAttested: (attested) => changePre({ attested }),
     completeInspection: () => {
-      if (!inspectionCanComplete(inspection)) return false
-      setInspection((current) => ({ ...current, completedAt: new Date().toISOString() }))
-      return true
+      if (state.inspection.completedAt || !inspectionCanComplete(state.inspection)) return false
+      return save({ ...state, inspection: { ...state.inspection, completedAt: new Date().toISOString() } })
     },
-    resetInspection: () => setInspection(emptyPreTripInspection),
-  }), [inspection])
+    updatePostTrip: (patch) => {
+      if (!state.inspection.completedAt || state.postTrip.completedAt) return
+      save({ ...state, postTrip: { ...state.postTrip, ...patch, attested: patch.attested ?? false } })
+    },
+    completePostTrip: (unfinishedStops, acknowledged) => save(finishPostTrip(state, unfinishedStops, acknowledged, new Date().toISOString())),
+    startNextCycle: () => save(startNextVehicleCycle(state)),
+    resetInspection: () => { save(emptyVehicleInspection) },
+  }
 
   return <PreTripInspectionContext.Provider value={value}>{children}</PreTripInspectionContext.Provider>
 }

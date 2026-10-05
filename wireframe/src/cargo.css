@@ -1169,3 +1169,6 @@ textarea { font: inherit; }
 .delivery-otp-problem button { grid-column: 1 / -1; min-height: 44px; border: 1px solid currentColor; border-radius: 8px; color: inherit; background: #fff; font: inherit; font-size: 12px; font-weight: 850; cursor: pointer; }
 .delivery-otp-problem.is-locked { border-color: #dfa6a2; color: #a2352e; background: #fff2f1; }
 .delivery-otp-verified { border-color: #91cfb4; color: #126e4c; background: #edf9f4; }
+.posttrip-issue { flex-basis: 100%; width: 100%; }
+.pretrip-flow a.ebol-secondary { margin-top: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.pretrip-flow .posttrip-record-note { margin-top: 14px; color: var(--cargo-muted); font-size: 12px; line-height: 1.5; }

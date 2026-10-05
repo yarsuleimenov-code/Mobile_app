@@ -7,7 +7,7 @@ export type PreTripCheckId =
   | 'controls'
   | 'emergency'
 
-export type PreTripPhotoId = 'front' | 'rear' | 'driver_side' | 'passenger_side'
+export type PreTripPhotoId = 'front' | 'rear' | 'driver_side' | 'passenger_side' | 'dashboard'
 export type PreTripAnswer = 'pass' | 'issue'
 
 export interface PreTripInspectionState {
@@ -32,6 +32,7 @@ export const preTripPhotos: Array<{ id: PreTripPhotoId; label: string; detail: s
   { id: 'rear', label: 'Rear', detail: 'Doors, lights and bumper' },
   { id: 'driver_side', label: 'Driver side', detail: 'Full side, wheels visible' },
   { id: 'passenger_side', label: 'Passenger side', detail: 'Full side, wheels visible' },
+  { id: 'dashboard', label: 'Dashboard', detail: 'Instrument panel and any warning indicators' },
 ]
 
 export const emptyPreTripInspection: PreTripInspectionState = {

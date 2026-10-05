@@ -24,7 +24,8 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | Entry | Screen and route | Next useful action |
 | --- | --- | --- |
 | Home | Cargo operations — `#/` | Pickup, Dropoff, load route, Order documents |
-| Home | Pre-trip inspection — `#/pre-trip-inspection` | Complete checklist, four photos and driver attestation |
+| Home | Pre-trip inspection — `#/pre-trip-inspection` | Complete checklist, five photos including Dashboard and driver attestation |
+| Home, after Pre-trip | Post-trip inspection — `#/post-trip-inspection` | Record vehicle condition after use; view completed/archived inspections |
 | Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Dropoff stop; Order details |
 | Bottom nav | Scan — `#/scan` | Open place or order places |
 | Home / Tasks / Pickup draft / Order details | Messages — `#/communications`, `#/orders/{number}/communications` | Send or review customer SMS; start an Order-linked call |
@@ -53,11 +54,22 @@ The code contains older Home, Pickup, Dropoff and Same Day components that are n
 
 1. On Home, find the **Pre-trip inspection** card for **Van 08 · Extended Van**. Select **Start** or **Continue**.
 2. Inspect all seven groups: Tires & wheels; Lights & reflectors; Windows, mirrors & wipers; Leaks under vehicle; Body, doors & cargo area; Brakes, steering & horn; Emergency equipment. Select **Pass** or **Issue** for each.
-3. Select **Continue to photos**. Use **Take photo** for Front, Rear, Driver side and Passenger side. Keep the full vehicle and wheels in frame. Gallery upload is intentionally unavailable.
+3. Select **Continue to photos**. Use **Take photo** for Front, Rear, Driver side, Passenger side and Dashboard. Keep the full vehicle and wheels in frame. Gallery upload is intentionally unavailable.
 4. Select **Review inspection**. If every check passes, select **I confirm this vehicle is safe to operate**, then **Complete inspection**.
 5. The result shows **Ready for route**. Return Home; the card shows **Vehicle cleared** and **Load today’s route** is enabled.
 
-Any **Issue** produces **Route locked** and disables completion. Select **Review issues** and change the result only after the physical condition has been resolved. If Camera unavailable appears, camera access must be restored before the inspection can finish. The wireframe stores one local inspection for its sample vehicle and route; it does not create a maintenance task or supervisor override.
+Any **Issue** produces **Route locked** and disables completion. Select **Review issues** and change the result only after the physical condition has been resolved. If Camera unavailable appears, camera access must be restored before the inspection can finish. Completed inspections are read-only. The wireframe stores a local vehicle cycle and history; it does not create a maintenance task or supervisor override.
+
+## Post-trip inspection
+
+1. After completing Pre-trip, return Home and select **Start** in **Post-trip inspection**. A loaded route is not required.
+2. Select **Pass** or **Issue** for all eight checks, including **Company equipment & tools**. Describe each Issue before continuing.
+3. Select **Continue to photos**. Capture **Front**, **Rear**, **Driver side**, **Passenger side** and **Dashboard**. All five are required; gallery upload is unavailable.
+4. Select **Review inspection** and confirm **I confirm this inspection record is accurate**. If stops have no completed handoff, acknowledge that they remain unfinished and must be reported to dispatch.
+5. Select **Complete Post-trip**. An Issue does not prevent submission: the result shows **Completed — issues reported** and **Vehicle needs attention**. Report defects to dispatch; the inspection does not send a message or close orders.
+6. **Back to Home** → **Start next vehicle cycle** opens a fresh Pre-trip. The previous pair remains in **Previous vehicle inspections**. A warning reminds you of defects in the previous Post-trip; beginning a new cycle does not confirm repairs.
+
+Drafts and read-only results survive refresh. If saving fails, check device storage and retry; do not leave until the action succeeds. Photos are local capture markers, not real images. Inspection timestamps do not calculate working hours. Pre-trip requires five photos including Dashboard; its company equipment extension is a separate next task.
 
 ## Tasks and Order details
 
@@ -166,7 +178,7 @@ The active prototype has a local Trip and receiving simulation. It does not demo
 | Order not found at Dropoff | Check the number and that Pickup was recorded in this browser state. |
 | Pending Supplemental Pickup | Resume and sign its new version before Dropoff. |
 | Review required | Return to the relevant review screen; direct signing links do not bypass review. |
-| Pre-trip inspection required | Open the Home card and complete all seven checks, four photos and the attestation before loading the route. |
+| Pre-trip inspection required | Open the Home card and complete all seven checks, five photos including Dashboard and the attestation before loading the route. |
 | Route locked / Issue reported | Do not depart. Review the issue and follow the operating team's escalation process; the wireframe has no supervisor override. |
 | Camera unavailable during Pre-trip | Restore camera availability; gallery upload cannot replace a required inspection photo. |
 | Code not recognized | Recheck the six digits and retry. In the prototype `111111` is always invalid; after three failures contact dispatch. |

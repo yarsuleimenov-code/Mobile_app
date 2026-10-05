@@ -10,6 +10,8 @@
 
 ## Состав
 
+- [POST_TRIP_INSPECTION_WIREFRAME.md](POST_TRIP_INSPECTION_WIREFRAME.md) — принятый owner Post-trip, история пар, новый цикл и границы проверок.
+- [BA_WEEKLY_2026_10_05_MOBILE_PLAN.md](BA_WEEKLY_2026_10_05_MOBILE_PLAN.md) — принятый план по встрече 5 октября: Post-trip и Dashboard-фото реализованы; комментарии сторон, контакты заказа и внешняя навигация — следующие задачи.
 - [CURRENT_STATE.md](CURRENT_STATE.md) — фактически реализованный контекст, актуальный Git-срез, границы проверки и следующие решения.
 - [DOCUMENTATION_SITE_IMPLEMENTATION.md](DOCUMENTATION_SITE_IMPLEMENTATION.md) — целевые URL, критерии готовности, зафиксированная база и правила публикации пользовательской документации вместе с прототипом.
 - [Mobile App: руководство на русском](../mobile-app/ru/README.md) и [на английском](../mobile-app/README.md) — бизнес-обзор, пользовательские инструкции, Quick Start и база знаний.

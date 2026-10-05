@@ -26,7 +26,8 @@
 | Откуда | Экран и маршрут | Следующий шаг |
 | --- | --- | --- |
 | Открытие приложения | Cargo operations — `#/` | Pickup, Dropoff, загрузка маршрута, Order documents |
-| Home | Pre-trip inspection — `#/pre-trip-inspection` | Чек-лист, четыре фото и подтверждение водителя |
+| Home | Pre-trip inspection — `#/pre-trip-inspection` | Чек-лист, пять фото, включая Dashboard и подтверждение водителя |
+| Home после Pre-trip | Post-trip inspection — `#/post-trip-inspection` | Состояние автомобиля после использования; просмотр результата и истории |
 | Home / нижнее меню | Tasks — `#/tasks` | Операция остановки или Order details |
 | Нижнее меню | Scan — #/scan | Запись места или места заказа |
 | Home / Tasks / Pickup draft / Order details | Messages — #/communications, #/orders/{number}/communications | Написать клиенту, просмотреть SMS или начать звонок по заказу |
@@ -55,11 +56,22 @@
 
 1. На Home найдите карточку **Pre-trip inspection** для **Van 08 · Extended Van** и нажмите **Start** или **Continue**.
 2. Проверьте семь групп: Tires & wheels; Lights & reflectors; Windows, mirrors & wipers; Leaks under vehicle; Body, doors & cargo area; Brakes, steering & horn; Emergency equipment. Для каждой выберите **Pass** или **Issue**.
-3. Нажмите **Continue to photos**. Через **Take photo** сделайте Front, Rear, Driver side и Passenger side, сохраняя автомобиль и колёса полностью в кадре. Загрузка из галереи намеренно недоступна.
+3. Нажмите **Continue to photos**. Через **Take photo** сделайте Front, Rear, Driver side, Passenger side и Dashboard, сохраняя автомобиль и колёса полностью в кадре. Загрузка из галереи намеренно недоступна.
 4. Нажмите **Review inspection**. Если все проверки пройдены, установите **I confirm this vehicle is safe to operate** и нажмите **Complete inspection**.
 5. На результате появится **Ready for route**. После возвращения Home карточка покажет **Vehicle cleared**, а **Load today’s route** станет доступной.
 
-Любой **Issue** показывает **Route locked** и блокирует завершение. Нажмите **Review issues** и меняйте результат только после физического устранения проблемы. При **Camera unavailable** необходимо восстановить доступ к камере: галерея не заменяет обязательные фото. Wireframe хранит один локальный осмотр примерного автомобиля и маршрута; ремонтная задача и supervisor override не реализованы.
+Любой **Issue** показывает **Route locked** и блокирует завершение. Нажмите **Review issues** и меняйте результат только после физического устранения проблемы. При **Camera unavailable** необходимо восстановить доступ к камере: галерея не заменяет обязательные фото. Завершённые осмотры доступны только для просмотра. Wireframe хранит текущую пару осмотров и историю; ремонтная задача и supervisor override не реализованы.
+
+## Послерейсовый осмотр
+
+1. После завершения Pre-trip вернитесь на Home и нажмите **Start** в **Post-trip inspection**. Загрузка маршрута не обязательна.
+2. Ответьте **Pass** или **Issue** по восьми пунктам, включая **Company equipment & tools**. Для каждого Issue обязательно опишите проблему.
+3. Нажмите **Continue to photos** и сделайте **Front**, **Rear**, **Driver side**, **Passenger side**, **Dashboard**. Все пять фото обязательны; галерея недоступна.
+4. Нажмите **Review inspection** и установите **I confirm this inspection record is accurate**. При остановках без завершённого handoff отдельно подтвердите, что они остаются незавершёнными и должны быть сообщены диспетчеру.
+5. Нажмите **Complete Post-trip**. Дефект не блокирует отчёт: появятся **Completed — issues reported** и **Vehicle needs attention**. Сообщите диспетчеру о проблемах; осмотр сам не отправляет сообщение и не закрывает заказы.
+6. **Back to Home** → **Start next vehicle cycle** открывает новый Pre-trip. Предыдущая пара доступна в **Previous vehicle inspections**. Предупреждение напоминает о дефектах предыдущего Post-trip; начало нового цикла не подтверждает ремонт.
+
+Черновики и read-only итоги сохраняются после обновления страницы. При ошибке сохранения проверьте хранилище устройства и повторите действие до ухода со страницы. Фото — локальные маркеры capture, не реальные изображения. Время осмотров не используется для расчёта рабочих часов. В Pre-trip обязательны пять фото с Dashboard; расширение проверки корпоративного оборудования — следующая задача.
 
 ## Tasks и данные заказа
 
@@ -180,7 +192,7 @@
 | Order not found при Dropoff | Проверьте номер и наличие записи Pickup в этом браузере. |
 | Незавершённый Supplemental Pickup | Продолжите и подпишите новую версию перед Dropoff. |
 | Review required | Вернитесь к соответствующему review; прямая ссылка на signing не обходит проверку. |
-| Требуется Pre-trip inspection | Откройте карточку на Home и завершите семь проверок, четыре фото и подтверждение до загрузки маршрута. |
+| Требуется Pre-trip inspection | Откройте карточку на Home и завершите семь проверок, пять фото, включая Dashboard и подтверждение до загрузки маршрута. |
 | Route locked / обнаружен Issue | Не начинайте маршрут. Проверьте проблему и действуйте по процедуре эскалации; supervisor override в wireframe отсутствует. |
 | Camera unavailable при Pre-trip | Восстановите доступ к камере; загрузка из галереи не заменяет обязательное фото осмотра. |
 | Code not recognized | Проверьте шесть цифр и повторите. В прототипе `111111` всегда ошибочен; после трёх ошибок обратитесь к диспетчеру. |

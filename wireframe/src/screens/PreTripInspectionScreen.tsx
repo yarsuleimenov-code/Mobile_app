@@ -32,7 +32,7 @@ const steps: Array<{ id: InspectionStep; label: string }> = [
 export function PreTripInspectionScreen() {
   const navigate = useNavigate()
   const { devices } = usePrototypeScenario()
-  const { inspection, answerCheck, capturePhoto, setAttested, completeInspection } = usePreTripInspection()
+  const { inspection, history, postTrip, saveError, answerCheck, capturePhoto, setAttested, completeInspection } = usePreTripInspection()
   const [step, setStep] = useState<InspectionStep>(() => {
     if (inspectionPhotosComplete(inspection)) return 'review'
     if (inspectionChecklistComplete(inspection)) return 'photos'
@@ -47,17 +47,18 @@ export function PreTripInspectionScreen() {
     setCompleted(true)
   }
 
-  if (completed) {
+  if (completed || inspection.completedAt) {
     return (
       <div className="cargo-flow pretrip-flow">
         <CargoFlowHeader title="Pre-trip inspection" subtitle="Van 08 · Extended Van" />
         <main className="pretrip-complete">
           <span><Check size={38} /></span>
-          <p className="pretrip-eyebrow">READY FOR ROUTE</p>
-          <h1>Vehicle cleared</h1>
-          <p>Safety checks and required photos are complete. Today’s route is now available.</p>
+          <p className="pretrip-eyebrow">{postTrip.completedAt ? 'PRE-TRIP RECORD' : 'READY FOR ROUTE'}</p>
+          <h1>{postTrip.completedAt ? 'Pre-trip completed' : 'Vehicle cleared'}</h1>
+          <p>{postTrip.completedAt ? 'This vehicle cycle is completed. Start the next cycle from Home to record a new Pre-trip.' : 'Safety checks and required photos are complete. Today’s route is now available.'}</p>
+          <p>Completed {new Date(inspection.completedAt!).toLocaleString()} · Read-only</p>
           <div className="pretrip-vehicle-summary"><Truck size={25} /><span><strong>Van 08 · Extended Van</strong><small>NJ1 · Today’s route</small></span><CheckCircle2 size={22} /></div>
-          <button type="button" className="cargo-primary" onClick={() => navigate('/')}>Open today’s route <ChevronRight size={19} /></button>
+          <button type="button" className="cargo-primary" onClick={() => navigate('/')}>Back to Home <ChevronRight size={19} /></button>
         </main>
       </div>
     )
@@ -66,6 +67,8 @@ export function PreTripInspectionScreen() {
   return (
     <div className="cargo-flow pretrip-flow">
       <CargoFlowHeader title="Pre-trip inspection" subtitle="Van 08 · Extended Van" />
+      {saveError ? <p className="ebol-storage-warning" role="alert">Inspection could not be saved. Check device storage and retry.</p> : null}
+      {Object.values(history.at(-1)?.postTrip.answers ?? {}).includes('issue') ? <div className="pretrip-warning"><AlertTriangle size={20} /><span><strong>Previous Post-trip reported issues</strong><small>Report to dispatch and verify the vehicle has been reviewed before departure. Starting a new inspection does not clear previous defects.</small></span></div> : null}
       <div className="pretrip-progress" aria-label={`Step ${currentIndex + 1} of ${steps.length}`}>
         {steps.map((item, index) => <div key={item.id} className={index < currentIndex ? 'is-done' : index === currentIndex ? 'is-active' : ''}><span>{index < currentIndex ? <Check size={15} /> : index + 1}</span><small>{item.label}</small></div>)}
       </div>
@@ -92,7 +95,7 @@ export function PreTripInspectionScreen() {
 
       {step === 'photos' ? (
         <main className="pretrip-body">
-          <div className="pretrip-intro"><span><Camera size={24} /></span><div><h1>Photograph all four sides</h1><p>Stand far enough away to keep the full vehicle and wheels in frame.</p></div></div>
+          <div className="pretrip-intro"><span><Camera size={24} /></span><div><h1>Photograph all four sides and dashboard</h1><p>Capture the full vehicle and wheels on each side, then the instrument panel and any warning indicators.</p></div></div>
           {!devices.camera ? <div className="pretrip-warning"><CircleAlert size={20} /><span><strong>Camera unavailable</strong><small>Camera access is required to complete the inspection.</small></span></div> : null}
           <div className="pretrip-photo-grid">
             {preTripPhotos.map((photo) => {

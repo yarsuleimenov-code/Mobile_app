@@ -3,7 +3,7 @@
 **Use this article when:** you are opening the app for the first time.
 
 1. Open **Home**. You will see **Cargo operations**, Pickup and Dropoff actions, and the required **Pre-trip inspection** card.
-2. Before loading the route, complete all seven Pre-trip checks, take the four required camera photos and confirm the vehicle is safe. Any Issue keeps the route locked.
+2. Before loading the route, complete all seven Pre-trip checks, take the five required camera photos including Dashboard and confirm the vehicle is safe. Any Issue keeps the route locked.
 3. Select **Load today’s route** after the card shows **Vehicle cleared**. The list shows Order number, sequence, time, type and address.
 4. Open **Tasks** to search an Order ID or title and filter All, Pickup or Dropoff.
 5. Select the task card to open its operation. Use **Order details · Spoke preview** to inspect the order before recording cargo.

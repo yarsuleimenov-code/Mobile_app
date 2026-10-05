@@ -10,11 +10,15 @@
 
 1. На Home нажмите **Start** в карточке Pre-trip inspection для **Van 08 · Extended Van**.
 2. Ответьте **Pass** или **Issue** по всем семи пунктам безопасности.
-3. Нажмите **Continue to photos** и сделайте обязательные фото Front, Rear, Driver side и Passenger side. Загрузка из галереи недоступна.
+3. Нажмите **Continue to photos** и сделайте обязательные фото Front, Rear, Driver side, Passenger side и Dashboard. Загрузка из галереи недоступна.
 4. Проверьте результат и установите **I confirm this vehicle is safe to operate**.
 5. Нажмите **Complete inspection**. На Home появится **Vehicle cleared**, после чего можно загрузить маршрут.
 
 Любой **Issue** сохраняет блокировку маршрута. Нажмите **Review issues** и исправляйте ответ только после устранения проблемы либо действуйте по процедуре эскалации. Состояние Camera unavailable также блокирует завершение.
+
+## После использования автомобиля
+
+Home → **Post-trip inspection** → восемь проверок (каждый Issue с описанием) → пять фото, включая Dashboard → Review и подтверждение водителя → **Complete Post-trip**. Подтвердите незавершённые остановки, если они есть. Дефекты не блокируют сдачу отчёта. Home → **Start next vehicle cycle** требует новый Pre-trip и сохраняет предыдущую пару в истории. [Подробная инструкция](user-guide.md#послерейсовый-осмотр).
 
 ## Основное меню
 

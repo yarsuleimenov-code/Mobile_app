@@ -14,7 +14,8 @@ The workflow is designed for the crew that records Pickup and Delivery evidence,
 | --- | --- |
 | Order | Shipment identified in the UI by an order number. A loaded Spoke stop's External ID becomes that number in the local route simulation. |
 | Task / Stop | A scheduled Pickup or Dropoff row on Today's Spoke route, with sequence, time, address and Order. Tasks are displayed in Home and Tasks. The active router has no separate task detail screen. |
-| Pre-trip inspection | Required vehicle safety checklist, four current camera photos and driver attestation. A passed inspection unlocks loading Today's route; any Issue keeps it locked. |
+| Pre-trip inspection | Required vehicle safety checklist, five current camera photos including Dashboard and driver attestation. A passed inspection unlocks loading Today's route; any Issue keeps it locked. |
+| Post-trip inspection | Eight checks including company equipment, five photo markers including Dashboard, required defect notes and driver attestation. Defects do not block reporting. Read-only results and paired history; next cycle requires fresh Pre-trip. No timekeeping or automatic order/Interstate close. |
 | Pickup | An operation that records dimension groups, individual cargo places, photos and order context; it prepares Pickup evidence for Order eBOL review. |
 | Dropoff | Verification of a previously recorded order against Pickup evidence, with Delivery photos and condition/exception; it prepares Delivery review. |
 | Same Day | A movement type whose Pickup and Dropoff are intended to be connected through a RouteRun in the approved product model. An older Same Day screen exists in source but is not routed in the active app. |
@@ -39,13 +40,13 @@ The active bottom navigation is **Home | Tasks | Scan | More**. Home offers Pick
 ```mermaid
 flowchart LR
   A["Home: route locked"] --> B["7 safety checks"]
-  B --> C["4 camera-only photos"]
+  B --> C["5 camera-only photos"]
   C --> D["Driver attestation"]
   D --> E["Vehicle cleared; load route"]
   B -->|Any Issue| F["Route locked; review issue"]
 ```
 
-The sample vehicle is **Van 08 · Extended Van** at NJ1. Every check needs Pass or Issue, and Front, Rear, Driver side and Passenger side photos must be taken in the flow. Gallery upload is not offered. Any Issue or unavailable camera prevents completion. The active wireframe persists the inspection locally and has no assignment service, maintenance task, supervisor override or server audit. [Pre-trip source](../../wireframe/src/screens/PreTripInspectionScreen.tsx), [documented scope](../system-report/PRE_TRIP_INSPECTION_WIREFRAME.md).
+The sample vehicle is **Van 08 · Extended Van** at NJ1. Every check needs Pass or Issue, and Front, Rear, Driver side, Passenger side and Dashboard photos must be taken in the flow. Gallery upload is not offered. Any Issue or unavailable camera prevents completion. The active wireframe persists the inspection locally and has no assignment service, maintenance task, supervisor override or server audit. [Pre-trip source](../../wireframe/src/screens/PreTripInspectionScreen.tsx), [documented scope](../system-report/PRE_TRIP_INSPECTION_WIREFRAME.md).
 
 ### Pickup and Order eBOL
 
