@@ -847,9 +847,6 @@ textarea { font: inherit; }
 .stop-navigation { min-width: 0; padding: 12px; border-radius: 9px; background: #f3f7fc; }
 .stop-navigation > small { display: block; font-size: 11px; line-height: 1.5; color: var(--cargo-muted); }
 .stop-navigation .stop-navigation-address { margin: 6px 0 12px; font-size: 16px; line-height: 1.4; color: var(--cargo-navy); overflow-wrap: anywhere; white-space: normal; }
-.stop-navigation-compact { padding: 10px 12px; }
-.stop-navigation-compact .stop-navigation-address { margin: 0 0 8px; }
-.stop-navigation-compact .stop-navigation-actions { margin-bottom: 0; }
 .stop-navigation-actions .address-copy-action { min-width: 120px; }
 .stop-navigation-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
 .stop-navigation-actions > a, .stop-navigation-actions > button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #b6cff1; border-radius: 8px; padding: 8px 12px; background: white; color: var(--cargo-blue); font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; }
@@ -857,6 +854,13 @@ textarea { font: inherit; }
 .stop-navigation-actions > button:disabled { opacity: .55; cursor: not-allowed; }
 .stop-navigation > p[role] { margin: 8px 0 0; font-size: 12px; line-height: 1.5; }
 .stop-navigation > label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.5; margin-top: 8px; }
+.stop-navigation-compact { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; padding: 0; border-radius: 0; background: transparent; }
+.stop-navigation-compact .stop-navigation-address { margin: 0; }
+.stop-navigation-compact .stop-navigation-actions { flex-wrap: nowrap; gap: 0; margin: 0; }
+.stop-navigation-compact .stop-navigation-actions > a, .stop-navigation-compact .stop-navigation-actions > button { width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--cargo-blue); }
+.stop-navigation-compact .stop-navigation-actions > a:hover, .stop-navigation-compact .stop-navigation-actions > button:not(:disabled):hover { background: #edf4ff; }
+.stop-navigation-compact .stop-navigation-actions > :focus-visible { outline: 2px solid var(--cargo-blue); outline-offset: -2px; }
+.stop-navigation-compact > small, .stop-navigation-compact > p[role], .stop-navigation-compact > label { grid-column: 1 / -1; }
 .order-stop-directions > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--cargo-blue); font-size: 13px; }
 .task-with-details > .stop-navigation { margin-top: 6px; }
 .team-copy-action { display: flex; gap: 8px; justify-content: center; align-items: center; }
