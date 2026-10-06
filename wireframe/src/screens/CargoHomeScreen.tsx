@@ -85,8 +85,8 @@ export function CargoHomeScreen() {
             <div className="spoke-task-list">
               {visibleTasks.map((task) => (
                 <div className="home-stop-with-directions" key={task.stopId}><button type="button" disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
-                  <span className="spoke-task-main"><span className="spoke-task-heading"><strong>#{task.externalId}</strong><time>{task.scheduledTime}</time></span><span className="spoke-task-name">{operationalName(getOrderDetails(task.externalId), task.externalId)}</span><small><b className={`spoke-task-operation spoke-task-operation--${task.operation}`}>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</b> · Stop {task.sequence} · {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</small></span>
-                  <ChevronRight size={19} />
+                  <span className="stop-card-heading"><span className="stop-card-title"><span className="stop-card-order">#{task.externalId}</span> · {operationalName(getOrderDetails(task.externalId), task.externalId)}</span><ChevronRight size={19} aria-hidden="true" /></span>
+                  <span className="stop-card-meta"><span><b className={`spoke-task-operation spoke-task-operation--${task.operation}`}>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</b> · Stop {task.sequence} · {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</span><time>{task.scheduledTime}</time></span>
                 </button><StopNavigation task={task} compact blockedMessage={!routeUnlocked ? 'Complete Pre-trip inspection before departure' : undefined} /></div>
               ))}
               {!visibleTasks.length ? <div className="spoke-task-empty">No stop found for this External ID.</div> : null}

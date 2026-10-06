@@ -82,7 +82,7 @@ Drafts and read-only results survive refresh. If saving fails, check device stor
 
 The current Tasks list does not show a universal task-status lifecycle. It shows scheduled stops; Pickup, Dropoff and Order eBOL have separate local states. Avoid interpreting a task row as server assignment or completion.
 
-On Home, each stop keeps its Order number, scheduled time, name and **Pickup/Dropoff · Stop · quantity**, including narrow mobile screens. Long names wrap; the full address and map/copy icons remain available.
+On Home and Tasks, the Order number and name form one emphasized heading: **#23343775 · Dining Chair**. A thin line separates it from **Pickup/Dropoff · Stop · quantity** and the scheduled time. The full address and map/copy icons sit below. Long names wrap without truncation; adjacent stops are separated by spacing rather than extra panels.
 
 For drivers, **Order details** is a reading screen, not an edit form. Handling requirements, when present, stay expanded before the contacts; orders without requirements do not show a Special Cargo: None card. Expand **Additional details** for External name and Source. **Spoke preview** and **Order change history** start collapsed. Dispatcher/Supervisor editors and their existing permissions are unchanged.
 
