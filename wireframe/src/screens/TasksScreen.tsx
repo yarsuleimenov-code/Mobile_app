@@ -44,7 +44,7 @@ export function TasksScreen() {
                 <div><span className={`task-type task-type--${task.operation}`}>{task.operation}</span><span className="movement">Stop {task.sequence}</span><span className="task-quantity">Qty {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</span></div>
               </div>
               <ChevronRight size={20} />
-            </Link><StopNavigation task={task} compact /><div className="task-secondary-actions"><Link className="task-details-link" to={teamContactsPath(task.externalId, task.operation, task.stopId)}>Order details</Link><Link className="task-message-link" to={communicationPath(task.externalId)}><MessageCircleMore size={16} /> Message customer{thread?.unreadCount ? <b>{thread.unreadCount}</b> : null}</Link></div></div>
+            </Link><StopNavigation task={task} compact /><div className="task-secondary-actions"><Link className="task-details-link" to={teamContactsPath(task.externalId, task.operation, task.stopId)}>Order details <ChevronRight size={15} aria-hidden="true" /></Link><Link className="task-message-link" to={communicationPath(task.externalId)} aria-label={`Message customer for order ${task.externalId}${thread?.unreadCount ? `, ${thread.unreadCount} unread` : ''}`} title="Message customer"><MessageCircleMore size={20} aria-hidden="true" />{thread?.unreadCount ? <b>{thread.unreadCount}</b> : null}</Link></div></div>
           })}
           {!visible.length ? <p className="spoke-task-empty">No tasks match the current filters.</p> : null}
         </div>

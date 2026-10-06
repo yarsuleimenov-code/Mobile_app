@@ -31,6 +31,8 @@ Home → **Post-trip inspection** → eight checks (describe every Issue) → fi
 
 In **Tasks**, choose a stop. Check its Order number, scheduled time and address. Use **Order details · Spoke preview** if the order name or handling information needs review. Opening a stop does not complete it.
 
+**Order details** is a compact link beside a customer-message icon in Tasks. Drivers read the summary and contacts without edit fields; expand **Additional details** for External name/Source. Handling requirements remain visible.
+
 ## Navigate
 
 Check the stop's full address on Home, Tasks, Pickup/Dropoff or Order details and select **Navigate** to open Google Maps. **Copy address** copies only the address; a manual-copy field appears if Clipboard is blocked. Select the stop first if several are available. Opening Maps does not complete the stop. If draft saving fails, retry before leaving the form. Driving directions do not guarantee truck-safe routing.

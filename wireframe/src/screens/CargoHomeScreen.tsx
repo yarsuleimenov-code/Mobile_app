@@ -85,9 +85,7 @@ export function CargoHomeScreen() {
             <div className="spoke-task-list">
               {visibleTasks.map((task) => (
                 <div className="home-stop-with-directions" key={task.stopId}><button type="button" disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
-                  <span className={`spoke-task-icon spoke-task-icon--${task.operation}`}>{task.operation === 'pickup' ? <ArrowUp size={19} /> : <ArrowDown size={19} />}</span>
-                  <span className="spoke-task-main"><strong>#{task.externalId}</strong><small>{String(task.sequence).padStart(2, '0')} · {operationalName(getOrderDetails(task.externalId), task.externalId)}</small><small>Qty {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</small></span>
-                  <span className={`spoke-task-side spoke-task-side--${task.operation}`}><strong>{task.scheduledTime}</strong><small>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</small></span>
+                  <span className="spoke-task-main"><span className="spoke-task-heading"><strong>#{task.externalId}</strong><time>{task.scheduledTime}</time></span><span className="spoke-task-name">{operationalName(getOrderDetails(task.externalId), task.externalId)}</span><small><b className={`spoke-task-operation spoke-task-operation--${task.operation}`}>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</b> · Stop {task.sequence} · {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</small></span>
                   <ChevronRight size={19} />
                 </button><StopNavigation task={task} compact blockedMessage={!routeUnlocked ? 'Complete Pre-trip inspection before departure' : undefined} /></div>
               ))}

@@ -77,10 +77,14 @@ Drafts and read-only results survive refresh. If saving fails, check device stor
 
 1. After **Vehicle cleared**, select **Load today’s route** on Home if Today's stops are not shown. This loads a local fixture; it does not connect to Spoke.
 2. Open **Tasks**. Search by Order ID or title, or choose All, Pickup or Dropoff.
-3. Select the task card to open the correct operation. Select **Order details · Spoke preview** to see the order name, source, quantity, special cargo information and a read-only preview of the route stop.
+3. Select the task card to open the correct operation. The compact **Order details** link opens its stop summary and team contacts; the message icon opens the customer conversation, with a badge for unread messages. **Spoke preview** remains available inside Order details.
 4. Use the screen's own primary action to save or confirm. Opening a task alone does not mark it complete.
 
 The current Tasks list does not show a universal task-status lifecycle. It shows scheduled stops; Pickup, Dropoff and Order eBOL have separate local states. Avoid interpreting a task row as server assignment or completion.
+
+On Home, each stop keeps its Order number, scheduled time, name and **Pickup/Dropoff · Stop · quantity**, including narrow mobile screens. Long names wrap; the full address and map/copy icons remain available.
+
+For drivers, **Order details** is a reading screen, not an edit form. Handling requirements, when present, stay expanded before the contacts; orders without requirements do not show a Special Cargo: None card. Expand **Additional details** for External name and Source. **Spoke preview** and **Order change history** start collapsed. Dispatcher/Supervisor editors and their existing permissions are unchanged.
 
 ## Team contacts
 

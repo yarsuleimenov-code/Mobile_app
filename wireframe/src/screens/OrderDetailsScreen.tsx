@@ -38,6 +38,7 @@ function OrderDetailsForm({ order }: { order: string }) {
   const [error, setError] = useState(false)
   const canName = canEditInternalName(role, current)
   const canSpecial = role === 'dispatcher'
+  const showEditors = role === 'dispatcher' || role === 'supervisor'
   const issues = orderDetailsIssues({ ...current, ...edit })
   const quantity = cargo ? calculatePieces(cargo.dimensionGroups) : null
   const thread = getThread(order)
@@ -58,7 +59,7 @@ function OrderDetailsForm({ order }: { order: string }) {
       <TeamContactsCard context={{ order, name: operationalName(current, order), quantity, task, workDate: route.workDate,
         handling: current.special_cargo_type ? `${specialCargoLabels[current.special_cargo_type]} · ${current.special_cargo_details}` : '', comment: cargo?.orderComment ?? '' }}
         tasks={tasks} focusContacts={params.get('focus') === 'team'} onSelectStop={(stopId) => { const next = new URLSearchParams(params); next.delete('focus'); if (stopId) next.set('stop', stopId); else next.delete('stop'); setParams(next, { replace: true }) }} />
-      <section className="order-detail-card">
+      {showEditors ? <><section className="order-detail-card">
         <h2>Names</h2>
         <dl className="order-detail-values"><div><dt>External name</dt><dd>{current.trade_name || 'Not received'}</dd></div><div><dt>Source</dt><dd>{current.name_source} · read-only</dd></div></dl>
         <label>Internal name<input maxLength={80} value={edit.internal_name} readOnly={!canName} onChange={(event) => change({ internal_name: event.target.value })} placeholder="Short operational name" /></label>
@@ -73,10 +74,14 @@ function OrderDetailsForm({ order }: { order: string }) {
         {edit.special_cargo_type ? <label>Handling details<textarea rows={3} maxLength={1000} readOnly={!canSpecial} value={edit.special_cargo_details} onChange={(event) => change({ special_cargo_details: event.target.value })} /></label> : null}
         <small>Handling requirements do not replace the cargo name.</small>
       </section>
-      {issues.length ? <div className="measurement-warning" role="status"><strong>Order data incomplete</strong>{issues.map((issue) => <p key={issue}>{issue}</p>)}<p>You can save now and complete these fields later.</p></div> : null}
+      </> : <details className="order-additional-details">
+        <summary>Additional details</summary>
+        <dl className="order-detail-values"><div><dt>External name</dt><dd>{current.trade_name || 'Not received'}</dd></div><div><dt>Source</dt><dd>{current.name_source}</dd></div></dl>
+      </details>}
+      {issues.length ? <div className="measurement-warning" role="status"><strong>Order data incomplete</strong>{issues.map((issue) => <p key={issue}>{issue}</p>)}{showEditors ? <p>You can save now and complete these fields later.</p> : null}</div> : null}
       {canName || canSpecial ? <button type="button" className="cargo-primary" onClick={save}>Save order details</button> : null}
       {message ? <p role={error ? 'alert' : 'status'} className={error ? 'ebol-storage-warning' : 'order-save-success'}>{message}</p> : null}
-      <details className="order-detail-card spoke-preview">
+      <details className={`${showEditors ? 'order-detail-card' : 'order-additional-details'} spoke-preview`}>
         <summary>Spoke preview <small>Read-only</small></summary>
         {task ? <><p>Outbound order fields</p><dl className="order-detail-values">
           <div><dt>Name</dt><dd>{operationalName(current, order)}</dd></div>
@@ -86,10 +91,10 @@ function OrderDetailsForm({ order }: { order: string }) {
           <div><dt>Comment</dt><dd>{cargo?.orderComment || 'No comment'}</dd></div>
         </dl></> : <p>This order has no stop in the current route.</p>}
       </details>
-      <details className="order-detail-card order-data-history"><summary>Order change history ({current.history.length})</summary>
+      <details className={`${showEditors ? 'order-detail-card' : 'order-additional-details'} order-data-history`}><summary>Order change history ({current.history.length})</summary>
         {current.history.length ? <ol>{[...current.history].reverse().map((entry, index) => <li key={`${entry.at}-${index}`}><strong>{entry.field.replaceAll('_', ' ')}</strong><span>{entry.before || '(empty)'} → {entry.after || '(empty)'}</span><small>{entry.role} · {new Date(entry.at).toLocaleString()}</small></li>)}</ol> : <p>No order data changes yet.</p>}
       </details>
-      <p className="order-role-note">Changes apply to current order data. Previously signed document versions remain unchanged.</p>
+      {showEditors ? <p className="order-role-note">Changes apply to current order data. Previously signed document versions remain unchanged.</p> : null}
       <Link className="order-message-action" to={communicationPath(order)}><MessageCircleMore size={19} /><span><strong>Message customer</strong><small>{thread?.customerName ?? 'Customer contact'} · {thread?.unreadCount ? `${thread.unreadCount} unread` : 'Corporate SMS'}</small></span></Link>
       <Link className="ebol-secondary" to={task ? spokeTaskPath(task, route.workDate) : `/${operation === 'dropoff' ? 'dropoff' : 'pickup'}?order=${order}`}>Open {(task?.operation ?? operation) === 'dropoff' ? 'Dropoff' : 'Pickup'}</Link>
     </main><CargoBottomNav />
