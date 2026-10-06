@@ -32,6 +32,7 @@ export function TeamContactsCard({ context, tasks, onSelectStop, focusContacts =
       <button className="team-copy-action" type="button" onClick={copy} aria-label={copyState === 'copied' ? 'Order summary copied' : 'Copy order summary'} aria-live="polite"><Copy size={17} aria-hidden="true" /> {copyState === 'copied' ? 'Summary copied' : 'Copy summary'}</button>
       {copyState === 'failed' ? <div className="team-copy-fallback"><p role="alert">Clipboard unavailable. Select and copy the summary below.</p><label>Order summary<textarea readOnly rows={7} value={summary} onFocus={(event) => event.target.select()} /></label></div> : null}
     </section>
+    {context.requirements?.trim() ? <section className="order-requirements" aria-labelledby="order-requirements-title"><h2 id="order-requirements-title">Requirements</h2><p>{context.requirements}</p><small>Broker comment</small></section> : null}
     {context.handling ? <section className="order-handling-summary" aria-labelledby="order-handling-title"><h2 id="order-handling-title">Handling requirements</h2><p>{context.handling}</p></section> : null}
     <section className="team-contacts-card" aria-labelledby="team-contacts-title">
     <h2 id="team-contacts-title"><UsersRound size={20} /> Team contacts</h2>

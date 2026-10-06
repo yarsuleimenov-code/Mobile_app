@@ -34,14 +34,16 @@ export function teamContactsPath(order: string, operation?: SpokeOperation, stop
 export interface TeamOrderContext {
   order: string; name: string; quantity: number | null; task?: SpokeTask; workDate: string
   handling: string; comment: string
+  requirements?: string
 }
 export function orderSummaryText(context: TeamOrderContext) {
-  const { order, name, quantity, task, workDate, handling, comment } = context
+  const { order, name, quantity, task, workDate, handling, comment, requirements } = context
   return [
     `Order #${order}`, `Name: ${name}`, `Quantity: ${quantity ?? 'Not recorded'}${quantity === null ? '' : ' pcs'}`,
     task ? `${task.operation === 'pickup' ? 'Pickup' : 'Dropoff'} · Stop ${task.sequence}` : 'Stop: Not selected / not available',
     `Address: ${task?.address.trim() || 'Not available'}`,
     ...(task ? [`Scheduled: ${workDate} · ${task.scheduledTime}`] : []),
+    ...(requirements?.trim() ? [`Requirements: ${requirements.trim()}`] : []),
     ...(handling.trim() ? [`Handling: ${handling.trim()}`] : []),
     ...(comment.trim() ? [`Order note: ${comment.trim()}`] : []),
   ].join('\n')

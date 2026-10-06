@@ -73,6 +73,8 @@ Drafts and read-only results survive refresh. If saving fails, check device stor
 
 ## Tasks and Order details
 
+In **Order details**, read the expanded **Requirements** block before contacting the team. It shows instructions from **Broker comment**, separately from Handling requirements, Order note and signing comments. The full text and line breaks remain visible; **Copy summary** includes these instructions. Orders without requirements show no empty block. For example, #23343775 includes BOL/packing instructions and #23343780 requests delivery together with #23343775. These are static prototype samples; CRM/Spoke synchronization is not connected.
+
 ![Tasks list](images/tasks.png)
 
 1. After **Vehicle cleared**, select **Load today’s route** on Home if Today's stops are not shown. This loads a local fixture; it does not connect to Spoke.

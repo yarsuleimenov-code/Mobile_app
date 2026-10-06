@@ -11,6 +11,7 @@ import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { mockTodaySpokeRoute, spokeTaskPath } from '../spokeDomain'
 import { TeamContactsCard } from '../TeamContactsCard'
 import { orderContextTasks } from '../teamContactsDomain'
+import { getOrderRequirements } from '../orderRequirements'
 
 export function OrderDetailsScreen() {
   const { orderNumber = '' } = useParams()
@@ -57,7 +58,7 @@ function OrderDetailsForm({ order }: { order: string }) {
     <main className="pickup-form order-details-body">
       <section className="order-name-summary"><strong>{operationalName(current, order)}</strong><span>Qty <b>{quantity ?? '—'}</b> pcs</span></section>
       <TeamContactsCard context={{ order, name: operationalName(current, order), quantity, task, workDate: route.workDate,
-        handling: current.special_cargo_type ? `${specialCargoLabels[current.special_cargo_type]} · ${current.special_cargo_details}` : '', comment: cargo?.orderComment ?? '' }}
+        handling: current.special_cargo_type ? `${specialCargoLabels[current.special_cargo_type]} · ${current.special_cargo_details}` : '', comment: cargo?.orderComment ?? '', requirements: getOrderRequirements(order) }}
         tasks={tasks} focusContacts={params.get('focus') === 'team'} onSelectStop={(stopId) => { const next = new URLSearchParams(params); next.delete('focus'); if (stopId) next.set('stop', stopId); else next.delete('stop'); setParams(next, { replace: true }) }} />
       {showEditors ? <><section className="order-detail-card">
         <h2>Names</h2>

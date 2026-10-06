@@ -844,6 +844,10 @@ textarea { font: inherit; }
 .order-name-summary:has(.order-summary-actions) { flex-wrap: wrap; }
 .order-summary-actions { flex-wrap: wrap; }
 .team-contacts-card h2 { display: flex; align-items: center; gap: 8px; }
+.order-requirements { padding: 12px; border-left: 3px solid #c18b28; border-radius: 8px; background: #fff6e3; overflow-wrap: anywhere; }
+.order-requirements h2 { margin: 0 0 8px; font-family: "Segoe UI", Arial, sans-serif; font-size: 17px; font-weight: 700; }
+.order-requirements p { margin: 0; font-family: "Segoe UI", Arial, sans-serif; font-size: 16px; line-height: 1.55; white-space: pre-wrap; }
+.order-requirements small { display: block; margin-top: 8px; color: #715624; font-size: 12px; }
 .team-order-context, .team-contacts-card, .order-handling-summary, .order-note-summary { padding: 0 0 12px; border-bottom: 1px solid var(--cargo-line); overflow-wrap: anywhere; }
 .team-order-context > h2, .team-contacts-card > h2, .order-handling-summary > h2, .order-note-summary > h2 { margin: 0 0 8px; font-size: 16px; }
 .order-details-body > .order-name-summary { padding: 0 0 12px; background: transparent; border-radius: 0; border-bottom: 1px solid var(--cargo-line); font-size: 16px; }
