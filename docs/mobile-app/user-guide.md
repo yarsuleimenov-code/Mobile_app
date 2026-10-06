@@ -84,9 +84,9 @@ The current Tasks list does not show a universal task-status lifecycle. It shows
 
 ## Team contacts
 
-Open **Team contacts** from Pickup/Dropoff to jump directly to the contact list. **Order details** opens the same order card from the top, including the stop context. The card shows this order's Dispatcher, Broker and Manager, separately from the customer contact. Select **@nickname** to open Telegram; compose and send the message yourself. **Not assigned** means no contact is available for that role.
+Open **Order details** from Pickup/Dropoff or Tasks. The single screen contains a compact stop summary followed by **Team contacts**; there is no separate Team contacts button in the operation. The card shows this order's Dispatcher, Broker and Manager, separately from the customer contact. Select **@nickname** to open Telegram; compose and send the message yourself. **Not assigned** means no contact is available for that role.
 
-Check the number, name, quantity, operation, address, scheduled time and handling/order note. If several stops are available, choose **Order stop** first. Select **Copy order summary**, then paste it into your message. If Clipboard is blocked, select and copy the displayed **Order summary** manually. Missing data is shown explicitly; OTP/signatures are not copied.
+Check the number, name, quantity, operation, address, scheduled time and handling/order note. If several stops are available, choose **Order stop** first. Select **Copy summary**, then paste it into your message. If Clipboard is blocked, select and copy the displayed **Order summary** manually. Missing data is shown explicitly; OTP/signatures are not copied.
 
 Names and Telegram handles are unverified sample data: agree recipients before external demonstrations. Opening Telegram depends on the device/browser; no messaging integration is connected.
 
@@ -94,7 +94,7 @@ Names and Telegram handles are unverified sample data: agree recipients before e
 
 On Home's **Today's stops**, Tasks, Pickup/Dropoff or Order details, check the full address and select **Navigate**. It opens Google Maps in a new tab or supported external app; depending on the device/location, you may see directions preview rather than immediate navigation. The original screen remains open. No arrival, stop completion or order status is recorded by this action.
 
-On Home/Tasks, the arrow icon beside the address opens Maps; the overlapping-sheets icon copies the complete address and changes to a checkmark on success. On detailed screens, **Copy address** changes to **Copied** without moving the content. **Copy order summary** similarly changes to **Order summary copied**. If Clipboard is unavailable, select the displayed text manually. For several possible stops, use **Select stop in Order details** and choose **Order stop** first. An unavailable address has no active Navigate link; select **Contact team** to clarify the destination.
+On Home/Tasks and Order details, the arrow icon beside the address opens Maps; the overlapping-sheets icon copies the complete address and changes to a checkmark on success. On Pickup/Dropoff, **Copy address** changes to **Copied** without moving the content. **Copy summary** similarly changes to **Summary copied**. If Clipboard is unavailable, select the displayed text manually. For several possible stops, use **Select stop in Order details** and choose **Order stop** first. An unavailable address has no active Navigate link; select **Contact team** to clarify the destination.
 
 On Home, departure actions remain blocked before Pre-trip clearance or after Post-trip completion. When navigating from Pickup/Dropoff, a save error blocks opening Maps: keep the form open, check device storage and retry. Ordinary driving directions do not guarantee commercial-vehicle height/weight/access compliance. Set up navigation while safely stopped, not while driving.
 

@@ -2,6 +2,8 @@
 
 Дата среза: 2026-10-05
 
+Обновление 2026-10-06 принято owner, push в main разрешён: единственный вход Order details из Pickup/Dropoff, компактная сводка остановки и отдельный раздел Team contacts вместо дублирующих кнопок и вложенных карточек. Handling requirements показаны до контактов, Order note — после. RU/EN инструкции синхронизированы. [Спецификация](TEAM_CONTACTS_WIREFRAME.md).
+
 Принято owner 2026-10-05: [Post-trip inspection](POST_TRIP_INSPECTION_WIREFRAME.md), история пар осмотров и новый цикл с обязательным Pre-trip; Dashboard и Company equipment & tools в обоих осмотрах. Осмотры содержат восемь проверок и пять фото-маркеров. [Комментарии каждой стороны на её экране](HANDOFF_COMMENTS_SIGNING_WIREFRAME.md) и equipment опубликованы в main коммитом 7580cd2. [Team contacts](TEAM_CONTACTS_WIREFRAME.md) с контекстом заказа, копированием, короткими handles и полными адресами принят и опубликован коммитом e821d0c. [Внешняя навигация](EXTERNAL_NAVIGATION_WIREFRAME.md) реализована и принята вместе с дополнительными UI/UX-улучшениями: Navigate в Google Maps и Copy address на пяти поверхностях, компактные списки и прямой переход к контактам; push в main разрешён.
 
 Назначение: единая точка входа перед следующим этапом разработки.

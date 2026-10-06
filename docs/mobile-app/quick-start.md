@@ -37,7 +37,7 @@ Check the stop's full address on Home, Tasks, Pickup/Dropoff or Order details an
 
 ## Team contacts
 
-Open **Team contacts** in Pickup/Dropoff or **Order details** in Tasks. Check the order/stop, select **Copy order summary**, then paste into a message. Open the required Dispatcher/Broker/Manager **@nickname** in Telegram; nothing is sent automatically. If Clipboard is blocked, copy the displayed text manually. Sample Telegram recipients must be agreed before external demonstrations.
+Open **Order details** in Pickup/Dropoff or Tasks and find **Team contacts** below the stop summary. Check the order/stop, select **Copy summary**, then paste into a message. Open the required Dispatcher/Broker/Manager **@nickname** in Telegram; nothing is sent automatically. If Clipboard is blocked, copy the displayed text manually. Sample Telegram recipients must be agreed before external demonstrations.
 
 ## Message or call a customer
 
