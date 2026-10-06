@@ -142,8 +142,8 @@ textarea { font: inherit; }
 .spoke-task-search { min-height: 46px; margin-top: 11px; padding: 0 11px; display: flex; align-items: center; gap: 8px; border: 1px solid #bdc8d3; border-radius: 8px; color: var(--cargo-muted); }
 .spoke-task-search input { min-width: 0; flex: 1; height: 44px; border: 0; outline: 0; color: var(--cargo-navy); font: inherit; font-size: 14px; }
 .spoke-task-list { margin-top: 8px; }
-.home-stop-with-directions > button, .task-with-details > .task-card { width: 100%; min-height: 82px; padding: 10px 0; display: block; border: 0; background: #fff; color: var(--cargo-navy); text-align: left; text-decoration: none; cursor: pointer; }
-.stop-card-heading { display: flex; align-items: flex-start; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid #e3eaf2; }
+.home-stop-with-directions > button, .task-with-details > .task-card { width: 100%; min-height: 44px; padding: 0 0 8px; display: block; border: 0; background: #fff; color: var(--cargo-navy); text-align: left; text-decoration: none; cursor: pointer; }
+.stop-card-heading { display: flex; align-items: flex-start; gap: 10px; }
 .stop-card-heading > svg { flex-shrink: 0; margin-top: 3px; }
 .stop-card-title { flex: 1; min-width: 0; font-family: "Segoe UI", Arial, sans-serif; font-size: 17px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
 .stop-card-order { font-weight: 700; white-space: nowrap; }
@@ -852,8 +852,8 @@ textarea { font: inherit; }
 .team-order-context label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-bottom: 12px; }
 .team-order-context .order-detail-values { grid-template-columns: 1fr 1fr; }
 .team-context-wide { grid-column: 1 / -1; }
-.home-stop-with-directions { padding-bottom: 16px; }
-.task-with-details + .task-with-details { margin-top: 16px; }
+.home-stop-with-directions, .task-with-details { padding: 10px; border: 1px solid var(--cargo-line); border-radius: 8px; background: #fff; }
+.home-stop-with-directions + .home-stop-with-directions, .task-with-details + .task-with-details { margin-top: 8px; }
 .stop-navigation { min-width: 0; padding: 12px; border-radius: 9px; background: #f3f7fc; }
 .stop-navigation > small { display: block; font-size: 11px; line-height: 1.5; color: var(--cargo-muted); }
 .stop-navigation .stop-navigation-address { margin: 6px 0 12px; font-size: 16px; line-height: 1.4; color: var(--cargo-navy); overflow-wrap: anywhere; white-space: normal; }
