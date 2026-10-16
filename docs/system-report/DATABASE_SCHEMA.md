@@ -1,5 +1,7 @@
 # Схема базы данных
 
+> **Design reference — 2026-10-16.** Предыдущее TO-BE проектирование. Принятые продуктовые правила сохранены в [Stage 0](STAGE_0_PRODUCT_DECISIONS.md) и [decision log](../decisions/DECISION_LOG.md); остальная архитектура/стек — рекомендации, не окончательный выбор. AS-IS и Open Questions: [PROJECT_BASELINE](../PROJECT_BASELINE.md). Упоминания ожидания приёмки owner и прежних test counts относятся к истории.
+
 Дата исходной модели: 2026-09-01. Сверка статуса: 2026-09-18.
 
 Статус: DDL и первая command transaction находятся в репозитории; migrations ещё не применены и не проверены на runtime PostgreSQL 16. Это целевая серверная модель, не подключённая к активному wireframe.

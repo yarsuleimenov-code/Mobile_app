@@ -1,5 +1,7 @@
 # Zaberman Mobile App — минимальный P1 implementation backlog
 
+> **Historical — 2026-10-16.** План/отчёт прежнего этапа сохранён для истории решений и проверок. Прототип принят CEO; актуальные scope, статус и следующий этап — в [PROJECT_BASELINE](PROJECT_BASELINE.md). Прежние формулировки «следующий показ/приёмка owner» не являются текущим заданием; рекомендации ниже не разрешают менять утверждённый UI.
+
 **Дата:** 2026-09-26  
 **Источник:** `docs/mobile-ui-ux-audit.md`  
 **Статус:** ready for product review; visual viewport gate blocked by Windows sandbox  

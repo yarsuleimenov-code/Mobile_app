@@ -1,0 +1,161 @@
+{
+  "package": "Mobile App developer handoff",
+  "version": "1.0+SA-0.1",
+  "date": "2026-10-16",
+  "entrypoint": "README.md",
+  "sourceRepository": "https://github.com/yarsuleimenov-code/Mobile_app",
+  "referencePrototypeCommit": "1abe03ce0cd54697dedf713a0657c5f41f69ece3",
+  "hashAlgorithm": "SHA-256 of UTF-8 bytes after CRLF to LF normalization",
+  "notes": [
+    "Curated export; original docs/ sources remain authoritative.",
+    "Internal links rebased; supplementary source references point to GitHub.",
+    "Legacy current/DEVELOPMENT_PACKAGE_V1.0.json describes original docs/ package, not this export.",
+    "This manifest does not hash itself."
+  ],
+  "files": [
+    {
+      "path": "requirements/BUSINESS_DECISIONS_REQUIRED.md",
+      "source": "docs/requirements/BUSINESS_DECISIONS_REQUIRED.md",
+      "sourceSha256": "1472d6f6d1d70291680a145c41f8c8abdb42b046cb4fd9fc9835b564feba9f92",
+      "sha256": "1472d6f6d1d70291680a145c41f8c8abdb42b046cb4fd9fc9835b564feba9f92"
+    },
+    {
+      "path": "requirements/DEVELOPMENT_PLAN.md",
+      "source": "docs/requirements/DEVELOPMENT_PLAN.md",
+      "sourceSha256": "736370c24f641502d41a22de7422846b5293b4684614ec65e994293d4b61aa8c",
+      "sha256": "736370c24f641502d41a22de7422846b5293b4684614ec65e994293d4b61aa8c"
+    },
+    {
+      "path": "requirements/NON_FUNCTIONAL_REQUIREMENTS.md",
+      "source": "docs/requirements/NON_FUNCTIONAL_REQUIREMENTS.md",
+      "sourceSha256": "0a4870ee82bc238fff2e13e9fd1730e8648913136cd6d36dc3622f800b4cf0c8",
+      "sha256": "6053c141a644bbdba0b80e0247c3afa9c5f7eec7faecb83b20d6b566b00fc532"
+    },
+    {
+      "path": "requirements/OPEN_QUESTIONS_REVIEW.md",
+      "source": "docs/requirements/OPEN_QUESTIONS_REVIEW.md",
+      "sourceSha256": "40fd7b832c1e2e1988af11bbe368613c04c09fa20622ba5bf6b7c46363a8c648",
+      "sha256": "40fd7b832c1e2e1988af11bbe368613c04c09fa20622ba5bf6b7c46363a8c648"
+    },
+    {
+      "path": "requirements/RELEASE_1_DECISIONS.md",
+      "source": "docs/requirements/RELEASE_1_DECISIONS.md",
+      "sourceSha256": "f2002c16915daba6f80024b3d0226ca9ede119f37238aed213a0aa34bc8b12e2",
+      "sha256": "f2002c16915daba6f80024b3d0226ca9ede119f37238aed213a0aa34bc8b12e2"
+    },
+    {
+      "path": "requirements/REQUIREMENTS_GAP_ANALYSIS.md",
+      "source": "docs/requirements/REQUIREMENTS_GAP_ANALYSIS.md",
+      "sourceSha256": "381d25fe95f771d79da138f99265af3b8fb5424c1c3344d0c607c7f739a16eb4",
+      "sha256": "b272c8bb99b80e508feca0866702e1c01ac294c26c1feb7923e5e4961120dcf0"
+    },
+    {
+      "path": "requirements/REQUIREMENTS_TRACEABILITY.md",
+      "source": "docs/requirements/REQUIREMENTS_TRACEABILITY.md",
+      "sourceSha256": "5906f886d7eec7281ab5ad699d8fec77ec543e5624cb8ee35647b6a0b3482530",
+      "sha256": "2c9ff4ead907380a54c626602b7c789dd7a35ea6b6fde4fee9da31e0c298193e"
+    },
+    {
+      "path": "requirements/TECHNICAL_SPECIFICATION.md",
+      "source": "docs/requirements/TECHNICAL_SPECIFICATION.md",
+      "sourceSha256": "91678382d732934510df689262ee20c9a35c2b0c220c52021a8bf2101923a84c",
+      "sha256": "537622224b2cf26b61ebfb171569beda04df7b9e5aca9654db8db44ec2eef208"
+    },
+    {
+      "path": "requirements/WORKFLOWS_AND_USE_CASES.md",
+      "source": "docs/requirements/WORKFLOWS_AND_USE_CASES.md",
+      "sourceSha256": "8f9fe863b7958d4d39e7ee5fd88d61708cafc18e0aaf1f6d288047907b6137a4",
+      "sha256": "8f9fe863b7958d4d39e7ee5fd88d61708cafc18e0aaf1f6d288047907b6137a4"
+    },
+    {
+      "path": "architecture/SYSTEM_ARCHITECTURE_AND_INTEGRATIONS.md",
+      "source": "docs/architecture/SYSTEM_ARCHITECTURE_AND_INTEGRATIONS.md",
+      "sourceSha256": "222fdc74da4060b73a0fe04d9fdb2e11bd12914b056ed1e5e16d164029f9146a",
+      "sha256": "3209295e9a51334df4341b9efe08d6266f162d0ee49ac547d1f2d70eedb31483"
+    },
+    {
+      "path": "system-analysis/INTEGRATION_MAPPING_AND_SYNC.md",
+      "source": "docs/system-analysis/INTEGRATION_MAPPING_AND_SYNC.md",
+      "sourceSha256": "400c27693b86bf182800b6441573daacbf4724f7e3598329e85871283edb9dae",
+      "sha256": "51e67826f3e2f7255b74d33686349300ec0763147f1578b95d9e063217287e94"
+    },
+    {
+      "path": "system-analysis/README.md",
+      "source": "docs/system-analysis/README.md",
+      "sourceSha256": "ea79d905deeed87c42f7c35ce91e97780afc674ff98b835bce1065aa66ccb715",
+      "sha256": "ea79d905deeed87c42f7c35ce91e97780afc674ff98b835bce1065aa66ccb715"
+    },
+    {
+      "path": "system-analysis/SYSTEM_BEHAVIOR_AND_DATA_CONTRACTS.md",
+      "source": "docs/system-analysis/SYSTEM_BEHAVIOR_AND_DATA_CONTRACTS.md",
+      "sourceSha256": "074e8828710ffd621332504a84f554403e6a7ca9001f0012d8e54cf3da3121fc",
+      "sha256": "074e8828710ffd621332504a84f554403e6a7ca9001f0012d8e54cf3da3121fc"
+    },
+    {
+      "path": "DEVELOPMENT_HANDOFF.md",
+      "source": "docs/DEVELOPMENT_HANDOFF.md",
+      "sourceSha256": "618c2c562e029947c9b4cd4f0c3ee212fb99e94f0a0474829ff448f8993d8b9a",
+      "sha256": "63278cba663d1a702ffdcb52852b71de87abb41089be6816b8982264fd5a855d"
+    },
+    {
+      "path": "PROJECT_BASELINE.md",
+      "source": "docs/PROJECT_BASELINE.md",
+      "sourceSha256": "a459043f97894b3fe86377ac6b78972dc72026dd73fa448a3f54f06265a0a9ff",
+      "sha256": "01368966b46f6b272722a6f5a43d76f683d16273980ae96bdee993f6d1211aab"
+    },
+    {
+      "path": "decisions/DECISION_LOG.md",
+      "source": "docs/decisions/DECISION_LOG.md",
+      "sourceSha256": "253b5f51a94a4f30316417946634a1360050d6acd545d4e3ecbdd74618d50379",
+      "sha256": "57fc485f5ad9bffaac0047c79954cbd7475eda335915a8d66f9b18d4514a73c0"
+    },
+    {
+      "path": "current/SYSTEM_ANALYSIS_REVIEW.md",
+      "source": "docs/current/SYSTEM_ANALYSIS_REVIEW.md",
+      "sourceSha256": "c4c15ab93f8b1d271f6ebf96dfa835992db84b85b465266f221be24b96a6875c",
+      "sha256": "c4c15ab93f8b1d271f6ebf96dfa835992db84b85b465266f221be24b96a6875c"
+    },
+    {
+      "path": "current/RELEASE_1_DOCUMENTATION_CHECKS.md",
+      "source": "docs/current/RELEASE_1_DOCUMENTATION_CHECKS.md",
+      "sourceSha256": "eaed719aee503c8ea0c10671b37b5a5ea3a1c2a6d877db3f35945098ff5249a5",
+      "sha256": "eaed719aee503c8ea0c10671b37b5a5ea3a1c2a6d877db3f35945098ff5249a5"
+    },
+    {
+      "path": "current/DOCUMENTATION_HANDOFF.md",
+      "source": "docs/current/DOCUMENTATION_HANDOFF.md",
+      "sourceSha256": "0960589d481a34889d2033edf32f9281ea2897620cd1c75173f5c10e3c53ea57",
+      "sha256": "edba3652b06c1b80fa8ca3a44c06e00eca8b2567ba417e0fb72b3bad9e6e4565"
+    },
+    {
+      "path": "current/DEVELOPMENT_PACKAGE_V1.0.json",
+      "source": "docs/current/DEVELOPMENT_PACKAGE_V1.0.json",
+      "sourceSha256": "5698cb4a144e76553ab96fd76cd7c3e22180de9505ed56afefc7bb7db36d2e99",
+      "sha256": "5698cb4a144e76553ab96fd76cd7c3e22180de9505ed56afefc7bb7db36d2e99"
+    },
+    {
+      "path": "references/AGENTS.md",
+      "source": "AGENTS.md",
+      "sourceSha256": "77646e7135f33221f4f0b8f35ba51cee256dcd2c213196d8569e0275f476806a",
+      "sha256": "77646e7135f33221f4f0b8f35ba51cee256dcd2c213196d8569e0275f476806a"
+    },
+    {
+      "path": "references/BOL_DECISION_LOG.md",
+      "source": "BOL_DECISION_LOG.md",
+      "sourceSha256": "b0a4f3b46c2e479fb5a7642f7e3b0cb85af28f06b1687d87a8283b7d57e13191",
+      "sha256": "6f46ab28b31aa30e071660025b034b097f7c8e753550301c48cbbc0b3b57f64d"
+    },
+    {
+      "path": "references/STAGE_0_PRODUCT_DECISIONS.md",
+      "source": "docs/system-report/STAGE_0_PRODUCT_DECISIONS.md",
+      "sourceSha256": "0696ea8fe773012a30d33c844e577027a76fd18719aace1b95867ff044d541c3",
+      "sha256": "0696ea8fe773012a30d33c844e577027a76fd18719aace1b95867ff044d541c3"
+    },
+    {
+      "path": "README.md",
+      "source": null,
+      "sourceSha256": null,
+      "sha256": "9a31a2af8e132181d7a1d2e459f82a5b13f78f301fad99b5dede8557ce722e8b"
+    }
+  ]
+}

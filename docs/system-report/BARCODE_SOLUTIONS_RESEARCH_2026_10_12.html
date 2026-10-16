@@ -1,0 +1,941 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Штрихкодирование грузовых мест Zaberman</title><style>
+:root{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f3f5f7;color:#1e293b;font:16px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif}main{max-width:1440px;margin:32px auto;padding:40px 44px;background:white}h1{font-size:32px;line-height:1.2;color:#111827;max-width:950px}h2{font-size:24px;margin-top:48px;border-top:1px solid #e2e8f0;padding-top:24px;scroll-margin-top:20px}h3{font-size:19px;margin-top:30px}p,li{max-width:1050px}a{color:#1d4ed8;text-decoration-thickness:1px;text-underline-offset:3px}nav{padding:18px 24px;background:#f8fafc;margin:24px 0}nav ol{columns:2;padding-left:22px;margin:0}nav li{break-inside:avoid;padding:3px 0;font-size:14px}.table-scroll{overflow-x:auto;margin:20px 0}table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.5}th,td{text-align:left;vertical-align:top;padding:10px 12px;border:1px solid #cbd5e1;min-width:125px}th{background:#edf2f7;font-weight:650}td:first-child{font-weight:600;min-width:135px}tr:nth-child(even) td{background:#fafbfc}code{font-size:.9em;background:#f1f5f9;padding:2px 4px;overflow-wrap:anywhere}strong{color:#111827}footer{font-size:13px;color:#64748b;margin-top:40px}@media(max-width:700px){main{margin:0;padding:22px 18px}h1{font-size:26px}h2{font-size:21px}nav ol{columns:1}th,td{min-width:150px}}@media print{@page{size:A3 landscape;margin:16mm}body{background:white;font-size:11pt}main{margin:0;padding:0;max-width:none}nav{display:none}h1{font-size:24pt}h2{font-size:17pt;break-after:avoid}h3{break-after:avoid}p,li{max-width:none}.table-scroll{overflow:visible}table{font-size:8pt;table-layout:fixed}th,td{min-width:0;padding:5px;overflow-wrap:anywhere}thead{display:table-header-group}tr{break-inside:avoid}a{color:#1e293b}footer{display:none}}
+</style></head><body>
+<aside style="padding:16px;background:#fff3cd;color:#322a12">Research snapshot 2026-10-12. Рекомендации не являются решением Mobile App. <a href="../PROJECT_BASELINE.md">Project baseline</a>.</aside><main><h1>Исследование решений для штрихкодирования грузовых мест Zaberman</h1>
+<p>Дата проверки публичных источников: <strong>12 октября 2026 года</strong>. Получатели: owner, Operations и команда мобильного приложения. Решение, которое должен поддержать отчет: выбор готового продукта и оборудования для небольшого пилота, с сохранением пути к собственному приложению.</p>
+<nav aria-label="Содержание"><ol><li><a href="#section-1">1. Executive Summary</a></li><li><a href="#section-2">2. Требования из ТЗ и согласованных решений</a></li><li><a href="#section-3">3. Обзор рынка и критерии отбора</a></li><li><a href="#section-4">4. Shortlist и применимость as-is</a></li><li><a href="#section-5">5. Сравнительная таблица и стоимость Stage 1</a></li><li><a href="#section-6">6. Оборудование и фактические способы печати</a></li><li><a href="#section-7">7. API и SDK для Stage 2</a></li><li><a href="#section-8">8. Сравнение архитектурных вариантов</a></li><li><a href="#section-9">9. Top 3 решения для быстрого пилота</a></li><li><a href="#section-10">10. Рекомендованное решение Stage 1</a></li><li><a href="#section-11">11. Рекомендованная архитектура Stage 2 и идентификатор</a></li><li><a href="#section-12">12. План MVP пилота</a></li><li><a href="#section-13">13. Риски и ограничения</a></li><li><a href="#section-14">14. Open Questions и окончательная рекомендация</a></li></ol></nav><h2 id="section-1">1. Executive Summary</h2>
+<p><strong>Рекомендуется начать с Orca Scan на Android, без интеграции с действующими системами, с отдельной записью на каждое физическое место.</strong> Это наиболее подходящий кандидат для проверки маркировки и цепочки перемещений: настраиваемые поля, генерация кодов, мобильное сканирование, история и выгрузка данных. Для четырех участников Starter стоит <strong>$79/месяц</strong> с дополнительными пользователями; Business — <strong>$99/месяц</strong> с пятью пользователями и API/Webhooks. Для короткого пилота без интеграции достаточно Starter. <a href="https://orcascan.com/pricing">Тарифы Orca Scan</a>.</p>
+<p><strong>Полное соответствие ТЗ у готовых решений не установлено.</strong> Особые пробелы: строгая сверка каждого места с Trip Manifest, защита от повторной операции, immutable evidence, создание и печать новых мест offline. Пилот должен проверить эти ограничения, а не объявлять inventory SaaS готовой заменой Zaberman.</p>
+<p><strong>Оборудование: мобильный термопринтер класса Brother RuggedJet 4 с аккумулятором.</strong> Для Orca опубликована связка Android → Brother Print Service Plugin → Bluetooth → RJ-4250WB; iOS-инструкция использует Wi‑Fi. RJ-4250WB снят с производства. Для новой закупки предпочтителен актуальный RJ-4255WB-L, но его работу именно с Orca следует сначала подтвердить на демонстрационном устройстве. <a href="https://orcascan.com/guides/brother-rj4250wb-orca-scan-setup-aa650889">Инструкция Orca</a>, <a href="https://brothermobilesolutions.com/products/printers/ruggedjet/ruggedjet-4/rj4250wb/">статус RJ-4250WB</a>, <a href="https://brothermobilesolutions.com/products/printers/ruggedjet/ruggedjet-4/">актуальная линейка</a>.</p>
+<p><strong>Top 3 для проверки:</strong> Orca Scan; BoxHero как более дешевый вариант складского учета; Sortly как вариант визуального учета с фото. Второй и третий кандидаты имеют более существенные ограничения для полевого Bluetooth-процесса. Для Stage 2 рекомендуется собственный учет CargoPlace и событий Zaberman, локальная генерация QR и hardware SDK Brother либо Zebra. Покупка специализированного barcode SaaS для этой архитектуры не обязательна.</p>
+<p>Рекомендуемый основной формат — <strong>QR</strong>, с opaque PlaceID и версией payload. Это предложение по символогии, а не изменение принятой модели: в baseline уже установлен UUIDv7, а текущий wireframe показывает Code 128. При переходе сохранить ранее выданные коды через таблицу соответствий; не переклеивать все места только из-за смены системы.</p>
+<h2 id="section-2">2. Требования из ТЗ и согласованных решений</h2>
+<h3>Источники и границы</h3>
+<p>Изучены локальное <a href="../../%D0%A2%D0%97%20%D0%BC%D0%BE%D0%B1%D0%B8%D0%BB%D1%8C%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F.docx">ТЗ мобильного приложения</a>, <a href="STAGE_0_PRODUCT_DECISIONS.md">Stage 0 Product Decisions</a>, <a href="../../knowledge-base/mobile-app/scan-and-cargo.md">Scan and Cargo</a>, <a href="../../knowledge-base/mobile-app/interstate-and-bol.md">Interstate and BOL</a>, <a href="../mobile-app/open-questions.md">Open Questions</a>.</p>
+<p>В предоставленной <a href="https://docs.google.com/spreadsheets/d/1Kajz5iLgFwKFB8Nbaw4yQa10wJ9Gde-zD3svpEd3kTI/edit">Google-таблице «анализ штрихкодирование»</a> обнаружен один лист «Лист1»; диапазон A1:K30 возвращает пустые значения. Поэтому таблица не использована как ТЗ. Это проверка указанного диапазона, а не утверждение об отсутствии данных за его пределами.</p>
+<p>Пользователи: водитель/delivery crew, складской сотрудник, supervisor; dispatcher/admin поддерживает подготовку и сверку. Основной вопрос: можно ли быстро маркировать каждое место и надежно найти его историю на всех handoff без собственной разработки?</p>
+<p>Минимальный готовый результат исследования: shortlist, проверенные пути печати, условия тарифов, границы API, рекомендация и исполнимый план пилота. Реальные регистрации, покупки, интеграции и полевые тесты в scope исследования не входят. Код мобильного приложения не изменяется.</p>
+<h3>Обязательные бизнес-правила</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Требование</th>
+<th>Следствие для выбора</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Order, OrderItem, CargoPlace и количество единиц — разные сущности</td>
+<td>Один SKU с Qty=10 не заменяет десять PlaceID</td>
+</tr>
+<tr>
+<td>Каждый физический CargoPlace имеет отдельный идентификатор</td>
+<td>В inventory SaaS одна карточка/строка на место, учетное количество места = 1</td>
+</tr>
+<tr>
+<td>OrderID, номер места, размеры, вес/quality state, фото, статус, Location и TripID</td>
+<td>Нужны пользовательские поля; содержимое места хранится отдельно от количества мест</td>
+</tr>
+<tr>
+<td>Pickup и Dropoff независимы</td>
+<td>Нельзя считать их одним изменением остатка или одной закрытой задачей</td>
+</tr>
+<tr>
+<td>Loading сверяется с ожидаемым Trip Manifest</td>
+<td>Поиск карточки по коду недостаточен; требуется проверка допустимости в выбранном Trip</td>
+</tr>
+<tr>
+<td>Unloading сверяется с фактически загруженным составом</td>
+<td>Плановый список и факт загрузки должны сохраняться отдельно</td>
+</tr>
+<tr>
+<td>Scan lookup не изменяет состояние груза</td>
+<td>Операция должна явно выбираться/подтверждаться пользователем</td>
+</tr>
+<tr>
+<td>История содержит время, actor и device</td>
+<td>Последний статус без событий не обеспечивает chain of custody</td>
+</tr>
+<tr>
+<td>Критические операции доступны offline</td>
+<td>Нужно проверить доступ к чужим ранее созданным местам, новые ID, печать, события и sync</td>
+</tr>
+<tr>
+<td>Повторная отправка не создает дубль операции</td>
+<td>Нужны event identity и идемпотентность, а не только уникальный barcode</td>
+</tr>
+<tr>
+<td>Reprint сохраняет PlaceID; replacement сохраняет связь и историю</td>
+<td>Печать копии и замена активного label alias — разные операции</td>
+</tr>
+<tr>
+<td>Подписанные факты не переписываются</td>
+<td>Обычный редактируемый inventory history не заменяет correction/reversal и locked snapshot</td>
+</tr>
+</tbody></table></div>
+<p>Принятый baseline: <strong>primary PlaceID — immutable UUIDv7; payload — schema version + opaque PlaceID; label — Order number, n/N и короткий alias</strong>. Order/Dispatch master остается владельцем плановых заданий; Zaberman operational DB — владельцем фактов; BOL/POD — отдельный документный модуль. Эти правила не меняются ради SaaS. Источник: разделы 7–10 <a href="STAGE_0_PRODUCT_DECISIONS.md">Stage 0</a>.</p>
+<h2 id="section-3">3. Обзор рынка и критерии отбора</h2>
+<p>Рассмотрены семь кандидатов из четырех классов: barcode capture, inventory/asset tracking, WMS/ERP и delivery SaaS. Не установлено ни одного продукта, одновременно подтверждающего весь сценарий Zaberman, offline-first и мобильную Bluetooth-печать на обеих платформах as-is.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Класс</th>
+<th>Что закрывает</th>
+<th>Где возникает разрыв</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Barcode capture — Orca Scan</td>
+<td>Быстрая настройка формы, идентификация, фиксирование операции</td>
+<td>Нет доказанного штатного Trip Manifest и строгого lifecycle Zaberman</td>
+</tr>
+<tr>
+<td>Inventory/asset — BoxHero, Sortly, Scanlily, Mobile Inventory</td>
+<td>Карточки, местонахождение, фото/атрибуты, история учета</td>
+<td>Учет SKU/остатков приходится адаптировать к отдельным грузовым местам</td>
+</tr>
+<tr>
+<td>WMS/ERP — Odoo Inventory + Barcode</td>
+<td>Физические packages, warehouse transfers, складская сверка</td>
+<td>Более тяжелое внедрение; Interstate Trip и документы Zaberman не штатные сущности</td>
+</tr>
+<tr>
+<td>Delivery — Onfleet</td>
+<td>Pickup/Dropoff, сканирование каждого piece, контроль завершения task</td>
+<td>Цена и изменение dispatch-процесса; Warehouse/Interstate не подтверждены</td>
+</tr>
+</tbody></table></div>
+<p>Отдельные label management системы, например Loftware NiceLabel, полезны для централизованного управления печатью, но не заменяют реестр CargoPlace и историю операций. Для одного пилотного принтера добавление такого слоя не оправдано. Это оценка применимости; официальные примеры описывают cloud/web printing и интеграционные print jobs. <a href="https://www.loftware.com/siteassets/partner-pages/doc/partner-program/local/en_us/loftware_alliance-partner-programs-guide.pdf">Loftware о печати</a>.</p>
+<p>Приоритет отбора: уникальность физического места → полевой print/scan → история → multi-user/offline → экспорт → API. Наличие routing, purchasing или AI inventory само по себе не повышает пригодность.</p>
+<h2 id="section-4">4. Shortlist и применимость as-is</h2>
+<h3>Orca Scan — основной кандидат</h3>
+<p>Barcode-платформа с настраиваемыми формами. Mobile app позволяет добавить item, сканировать, заполнить поля и сохранить; web настраивает пользователей и шаблоны. Для быстрых повторных операций предусмотрены continuous scan и закрепление значений. Применимость: запись = CargoPlace; OrderID/TripID/Location/Operation — поля, а не новые бизнес-сущности. <a href="https://orcascan.com/guides/orca-scan-mobile-app-76ecf6ed">Mobile guide</a>.</p>
+<p>Автоматические значения поддерживаются, включая Unique ID с prefix/suffix/length; можно импортировать собственные barcode values. Это <strong>не подтверждение UUIDv7</strong> и не доказательство безопасной генерации на двух offline-устройствах. <a href="https://orcascan.com/guides/generate-barcodes-1eefe298">Генерация кодов</a>.</p>
+<p>История фиксирует действие, timestamp, user и device. На практике следует проверить повторное чтение без изменения полей, экспорт всей истории и сохранение исходного времени offline-события. <a href="https://orcascan.com/guides/history-log-b7585004">History log</a>.</p>
+<p>Ограничение: unknown scan может приводить к добавлению записи при соответствующих правах. Нельзя разрешать warehouse/loading employee создавать «новое место» вместо разбора неизвестного кода. Field-level и operation-level ограничения Zaberman штатными sheet permissions не доказаны.</p>
+<h3>BoxHero — бюджетная складская альтернатива</h3>
+<p>Генерирует barcode при регистрации item; поддерживает QR и операции Stock In/Out/Move. Для пилота каждый CargoPlace придется оформить отдельным item с Qty=1, OrderID — атрибутом. <a href="https://www.boxhero.io/docs/key-features/print-barcode">Barcode printing</a>, <a href="https://www.boxhero.io/features/barcoding">barcoding</a>.</p>
+<p>Конкретная официальная инструкция подтверждает <strong>Android → Zebra Print → Bluetooth → ZD421T</strong>. Это печать через сервис производителя и настольный принтер; переносить вывод на мобильный ZQ521 или iOS нельзя. Для ZD230D инструкция описывает LAN/Wi‑Fi. Общая страница содержит противоречие: перечисляет Bluetooth, затем требует одну Wi‑Fi-сеть. Для ZD421T приоритет отдан модельной инструкции. <a href="https://www.boxhero.io/docs/resources/guides/zebra-zd421t/mobile-printing">ZD421T</a>, <a href="https://www.boxhero.io/docs/resources/guides/zebra-zd230d/mobile-printing">ZD230D</a>.</p>
+<p>Offline заявлен на feature page, но полного контракта создания/печати/конфликтов нет. Подходит для складского теста; для Pickup с автономным принтером — условный кандидат.</p>
+<h3>Sortly — альтернатива с визуальным учетом</h3>
+<p>Создает собственные QR/barcode labels, использует фото и карточки предметов. В тарифах Advanced — QR, Ultra и выше — QR и Barcode. Одна карточка должна соответствовать одному месту. <a href="https://help.sortly.com/choosing-the-right-labels-in-sortly">Выбор этикеток</a>.</p>
+<p>Печать формирует label/PDF; на iOS подтвержден только AirPrint. Это не native Bluetooth-печать. На Android вывод зависит от доступного print service, поэтому нужен тест конкретного принтера. <a href="https://help.sortly.com/hc/en-us/articles/360037385792-Create-QR-Code-and-Barcode-Labels">Create labels</a>.</p>
+<p>Offline доступен в Android/iOS mobile app, с предварительной синхронизацией. Документация описывает Disable Sync и последующее включение синхронизации; автоматический надежный conflict resolution не подтвержден. <a href="https://help.sortly.com/can-i-use-sortly-in-offline-mode">Offline guide</a>.</p>
+<h3>Mobile Inventory — недорогой Android-first тест</h3>
+<p>Поддерживает inventories/products/transactions, custom fields, сканирование и team sync на PRO; offline доступен. Для shared Android inventory требуется разрешение Allow changes while offline. Это не подтверждает одинаковые offline writes на iOS. <a href="https://support.mobileinventory.net/articles/free-vs-premium-vs-sync/">Функции</a>, <a href="https://support.mobileinventory.net/articles/multiple-user-synchronization/">multi-user</a>.</p>
+<p>Генератор печати web умеет создать значения, Code 128/QR и экспорт PDF/SVG/PNG; workflow проходит через браузерную печать. Подтвержденного модельного Bluetooth-пути и публичного developer API с endpoints не найдено. Наличие слова API в terms не считается доказательством доступной интеграции. <a href="https://support.mobileinventory.net/articles/print-barcodes/">Print Barcodes</a>.</p>
+<p>Подходит для контролируемого учета мест и операций; неудобен как долгосрочная интеграционная основа до подтверждения API и печати.</p>
+<h3>Scanlily — учет коробок и содержимого, условный кандидат</h3>
+<p>Есть items/containers, QR lookup, собственные barcode values и history. Современная pricing page дает генерацию labels на Pro, multi-user/locations на Ultra и API на Premium; старые help pages используют тариф Business. Следует проверять функцию в выбранном аккаунте, а не покупать по старому названию тарифа. <a href="https://www.scanlily.com/en/pricing">Pricing</a>, <a href="https://www.scanlily.com/en/features/QR_Codes_and_Barcodes">QR и barcodes</a>.</p>
+<p>Web label generator создает уникальные Scanlily QR и PDF, в том числе 4×6 inches. Это не доказательство встроенной Bluetooth-печати и локальной генерации новых labels offline. Proprietary barcode допускает совпадения с последующим выбором item — для Zaberman это нежелательно. <a href="https://www.scanlily.com/en/features/generate_qr_and_barcode_labels">Генератор labels</a>.</p>
+<p>Описанный offline-first photo workflow означает съемку штатной камерой с поздней загрузкой; полноценные offline scan/status events не подтверждены. <a href="https://www.scanlily.com/en/blog/upload_images_and_videos_via_web">Web upload</a>. <strong>Не подходит для полного пилота с обязательными offline и Bluetooth без дополнительной проверки.</strong></p>
+<h3>Odoo Inventory + Barcode — складской кандидат, не быстрый полевой пилот</h3>
+<p>Packages обозначают физические контейнеры и имеют отдельные barcode; Packaging обозначает тип упаковки/число товаров. Для CargoPlace применимы именно <strong>Packages</strong>. Receipts/deliveries/transfers обрабатываются Barcode app. <a href="https://www.odoo.com/documentation/19.0/applications/inventory_and_mrp/inventory/product_management/configure.html">Packages vs Packaging</a>, <a href="https://www.odoo.com/documentation/master/applications/inventory_and_mrp/barcode/operations/receipts_deliveries.html">складские операции</a>.</p>
+<p>Есть package barcode labels и ZPL/PDF. В документации master описана прямая сетевая печать ePOS/ZPL/IoT; это не Bluetooth со смартфона. Возможности master могут отличаться от установленной 19.0, поэтому не считаются обещанием текущего SaaS. <a href="https://www.odoo.com/documentation/18.0/applications/inventory_and_mrp/inventory/shipping_receiving/setup_configuration/zebra.html">Zebra labels 18.0</a>, <a href="https://www.odoo.com/documentation/master/applications/inventory_and_mrp/inventory/shipping_receiving/setup_configuration/print_on_validation.html">printing master</a>.</p>
+<p>Базовый offline-first barcode workflow не подтвержден. Для Stage 1 непропорционален задаче, если Zaberman отдельно не выбирает ERP/WMS.</p>
+<h3>Onfleet — готовые handoff, более дорогой и широкий scope</h3>
+<p>Courier Suite генерирует отдельный QR для каждого piece заказа; при Required правильный barcode нужен для завершения task. Есть история сканирований Pickup/Dropoff и Route Load task для проверки пакетов перед доставкой. <strong>Route Load не равен Interstate Trip</strong>: разгрузка в destination warehouse и отдельный Interstate BOL не установлены. <a href="https://support.onfleet.com/hc/en-us/articles/37852822362132-Barcode-Scanning-Couriers-and-Clients">Courier barcode</a>, <a href="https://support.onfleet.com/hc/en-us/articles/47768817655956-Route-Load-Task">Route Load</a>.</p>
+<p>Печать labels — из dashboard через browser, формат 4×6, с драйвером/ПО принтера; полевой Bluetooth print внутри driver app не подтвержден. <a href="https://support.onfleet.com/hc/en-us/articles/28839217171220-Label-Printing">Label printing</a>.</p>
+<p>Offline mode включается в driver settings; без него старт/завершение task ограничены connectivity. Поведение новых barcode labels offline не установлено. <a href="https://support.onfleet.com/hc/en-us/articles/10228814951060-Driver-App-Settings">Driver settings</a>. Подходит для отдельного last-mile пилота, особенно если Onfleet уже используется, но не рекомендуется покупать его только ради маркировки.</p>
+<h2 id="section-5">5. Сравнительная таблица и стоимость Stage 1</h2>
+<h3>Покрытие пяти операций и зависимость от поставщика</h3>
+<p>Матрица — оценка применимости опубликованных функций из раздела 4, а не проверка в работающих аккаунтах. «Ручная адаптация» означает сохранение исходных Order/Operation/Trip сущностей через поля и сверку, без объявления нового inventory-процесса процессом Zaberman.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Продукт</th>
+<th>Pickup создание и label</th>
+<th>Warehouse receiving</th>
+<th>Interstate loading</th>
+<th>Interstate unloading</th>
+<th>Dropoff</th>
+<th>Vendor lock-in и выход</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orca</td>
+<td>Mobile Add/print; авто-ID на mobile/offline проверить</td>
+<td>Scan + operation/location; сверка вручную</td>
+<td>TripID field + ручной Manifest</td>
+<td>Location/event + ручная сверка loaded set</td>
+<td>Scan + операция; комплект вручную</td>
+<td>Средний: поля переносимы, history export проверить; сохранить собственный payload/mapping</td>
+</tr>
+<tr>
+<td>BoxHero</td>
+<td>Item/Generate/print; мобильный printer условно</td>
+<td>Stock In на item=place</td>
+<td>Move + TripID attribute; native Trip нет</td>
+<td>Move в warehouse; expected set вручную</td>
+<td>Stock Out; комплект вручную</td>
+<td>Средний: перенос карточек/API доступен, stock transaction semantics надо преобразовать</td>
+</tr>
+<tr>
+<td>Sortly</td>
+<td>Item/photo/label PDF, Android printer проверить</td>
+<td>Move/edit после scan</td>
+<td>TripID custom field; Manifest вручную</td>
+<td>Move/edit и missing list вручную</td>
+<td>Scan/edit; комплект вручную</td>
+<td>Средний–высокий: export проще API, API только Enterprise; vendor QR надо сопоставить</td>
+</tr>
+<tr>
+<td>Mobile Inventory</td>
+<td>Product/custom barcode + web print</td>
+<td>Transaction с Qty=1</td>
+<td>Transaction/context; Trip validation не доказана</td>
+<td>Transaction/context; loaded set вручную</td>
+<td>Transaction + ручная сверка</td>
+<td>Средний–высокий: экспорт есть, публичного API не установлено</td>
+</tr>
+<tr>
+<td>Scanlily</td>
+<td>Item/container + unique label PDF</td>
+<td>Location update</td>
+<td>Trip field/location вручную</td>
+<td>Location update и сверка вручную</td>
+<td>Item lookup/update, не handoff flow</td>
+<td>Высокий при vendor QR URL; own barcode и full export снижают зависимость</td>
+</tr>
+<tr>
+<td>Odoo</td>
+<td>Package + label/receipt; field print условно</td>
+<td>Штатный receipt/package workflow</td>
+<td>Internal transfer может представлять движение; Trip mapping нужен</td>
+<td>Receipt/transfer; Trip discrepancy mapping нужен</td>
+<td>Delivery order/package check; POD Zaberman отдельно</td>
+<td>Высокий при полном ERP adoption; API Custom и model mapping; временный слой дорог в сопровождении</td>
+</tr>
+<tr>
+<td>Onfleet</td>
+<td>Order/pieces + dashboard labels; новое место в driver app не установлено</td>
+<td>Dedicated receiving не доказан</td>
+<td>Route Load для last-mile, не Interstate Trip</td>
+<td>Dedicated Interstate unloading не доказан</td>
+<td>Required per-piece scan в task</td>
+<td>Высокий при переносе dispatch; REST помогает выходу, но Order/Task/labels требуют mapping</td>
+</tr>
+</tbody></table></div>
+<p>Ни в одной ручной адаптации поле TripID само по себе не блокирует загрузку неверного места. Odoo transfers и Onfleet Route Load можно рассматривать как кандидатов на конкретную операцию только после согласования соответствия исходному Trip/Manifest; переименования интерфейса недостаточно.</p>
+<p>Обозначения: <strong>да</strong> — функция документирована; <strong>условно</strong> — нужен print service/настройка/проверка; <strong>не подтверждено</strong> — публичных доказательств недостаточно. Поддержка SDK принтера не означает поддержку этого принтера выбранным SaaS.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Solution</th>
+<th>Type</th>
+<th>Barcode/QR generation</th>
+<th>Bluetooth printing</th>
+<th>Mobile scanning</th>
+<th>Multi-user</th>
+<th>Offline</th>
+<th>API/SDK</th>
+<th>Price</th>
+<th>Integration potential</th>
+<th>Key limitations</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orca Scan</td>
+<td>Barcode capture</td>
+<td>Auto Unique ID; QR/Code 128; own values</td>
+<td>Android + Brother plugin + RJ-4250WB; iOS Wi‑Fi</td>
+<td>Android/iOS camera, hardware</td>
+<td>Paid; 2 Starter / 5 Business</td>
+<td>Да; полнота локального каталога и новый print не установлены</td>
+<td>REST + Webhooks Business; Node wrapper, не camera SDK</td>
+<td>Starter $49/mo; Business $99/mo</td>
+<td>Высокий для временного capture adapter</td>
+<td>Нет доказанного native Trip control; 30/90 days history; documented printer discontinued</td>
+</tr>
+<tr>
+<td>BoxHero</td>
+<td>Inventory</td>
+<td>Generate; barcode/QR</td>
+<td>Android + Zebra Print + ZD421T; mobile rugged не доказан</td>
+<td>Android/iOS</td>
+<td>Business 3 + paid seats</td>
+<td>Заявлен; контракт не установлен</td>
+<td>REST + Webhooks; native scanner SDK не подтвержден</td>
+<td>$30/team/mo</td>
+<td>Средний: item/transaction adapter</td>
+<td>SKU/Qty model, field TripID не проверяет Manifest; printer docs противоречат общей странице</td>
+</tr>
+<tr>
+<td>Sortly</td>
+<td>Inventory/asset</td>
+<td>QR Advanced; barcode Ultra+</td>
+<td>iOS только AirPrint; Android условно через print service</td>
+<td>Android/iOS; external scanner</td>
+<td>2 Advanced / 5 Ultra</td>
+<td>Mobile да; заранее sync</td>
+<td>API + Webhooks только Enterprise</td>
+<td>Ultra $149/mo; annual first year $888</td>
+<td>Средний; API требует Enterprise</td>
+<td>Нет готового Trip lifecycle; PDF/AirPrint не Bluetooth; лимит карточек</td>
+</tr>
+<tr>
+<td>Mobile Inventory</td>
+<td>Inventory app</td>
+<td>Web generator; QR/Code 128</td>
+<td>Не подтверждено; browser/PDF route</td>
+<td>Android/iOS; external scanner Android PRO</td>
+<td>PRO licensing</td>
+<td>Да; shared Android writes по разрешению</td>
+<td>Публичный API/SDK не подтвержден</td>
+<td>PRO от €7.50/device/mo</td>
+<td>Низкий до подтверждения API; экспорт</td>
+<td>Product/transaction model; нет подтвержденной mobile printing связки</td>
+</tr>
+<tr>
+<td>Scanlily</td>
+<td>Asset/container</td>
+<td>Unique vendor QR; own barcode; PDF</td>
+<td>Не подтверждено; PDF + внешний print route</td>
+<td>Android/iOS</td>
+<td>Ultra 5; Premium unlimited</td>
+<td>Scan/status offline не подтвержден</td>
+<td>REST endpoints; API Premium по pricing, Business в help</td>
+<td>Ultra €29/mo; Premium €59/mo в открытой EUR версии</td>
+<td>Средний для items, низкий для операций</td>
+<td>Vendor URL labels; тарифные противоречия; API не доказывает полный event export</td>
+</tr>
+<tr>
+<td>Odoo Inventory + Barcode</td>
+<td>WMS/ERP</td>
+<td>Unique package codes; ZPL/PDF labels</td>
+<td>Штатный mobile BT не подтвержден; network/IoT</td>
+<td>Mobile app/scanner; camera</td>
+<td>Paid per user</td>
+<td>Для целевого workflow не подтвержден</td>
+<td>External JSON-2 API Custom; automations/webhooks требуют настройки</td>
+<td>Standard $24.90, Custom $49/user/mo на показанном annual offer</td>
+<td>Высокий как WMS; тяжелый для временного слоя</td>
+<td>Другая transfer model; внедрение; Custom для API; master docs не released guarantee</td>
+</tr>
+<tr>
+<td>Onfleet Courier Suite</td>
+<td>Delivery SaaS</td>
+<td>Per-piece QR на order labels</td>
+<td>Не подтверждено в driver app; dashboard print</td>
+<td>Android/iOS camera</td>
+<td>Unlimited users</td>
+<td>Driver mode да; new label offline не доказан</td>
+<td>REST + Webhooks; embedded barcode SDK не доказан</td>
+<td>Scale от $1,349/mo</td>
+<td>Высокий для Pickup/Dropoff</td>
+<td>Warehouse/Interstate не покрыты доказательствами; покупка dispatch platform ради labels</td>
+</tr>
+</tbody></table></div>
+<p>Источники строк: <a href="https://orcascan.com/pricing">Orca pricing</a>, <a href="https://www.boxhero.io/docs/pricing">BoxHero pricing</a>, <a href="https://www.sortly.com/pricing/">Sortly pricing</a>, <a href="https://web.mobileinventory.net/licenses">Mobile Inventory pricing</a>, <a href="https://www.scanlily.com/en/pricing">Scanlily pricing</a>, <a href="https://www.odoo.com/pricing">Odoo pricing</a>, <a href="https://onfleet.com/pricing">Onfleet pricing</a>. Источники функциональности приведены в разделах 4, 6 и 7.</p>
+<h3>Тарифы и пределы</h3>
+<p>Цены ниже — публичные значения, без оборудования, доставки, налогов и внедрения. Валюты сохранены; пересчет не выполнялся. Dynamic pricing и регион checkout могут изменить цену. Годовой эквивалент не равен помесячной оплате.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Продукт</th>
+<th>Free/trial и лимиты</th>
+<th>Практическая стоимость и ограничение роста</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orca</td>
+<td>Free: 1 user, 1 sheet, 100 rows, history 7 days. Starter: 2 users, 5 sheets, 2,000 rows/sheet, 30 days history</td>
+<td>Starter $49/mo + $15/extra user: четыре пользователя $79. Business $99/mo: 5 users, 10 sheets, 10,000 rows/sheet, 90 days. Annual $39/$79 effective per month. REST/Webhooks на Business</td>
+</tr>
+<tr>
+<td>BoxHero</td>
+<td>Personal: 1 member, 100 items, 1 location, 30-day history, без label printing; Business trial 30 days</td>
+<td>$30/mo: 3 members, 1,000 items, 3 locations, unlimited transaction history. Четвертый участник +$5: $35/mo. Annual $288/team; +1,000 items $10/mo; +10 locations $10/mo</td>
+</tr>
+<tr>
+<td>Sortly</td>
+<td>Free: 1 user, 100 unique items; 14-day trial paid plans</td>
+<td>Advanced $49/mo: 2 users/500 items; Ultra $149: 5/2,000; Premium $299: 8/5,000. API Enterprise quote. Annual first-year offers $288/$888/$1,788; renewal discount отличается</td>
+</tr>
+<tr>
+<td>Mobile Inventory</td>
+<td>Free без team sync; PRO trial один месяц. Одноразовый Android Premium не включает team/cloud</td>
+<td>PRO от €7.50/device/mo: минимум €22.50 для трех field devices; дополнительный лицензируемый endpoint считать отдельно. Scanner+ €4/device/mo. Terms: 3 shared inventories, 5,000 products/inventory, 50,000 entries, 1 GB/account и 1,000 images; trial не для production</td>
+</tr>
+<tr>
+<td>Scanlily</td>
+<td>Free: 1 user/500 items; Pro 2/500; Ultra 5/2,000; Premium unlimited users/5,000</td>
+<td>Открытая текущая EUR страница: Pro €9, Ultra €29, Premium €59/mo; annual €90/€290/€590. Иная USD версия показывала $9/$35/$75: это региональные отображения, не валютная конверсия. Купленные QR labels не расходуют item cap, но сами стоят денег</td>
+</tr>
+<tr>
+<td>Odoo</td>
+<td>One App Free: один app, unlimited users; нельзя считать всю связку Inventory + Barcode + integration бесплатно доступной без проверки зависимостей</td>
+<td>Показанное annual offer: Standard $24.90/user/mo (reference $31.10), Custom $49 (reference $61); скидка первые 12 месяцев. External API только Custom; Odoo.sh отдельно. Четыре пользователя Custom: $196/mo effective первого года, не цена помесячного checkout</td>
+</tr>
+<tr>
+<td>Onfleet</td>
+<td>Постоянного бесплатного командного плана на pricing нет; trial. Launch 2,500 completed tasks</td>
+<td>Launch от $619/mo, Scale от $1,349: 5,000 tasks, barcode scanning. Users unlimited. Courier generation доступна Scale+ couriers; подтвердить состав коммерческого предложения. Pickup и Dropoff — отдельные completed tasks, не одна shipment</td>
+</tr>
+</tbody></table></div>
+<p>Источники лимитов дополнительно: <a href="https://support.mobileinventory.net/articles/terms-and-conditions/">Mobile Inventory terms</a>, <a href="https://support.mobileinventory.net/">PRO trial и Premium</a>, <a href="https://www.sortly.com/pricing/">Sortly условия промо</a>, <a href="https://support.onfleet.com/hc/en-us/articles/37852822362132-Barcode-Scanning-Couriers-and-Clients">Onfleet barcode availability</a>.</p>
+<h3>Настройка и ручные действия</h3>
+<p>Следующие сроки и оценки действий — <strong>аналитическая оценка</strong>, не SLA поставщиков и не измерения. Предположения: готовые OrderID/TripID, четыре пользователя, один маршрут, доступный принтер, без API; обучение и доставка оборудования не включены. «Действие» — отдельный выбор/ввод/подтверждение, без учета числа нажатий клавиатуры.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Продукт</th>
+<th>Первичная настройка</th>
+<th>Pickup на место</th>
+<th>Повторная операция</th>
+<th>Удобство и необходимость интеграции</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orca</td>
+<td>0.5–2 рабочих дня</td>
+<td>5–8: Add → поля → save → print settings → print → наклейка → scan-test</td>
+<td>3–5: scan → операция/контекст → save</td>
+<td>Driver/warehouse форма достаточно проста; CSV handoff, API не нужен</td>
+</tr>
+<tr>
+<td>BoxHero</td>
+<td>1–2 дня</td>
+<td>6–9: item, barcode, атрибуты, stock in, print, scan-test</td>
+<td>4–6: scan → move/out → location → confirm</td>
+<td>Удобнее warehouse; водителю мешает stock vocabulary; интеграция не обязательна</td>
+</tr>
+<tr>
+<td>Sortly</td>
+<td>0.5–2 дня</td>
+<td>6–9: карточка/фото/поля → label PDF → print → scan-test</td>
+<td>3–6: scan → edit/move → save</td>
+<td>Наглядно для crew; printing/sync добавляют переключения; API не нужен для теста</td>
+</tr>
+<tr>
+<td>Mobile Inventory</td>
+<td>1–3 дня</td>
+<td>7–10 с web/PDF printing</td>
+<td>4–6: scan → transaction → context → save</td>
+<td>Android полевой учет; печать может потребовать второй интерфейс/PC</td>
+</tr>
+<tr>
+<td>Scanlily</td>
+<td>1–3 дня</td>
+<td>6–10 через website/PDF либо заранее готовые QR</td>
+<td>3–6: scan → поля/location → save</td>
+<td>Удобно для коробок; полная цепочка зависит от сети/внешней печати</td>
+</tr>
+<tr>
+<td>Odoo</td>
+<td>5–15 дней</td>
+<td>8+ с package/transfer setup</td>
+<td>4–8 в рамках transfer</td>
+<td>Warehouse сильнее driver; настройка процессов уже отдельный проект</td>
+</tr>
+<tr>
+<td>Onfleet</td>
+<td>2–5 дней для Pickup/Dropoff</td>
+<td>Dispatcher order setup + dashboard labels; полевая новая печать не доказана</td>
+<td>2–4 в готовой task</td>
+<td>Driver flow наиболее специализирован; перенос dispatch данных вручную либо интеграция</td>
+</tr>
+</tbody></table></div>
+<p>Для всех кандидатов измерить реальную трудоемкость в пилоте. Дополнительные ручные поля OrderID/TripID — главный источник ошибок; общий login запрещен, поскольку теряется actor.</p>
+<h2 id="section-6">6. Оборудование и фактические способы печати</h2>
+<h3>Сравнение классов</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Устройство/класс</th>
+<th>Подключение и smartphone print</th>
+<th>Labels и форматы</th>
+<th>ПО/SDK</th>
+<th>Вывод для Zaberman</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Brother RJ-4250WB</td>
+<td>BT/Wi‑Fi/USB, MFi; Orca Android BT через Brother plugin; Orca iOS Wi‑Fi</td>
+<td>Direct thermal; max print width 104 mm; QR/Code 128 и другие</td>
+<td>Brother Print SDK Android/iOS</td>
+<td>Документированная тестовая связка, но discontinued; использовать имеющийся/арендный аппарат, не стандарт новой закупки</td>
+</tr>
+<tr>
+<td>Brother RJ-4255WB-L / RuggedJet 4</td>
+<td>BT/Wi‑Fi/USB-C, Android/iOS; -L с battery</td>
+<td>До 4-inch labels; max media 114 mm; QR/Code 128; black mark/gap</td>
+<td>Native Brother SDK; service compatibility с Orca проверяется отдельно</td>
+<td>Предпочтительный класс новой закупки после теста; нужны аккумулятор, charger, носитель</td>
+</tr>
+<tr>
+<td>Zebra ZQ511/ZQ521</td>
+<td>BT Classic + BLE; MFi; Wi‑Fi зависит от SKU</td>
+<td>Print width 72/104 mm; media 35–80 / 50.8–113 mm; QR/Code 128, ZPL/CPCL</td>
+<td>Link-OS Android/iOS; готовая SaaS связка зависит от app/service</td>
+<td>Хороший альтернативный rugged класс Stage 2; Orca BT на нем не подтвержден</td>
+</tr>
+<tr>
+<td>Zebra ZD421T с соответствующим BT модулем</td>
+<td>Настольный, питание от сети; BoxHero Android через Zebra Print по BT</td>
+<td>Thermal transfer; layout под выбранный roll; QR/Code 128 через label rendering/ZPL</td>
+<td>Zebra Print на Android, Link-OS</td>
+<td>Подтвержденный BoxHero складской тест; не переносной Pickup-принтер</td>
+</tr>
+<tr>
+<td>Brother QL-810W/QL-820NWB</td>
+<td>QL-810W Wi‑Fi, не BT; QL-820NWB дополнительно BT; smartphone route зависит от app</td>
+<td>DK labels до 62 mm класса QL; конкретные шаблоны сверять</td>
+<td>iPrint&amp;Label/SDK для поддерживаемых моделей</td>
+<td>Офисный/складской вариант; не считать QL-810W Bluetooth-моделью</td>
+</tr>
+<tr>
+<td>Rollo Wireless X1040</td>
+<td>Wi‑Fi/USB, AirPrint; BT используется для setup Wi‑Fi, print по BT не доказан</td>
+<td>Shipping 4×6; на Android stock print path ограничен 4×6</td>
+<td>Rollo app для setup; открытый mobile printer SDK не подтвержден</td>
+<td>Подходит складу; не соответствует автономному Bluetooth Pickup</td>
+</tr>
+<tr>
+<td>BIXOLON SPP-R310</td>
+<td>Mobile 3-inch; BT/WLAN зависит от SKU, режим iOS отдельно</td>
+<td>Receipt/label/linerless media; QR/Code 128 и пределы label size сверить в command manual перед выбором</td>
+<td>Android/iOS UPOS SDK опубликованы</td>
+<td>Альтернативный hardware-only путь; конкретная SaaS связка не установлена</td>
+</tr>
+</tbody></table></div>
+<p>Источники: <a href="https://brothermobilesolutions.com/products/printers/ruggedjet/ruggedjet-4/rj4250wb/">Brother RJ-4250WB</a>, <a href="https://brothermobilesolutions.com/products/printers/ruggedjet/ruggedjet-4/rj4255wb/">Brother RJ-4255WB</a>, <a href="https://www.zebra.com/us/en/products/spec-sheets/printers/mobile/zq511-zq521.html">Zebra спецификация</a>, <a href="https://www.zebra.com/gb/en/products/spec-sheets/printers/mobile/zq511-zq521.html">Zebra media</a>, <a href="https://www.boxhero.io/docs/resources/guides/zebra-zd421t/mobile-printing">BoxHero ZD421T</a>, <a href="https://orcascan.com/guides/files/brother-ql-810w-user-guide-sOOIjc7CLnjUblNzYJNNA-17bf1c08.pdf">Brother mobile guide</a>, <a href="https://support.rollo.com/support/solutions/articles/29000039959-setup-wireless-rollo-for-first-use">Rollo setup</a>, <a href="https://www.bixolon.com/download_view.php?idx=14">BIXOLON SDK/spec downloads</a>.</p>
+<h3>Рекомендация по комплектации</h3>
+<p>На первый тест взять <strong>один demo/арендный Brother RuggedJet 4</strong>, два Android-телефона и третий телефон для приемки/Dropoff. Для покупки выбрать RJ-4255WB-L с аккумулятором; стандартный RJ-4255WB и варианты -L/-LCP/-LF имеют разную комплектацию. Для обычных adhesive die-cut labels не заказывать linerless -LF без необходимости. <a href="https://brothermobilesolutions.com/products/printers/ruggedjet/ruggedjet-4/">Brother variants</a>.</p>
+<p>Базовая этикетка пилота: <strong>4×2 inches ≈ 102×51 mm</strong>, QR, короткий alias, Order number, номер места n/N. Такой носитель есть в перечне supplies RJ-4255WB. Это рекомендуемый макет, не подтверждение готового шаблона Orca под все поля. Размер и размещение проверяются одним тестовым roll; 4×6 применять только если нужен дополнительный текст. <a href="https://brothermobilesolutions.com/products/printers/ruggedjet/ruggedjet-4/rj4255wb/">Brother supplies</a>.</p>
+<p>Для камеры отдельный сканер не нужен. При большом потоке — 2D imager, поддерживающий QR и HID/keyboard либо vendor SDK. 1D-only лазер не подходит для QR. Совместимость с конкретным телефоном/app и поведение Enter/suffix проверять отдельно; не покупать scanner только по надписи Bluetooth.</p>
+<p>Термопечать — простая полевой вариант, но стойкость наклейки зависит от поверхности, влаги, нагрева, трения и срока перевозки. В пилоте проверить гофрокартон, пленку и многоразовую тару. Для долговременной складской маркировки рассмотреть thermal transfer на стационарном принтере. Сравнение технологий: <a href="https://www.boxhero.io/docs/key-features/print-barcode">BoxHero printing</a>.</p>
+<h3>Цены оборудования</h3>
+<p>Официальная страница Rollo показывает <strong>$279.99 Wireless / $199.99 USB</strong>; это US retail без итоговой доставки и налогов. <a href="https://www.rollo.com/product-category/printers/">Rollo printers</a>.</p>
+<p>На изученных страницах Brother RuggedJet, Zebra ZQ и BIXOLON нет подтвержденной конечной цены комплекта для региона закупки Zaberman. Поэтому числовая «текущая цена» для них не выдумывается: требуется quotation/demo offer с SKU, battery, charger, гарантийным обслуживанием и расходниками. Цена Rollo не является ориентиром стоимости rugged mobile printer. Необходимая смета пилота приведена в разделе 12 как формула с незаполненными закупочными переменными.</p>
+<h2 id="section-7">7. API и SDK для Stage 2</h2>
+<p>Фактическая проверка означает чтение публичной документации с endpoints/методами. Authenticated API calls, live webhooks и SDK builds не выполнялись: credentials и устройства не предоставлены. Это документально подтвержденные возможности, а не результаты интеграционного теста.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Решение</th>
+<th>Что действительно опубликовано</th>
+<th>Webhooks и scan data</th>
+<th>Что не следует предполагать</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orca</td>
+<td>REST v1: sheets/rows/fields/history/users; Barcode Image API; Node SDK</td>
+<td>WebHook Out для rows/add/update/delete и sheet changes; user email, row ID и event type</td>
+<td>REST «Barcode Scanner API» не embedded camera SDK. Сканируют в Orca app. Нет доказанного REST задания на локальный Bluetooth-принтер</td>
+</tr>
+<tr>
+<td>BoxHero</td>
+<td>REST: GET/POST/PUT items, barcode field, attrs; transactions</td>
+<td>txs/new/edit/delete, item events; event ID, time, created_by для transactions</td>
+<td>Это inventory transaction, не каждый camera decode. Порядок webhooks не гарантирован; file-type attrs API не возвращает</td>
+</tr>
+<tr>
+<td>Sortly</td>
+<td>Enterprise REST: create/update/move items, folders/custom fields; OpenAPI</td>
+<td>Webhooks в guides; event-to-business mapping требует проверки</td>
+<td>API не доступен на Ultra; printer control/camera SDK не подтвержден</td>
+</tr>
+<tr>
+<td>Scanlily</td>
+<td>GET /getitems, POST /createitem, POST /updateitem</td>
+<td>История в app; полный scan-event feed/webhooks публично не подтверждены</td>
+<td>/updateitem описан для quantity/price; нельзя обещать произвольные операции Trip и полный audit export. Help «Business» конфликтует с pricing «Premium»</td>
+</tr>
+<tr>
+<td>Mobile Inventory</td>
+<td>Публичных endpoints не установлено; import/export доступны</td>
+<td>Transaction records внутри продукта</td>
+<td>Нельзя обещать REST/Webhooks по общему упоминанию API в terms</td>
+</tr>
+<tr>
+<td>Odoo</td>
+<td>JSON-2 API с версии 19; методы конкретной DB отражены в /doc; Custom plan</td>
+<td>Webhook automations конфигурируются; не готовый cargo event contract</td>
+<td>RPC/model API не мобильный scan/print SDK; API plan и deployed version обязательны</td>
+</tr>
+<tr>
+<td>Onfleet</td>
+<td>REST tasks/orders/workers; requested/captured barcodes</td>
+<td>GET task → barcodes.captured: id, symbology, data base64, time, location; task webhooks</td>
+<td>Capture docs указывают Onfleet driver app. Pricing mention driver SDK не доказывает отдельный barcode scanner SDK для Zaberman</td>
+</tr>
+</tbody></table></div>
+<p>Проверенные developer sources: <a href="https://orcascan.com/guides/barcode-scanning-rest-api-f09a21c3">Orca REST</a>, <a href="https://orcascan.com/guides/capture-barcode-scan-events-with-webhooks-da8bbe42">Orca Webhooks</a>, <a href="https://orcascan.com/tools/qr-code-generator">Orca QR Image API</a>, <a href="https://www.boxhero.io/docs/developers/api/reference/items">BoxHero items</a>, <a href="https://www.boxhero.io/docs/developers/webhooks/overview">BoxHero webhook contract</a>, <a href="https://developer.sortly.com/guides">Sortly guides</a>, <a href="https://www.scanlily.com/en/features/api">Scanlily API</a>, <a href="https://www.odoo.com/documentation/19.0/es_419/developer/reference/external_api.html">Odoo 19 API</a>, <a href="https://www.odoo.com/documentation/19.0/applications/studio/automated_actions.html">Odoo webhook automations</a>, <a href="https://docs.onfleet.com/reference/capturing">Onfleet capture</a>, <a href="https://docs.onfleet.com/reference/webhooks">Onfleet webhooks</a>.</p>
+<p>У Orca Validation URL позволяет approve/reject/modify данные до save, но требует внешний endpoint и ответа за <strong>750 ms</strong>, иначе результат игнорируется. Это уже разработка/интеграция и не решение offline manifest validation для Stage 1. <a href="https://orcascan.com/guides/barcode-scan-validation-webhook-56928ff9">Validation contract</a>.</p>
+<h3>Hardware SDK без SaaS</h3>
+<p><strong>Brother Print SDK</strong> поддерживает Android/iOS, печать изображений/PDF/templates и локальное подключение. RJ-4250WB/RJ-4255WB перечислены среди поддерживаемых моделей. iOS Bluetooth/MFi выпуск приложения требует процесса PPID, указанного Brother. Приложение производителя для production printing не обязательно после собственной SDK-интеграции; setup utility может оставаться. <a href="https://support.brother.com/g/s/es/htmldoc/mobilesdk/overview/supported-printer.html">Supported printers</a>, <a href="https://support.brother.com/g/s/es/dev/en/mobilesdk/download/index.html?c=eu_ot&comple=on&lang=en&redirect=on">SDK download и PPID</a>, <a href="https://support.brother.com/g/s/es/htmldoc/mobilesdk/overview/supported-environment.html">OS requirements</a>.</p>
+<p><strong>Zebra Link-OS Multiplatform SDK</strong> имеет Java Android, Objective-C iOS и .NET MAUI; поддерживает Link-OS printers, включая ZQ series с исключениями. Доступны библиотеки, API и samples; Bluetooth/print status доступны через соответствующие connection/printer APIs. Не смешивать Link-OS с лицензируемым Enterprise Browser и не переносить поддержку на ZQ120/220 Plus, исключенные из списка. <a href="https://techdocs.zebra.com/link-os/">TechDocs</a>, <a href="https://www.zebra.com/gb/en/support-downloads/software/printer-software/link-os-multiplatform-sdk.html">SDK supported hardware</a>.</p>
+<p><strong>BIXOLON</strong> публикует Android/iOS UPOS SDK для SPP-R310. Можно использовать отдельно от SaaS, но нужно проверить label media/sensors, SKU и конкретные методы QR/Code 128. <a href="https://www.bixolon.com/download_view.php?idx=14">Downloads</a>.</p>
+<p>SaaS server API не может сам обратиться к Bluetooth-принтеру телефона. Между локальным print job и hardware требуется mobile app/print service/SDK. Генерация barcode image, отправка print bytes и регистрация успешной маркировки — три разные функции.</p>
+<h3>Сканирование внутри Zaberman</h3>
+<p>На Android применим ML Kit Barcode Scanning с <strong>bundled model</strong>, чтобы не зависеть от первичной загрузки модели; SDK возвращает raw value и format локально. На iOS применим Apple Vision VNDetectBarcodesRequest; поддерживаемые symbologies следует проверять на целевой OS. Это отдельные сканирующие компоненты, не API inventory SaaS. <a href="https://developers.google.com/ml-kit/vision/barcode-scanning/android">ML Kit Android</a>, <a href="https://developers.google.com/ml-kit/vision/barcode-scanning?authuser=09">ML Kit offline</a>, <a href="https://developer.apple.com/documentation/vision/vndetectbarcodesrequest/symbologies">Apple Vision</a>.</p>
+<p>Факт camera decode не равен факту Loading. Zaberman должен сохранять event только после проверки контекста и подтверждения действия. External scanner HID может использовать обычный ввод PlaceID; SDK нужен, когда требуются device control/metadata, а не автоматически для каждого сканера.</p>
+<h2 id="section-8">8. Сравнение архитектурных вариантов</h2>
+<p>Оценки сроков — рабочие ориентиры без закупки/согласований. Стоимость разработки не оценена без backlog, числа платформ и существующих production API.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Вариант</th>
+<th>Преимущества</th>
+<th>Ограничения и стоимость</th>
+<th>Запуск и масштабирование</th>
+<th>Зависимость и дальнейшая интеграция</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A Ready SaaS + mobile app</td>
+<td>Быстрые handoff/roles/history, support</td>
+<td>SaaS monthly; printers и Trip правила могут не покрываться. Onfleet Scale от $1,349/mo; кодирование в его order/task model</td>
+<td>2–5 дней для узкого handoff, больше для migration; scale внутри тарифов</td>
+<td>Высокая зависимость процессов; adapter может сохраниться, UI vendor заменяется</td>
+</tr>
+<tr>
+<td>B Barcode/inventory SaaS + Bluetooth printer</td>
+<td>Самый малый Stage 1 scope; уже есть mobile form, scan, export</td>
+<td>Orca $79/mo на 4 users либо $99 Business + hardware; часть сверок ручная</td>
+<td>0.5–3 дня setup; рост мест расходует rows/items/history и пользователей</td>
+<td>Средняя; независимые коды/export позволяют уйти. Printer adapter все равно нужен в своем app</td>
+</tr>
+<tr>
+<td>C Zaberman app + printer SDK</td>
+<td>Строгие Trip checks, единый actor/event model, локальная печать</td>
+<td>Собственная реализация offline/sync; SDK не создает бизнес-логику и не устраняет MFi/OS constraints</td>
+<td>Планирование в неделях, оценка после пилота; масштабируется с backend/field fleet</td>
+<td>Низкая SaaS-зависимость; hardware зависимость изолируется небольшим adapter</td>
+</tr>
+<tr>
+<td>D Собственная Barcode/QR логика без SaaS</td>
+<td>ID, labels, events и данные полностью под контролем</td>
+<td>Нужно строить весь operational workflow; raw BT/protocol support самому повышает обслуживание</td>
+<td>Медленнее B; без printer SDK срок/риски выше</td>
+<td>Минимальная SaaS-зависимость; риски собственного print transport</td>
+</tr>
+</tbody></table></div>
+<p><strong>C и D частично пересекаются.</strong> QR/ID/business logic можно иметь полностью свои и при этом использовать бесплатный/лицензируемый hardware SDK. Рекомендуемый Stage 2 — <strong>D для данных и логики + C для аппаратного подключения</strong>. Избегать самостоятельной реализации Bluetooth transport, если штатный SDK закрывает задачу.</p>
+<h2 id="section-9">9. Top 3 решения для быстрого пилота</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Место</th>
+<th>Решение</th>
+<th>Когда выбирать</th>
+<th>Условие допуска</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Orca Scan + Android + Brother RuggedJet</td>
+<td>Проверить все handoff на одной форме, нужен переносимый capture слой</td>
+<td>Успешные новый ID → print → scan-test, access к местам другого сотрудника offline, экспорт истории</td>
+</tr>
+<tr>
+<td>2</td>
+<td>BoxHero + Android + Zebra Print</td>
+<td>Бюджетный warehouse-first пилот; уже есть ZD421T либо другая проверенная печать</td>
+<td>Отдельный item на место, Qty=1; подтверждение mobile printer пути для Pickup; no false manifest completion</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Sortly Ultra + совместимый print service</td>
+<td>Важна карточка с фото и простой visual inventory; API сейчас не нужен</td>
+<td>Тест Android Bluetooth; offline read/write и reprint; согласие на Enterprise quote при будущей интеграции</td>
+</tr>
+</tbody></table></div>
+<p>Это shortlist <strong>кандидатов</strong>, не трех полностью соответствующих ТЗ продуктов. Если обязательны iOS Bluetooth printing и полноценное offline создание/печать без PC уже в пилоте, готовый победитель документально не установлен. Не менять условие на Wi‑Fi молча.</p>
+<p>Onfleet имеет более готовые Pickup/Dropoff проверки, но не входит в Top 3 из-за стоимости, отсутствия подтвержденного полевого Bluetooth print и необходимости затронуть dispatch. Если Onfleet уже является Order/Dispatch master Zaberman, его позицию нужно пересмотреть.</p>
+<h2 id="section-10">10. Рекомендованное решение Stage 1</h2>
+<p><strong>Orca Scan Starter, четыре персональных аккаунта, Android, один мобильный Brother.</strong> Сначала короткий технический bench-test на Free с одним пользователем; для реального командного пилота — платный Starter. Business брать только при необходимости API/Webhooks либо пяти пользователей/длинной истории. Не покупать годовую подписку до field-test.</p>
+<p>Использовать одну shared sheet <strong>CargoPlace</strong>. Barcode — идентификатор конкретного места; поля: OrderID, PlaceNo, PlaceCount, internal_name, L/W/H, weight_value, quality/reason, current Location, current Operation, TripID и exception note. Историю действий использовать как временный журнал, с отдельными milestone timestamp/actor при необходимости. Настройка обязательных полей и сохранение оригинального event time проверяются на bench-test.</p>
+<p><strong>Допустимый временный компромисс:</strong> vendor-generated opaque barcode как внешний label identifier, не primary PlaceID production DB. До UUIDv7 migration сохранить mapping <code>source_system + external_item_id + barcode_value → PlaceID</code>. Если уже есть реальные PlaceID, импортировать их значения вместо генерации новых. Vendor ID не объявлять UUIDv7. Это ограничение as-is пилота; принятый production baseline остается прежним.</p>
+<p>Pickup: создать запись на смартфоне → получить уникальный код → распечатать → наклеить → scan-test → явно сохранить Pickup. Если mobile auto-ID/local print не проходит тест, field launch по полной цепочке <strong>не допускать</strong>. Предварительно созданный пул кодов может проверить наклейки/сканирование, но такой тест отмечается как сокращенный и не засчитывает создание на Pickup.</p>
+<p>Warehouse/Loading/Unloading/Dropoff: scan → проверить OrderID/TripID и список ожидаемых PlaceID → записать выбранную операцию/Location → save. Для Stage 1 ожидаемый список готовит supervisor из существующих Order/Trip данных, без изменения их владельца. Inventory SaaS не должен автоматически завершать Order, Trip или BOL.</p>
+<p>История inventory updates временно фиксирует действия, но не заменяет immutable operational event store. Отсутствие жесткой проверки manifest компенсируется ручной сверкой supervisor; это <strong>ограничение масштабирования</strong>, а не будущая архитектура. После пилота выбирать либо перенос в Zaberman, либо продукт с доказанными required checks.</p>
+<h2 id="section-11">11. Рекомендованная архитектура Stage 2 и идентификатор</h2>
+<h3>Что перенести и что сохранить</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Компонент</th>
+<th>Stage 1</th>
+<th>Stage 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CargoPlace registry и attributes</td>
+<td>Временная SaaS sheet с export</td>
+<td>Zaberman operational DB</td>
+</tr>
+<tr>
+<td>Order/Task/RouteRun planning</td>
+<td>Текущий источник, ручной перенос нужных IDs</td>
+<td>Approved Order/Dispatch master и adapter</td>
+</tr>
+<tr>
+<td>Trip Manifest и подтвержденные sets</td>
+<td>Текущий Trip источник + supervisor сверка</td>
+<td>Zaberman Trip/Manifest с per-place validation</td>
+</tr>
+<tr>
+<td>Scan/операционные события</td>
+<td>SaaS history + архив выгрузок</td>
+<td>Собственный event store; actor/device/event ID/original time</td>
+</tr>
+<tr>
+<td>ID и QR image</td>
+<td>SaaS value/image либо импорт собственных ID</td>
+<td>UUIDv7 и local encoder без SaaS/network</td>
+</tr>
+<tr>
+<td>Print</td>
+<td>System print service и vendor plugin</td>
+<td>Brother/Zebra hardware SDK adapter, local queue</td>
+</tr>
+<tr>
+<td>Camera scan</td>
+<td>Внешнее mobile app</td>
+<td>Local scanner SDK внутри Zaberman</td>
+</tr>
+<tr>
+<td>Photos/docs</td>
+<td>Временные attachments с export</td>
+<td>Object storage + metadata; document module отдельно</td>
+</tr>
+<tr>
+<td>SaaS</td>
+<td>Capture/history для пилота</td>
+<td>Удалить после verified migration; optional read-only archive</td>
+</tr>
+</tbody></table></div>
+<p>Сохранять после Stage 1 имеет смысл <strong>сам принтер, носители, подтвержденный label layout и при необходимости hardware SDK</strong>. REST/Webhooks SaaS использовать только как переходный adapter. Не оставлять обязательную зависимость от внешнего label image endpoint для offline печати.</p>
+<p>Не привязывать к SaaS: PlaceID, OrderID/TripID, бизнес-статусы и operation types, label payload version, device/user identity, event identity, Manifest, адреса хранения оригинального evidence и lifecycle BOL/POD.</p>
+<h3>Формат кода</h3>
+<p>Рекомендация production: <code>ZCP1:&lt;UUIDv7&gt;</code>; пример формы <code>ZCP1:xxxxxxxx-xxxx-7xxx-xxxx-xxxxxxxxxxxx</code>. Prefix — namespace и версия, UUID — opaque identity. Это предложенная сериализация принятого контракта, а не существующий реализованный формат. QR не должен содержать имя клиента, адрес, OrderID, TripID, статус, размеры или vendor URL.</p>
+<p>Человекочитаемая часть: короткий уникальный alias, Order number, место <code>3/8</code>, internal_name при необходимости. Номер <code>3/8</code> может стать устаревшим после Supplemental Pickup: код и PlaceID не меняются, учет состава определяется данными операции/snapshot. QR нужен для ID, напечатанный текст — для физической сверки.</p>
+<p><strong>Почему QR:</strong> длинный versioned UUID в Code 128 занимает много ширины; QR удобнее разместить на 4×2-inch label и читать камерой/2D imager. Это инженерная оценка для данного payload, подлежащая сравнению на настоящих этикетках. Code 128 оставить дополнительным форматом только после теста длины/scan distance; текущий wireframe не считать hardware validation.</p>
+<p>Code 128 с коротким alias возможен как отдельный scan alias, но отличается от baseline payload и требует явного alias resolver. Не заменять им primary PlaceID без продуктового решения. QR и Code 128 на одной этикетке на первом этапе не обязательны: два разных payload создают неоднозначность.</p>
+<p>GS1 SSCC имеет смысл при требовании совместимости партнеров: это 18-значный identifier логистической единицы, с GS1 Company Prefix и правилами выдачи. Для внутреннего пилота выбирать его только ради «стандарта» не нужно. При необходимости SSCC хранить как отдельный внешний идентификатор, связанный с PlaceID. <a href="https://www.gs1.org/standards/id-keys/sscc">GS1 SSCC</a>, <a href="https://www.gs1.org/standards/gs1-logistic-label-guideline/1-3">GS1 Logistic Label Guideline</a>.</p>
+<h3>События и повторная печать</h3>
+<p>Минимальное production-событие: event_id, PlaceID, operation_type, operation_id, OrderID, TripID при применимости, from/to Location, occurred_at, received_at, actor_id, device_id, result и reason. Сервер дедуплицирует по event_id; бизнес-проверка предотвращает повторный Load в одном Trip. Это развитие уже принятой модели событий, не параллельная система процессов.</p>
+<p>Lookup → найденная карточка; Load/Receive/Dropoff → отдельное подтверждение контекста. Offline сохраняет локальный факт как pending, сервер окончательно подтверждает допустимый переход. HTTP retry не должен повторно перемещать груз.</p>
+<p>Reprint: тот же PlaceID и active code, отдельная причина/actor/time; не новый CargoPlace. Replacement: тот же PlaceID, новый alias, старый alias replaced/void с сохранением связи. В рекомендованном stable PlaceID QR основной ID не меняется; если бизнес требует сделать именно старый QR недействительным, понадобится versioned label-instance token и resolver — это отдельное решение, не обещание базового payload. В Stage 1 проверить reprint; управляемая replacement semantics SaaS не установлена.</p>
+<h2 id="section-12">12. План MVP пилота</h2>
+<h3>Состав и границы</h3>
+<p><strong>Две недели</strong>, 20 тестовых Orders, 100 физических мест, один origin warehouse, один destination warehouse, два Trip. Четыре аккаунта: Pickup/Dropoff driver, origin warehouse employee, destination employee, supervisor/admin. Три Android-телефона; один printer на Pickup; одна supervisor workstation. Числа — предложенный объем пилота, не фактическая нагрузка Zaberman.</p>
+<p>ПО: Orca Starter, Brother Print Service Plugin на Android, настроенный шаблон label, исходные Order/Trip списки и папка для ежедневного архива. Интеграция, новый backend, BOL generation и автоматические уведомления в пилот не входят. Реальные подписанные документы ведутся в действующем процессе.</p>
+<p>Цепочка: <strong>CargoPlace creation → unique code → Bluetooth print → Pickup scan-test → Warehouse receiving scan → Trip loading scan → Trip unloading scan → Dropoff scan</strong>. Выгрузка включена отдельно, хотя в сокращенном примере MVP ее нет.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Этап</th>
+<th>Операция и ожидаемый результат</th>
+<th>Как контролировать as-is</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pickup</td>
+<td>Создать каждый CargoPlace, связать с Order, label/scan-test, сохранить факт</td>
+<td>Сверка наклейки с карточкой и физическим местом; каждое место Qty=1</td>
+</tr>
+<tr>
+<td>Warehouse receiving</td>
+<td>Найти место, подтвердить arrival в origin warehouse</td>
+<td>Ожидаемые PlaceID из Pickup; неизвестное не создавать как новую карточку</td>
+</tr>
+<tr>
+<td>Interstate loading</td>
+<td>Выбрать Trip, сравнить принадлежность, отметить фактически загруженные</td>
+<td>Supervisor сверяет set с Manifest; missing/wrong/extra отдельно</td>
+</tr>
+<tr>
+<td>Interstate unloading</td>
+<td>Сравнить received set с loaded set, записать destination</td>
+<td>Недостача из факта загрузки, а не из исходного Order quantity</td>
+</tr>
+<tr>
+<td>Dropoff</td>
+<td>Сканировать передаваемые места и сверить состав доставки</td>
+<td>Частичную передачу не считать complete; POD в действующем процессе</td>
+</tr>
+</tbody></table></div>
+<h3>Порядок проведения</h3>
+<ol>
+<li><strong>День 1–2: bench-test до закупки.</strong> Подготовить 10 мест. На смартфоне создать новое место, получить ID, print QR по Bluetooth без PC и scan-test. Повторить после restart и без WAN, сохранив Bluetooth включенным. Снять отдельные результаты для creation, generation, print и scan. Если RJ-4255WB не работает через plugin, не переносить на него вывод о RJ-4250WB.</li>
+<li><strong>День 2–3: setup и обучение.</strong> Настроить поля/права/labels; импортировать тестовые OrderID/TripID; определить one writer на этап и владельца расхождений. Пользователям запретить удаление/очистку реестра; сохранить контрольную выгрузку.</li>
+<li><strong>День 4–8: две полные цепочки.</strong> Пройти все пять операций на 100 местах, включая частичную loading/unloading. Ежедневно сверять место, history и ожидаемые списки; отдельно записывать время и число действий.</li>
+<li><strong>День 9: offline/conflict/recovery.</strong> Два устройства создают новые места offline; второй сотрудник читает место первого; трижды retry/sync; kill/restart app; printer sleep/reconnect; damage/reprint; competing updates одного места.</li>
+<li><strong>День 10: exit-test.</strong> Выгрузить карточки, коды, все доступные события и attachments. Найти 10 случайных мест и восстановить всю цепочку с actor/time/Order/Trip. Составить Go/Conditional Go/No Go, список сокращений и бюджет следующего этапа.</li>
+</ol>
+<p>Не проводить критический приемочный offline-тест только на своем My Scans: особенно важно место, созданное <strong>другим</strong> пользователем и предварительно синхронизированное на принимающий телефон. Документация Orca отдельно описывает My Scans как offline-access; полнота shared catalogue должна быть доказана тестом. <a href="https://orcascan.com/guides/orca-scan-mobile-app-76ecf6ed">Orca mobile storage</a>.</p>
+<h3>Набор негативных тестов</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Тест</th>
+<th>Ожидаемый бизнес-результат</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Два одинаковых физически места одного Order</td>
+<td>Два разных ID; нет объединения в SKU Qty=2</td>
+</tr>
+<tr>
+<td>Одно место содержит несколько предметов</td>
+<td>Один PlaceID, содержимое/units отдельно</td>
+</tr>
+<tr>
+<td>Повторный scan одного PlaceID в том же loading</td>
+<td>Не второй Load; повтор отмечен, фактический count не растет</td>
+</tr>
+<tr>
+<td>Скан места чужого Trip / неизвестного кода</td>
+<td>Не accepted Load; exception или ручная остановка, не автоматическое создание</td>
+</tr>
+<tr>
+<td>Из 8 мест загружены 6, получены 5</td>
+<td>Loaded=6; received=5; missing=1 относительно загрузки; незагруженные 2 отдельно</td>
+</tr>
+<tr>
+<td>Поврежденная наклейка / reprint</td>
+<td>Найден тот же PlaceID; история сохранена; reason/actor reprint проверены</td>
+</tr>
+<tr>
+<td>Интернет пропал после save/print</td>
+<td>Видимое локальное сохранение, один итоговый факт после sync</td>
+</tr>
+<tr>
+<td>Два offline creators</td>
+<td>Ни одного совпавшего ID; данные одного места не перезаписывают другое</td>
+</tr>
+<tr>
+<td>Одно место изменено на двух телефонах</td>
+<td>Не молчаливая потеря факта; обнаружение/разбор supervisor, результат зафиксирован</td>
+</tr>
+<tr>
+<td>Частичный Dropoff / refused / damage</td>
+<td>Переданные места отдельно; Order не объявлен полностью доставленным</td>
+</tr>
+</tbody></table></div>
+<h3>Критерии успешности</h3>
+<p>Это предложенные acceptance thresholds, не заявления о возможностях SaaS.</p>
+<ul>
+<li><strong>0 дублирующихся ID</strong>, 100/100 мест имеют физическую наклейку и correct scan-test.</li>
+<li><strong>Не менее 98%</strong> обычных labels прочитаны с первой попытки в тестовых условиях; все остальные — со второй попытки/manual fallback без ошибочной идентификации.</li>
+<li><strong>95% scan lookup ≤ 3 секунд</strong>, <strong>95% print dispatch → label ready ≤ 15 секунд</strong> после начального pairing, без наклейки и ввода размеров.</li>
+<li>Все полевые labels печатаются с телефона по Bluetooth без PC/WAN; time-to-create-and-mark отдельно, целевой median ≤ 60 секунд без измерений/фото.</li>
+<li>100% ожидаемых handoff в export связываются с PlaceID, OrderID, operation, actor/time; для loading/unloading присутствует TripID.</li>
+<li>Все 10 негативных сценариев выявлены; wrong/extra/duplicate не попадают в подтвержденный состав. Для Stage 1 ручной контроль допускается и считается отдельно от автоматического.</li>
+<li>Offline-тест ≥ 30 минут, включая 20 новых мест на двух телефонах; после reconnect ≤ 5 минут до появления всех тестовых записей при рабочей сети; 0 потерянных фактов/ID collisions.</li>
+<li>Три повторных sync не увеличивают confirmed count. 10/10 случайных мест восстановлены из exit export без входа в SaaS.</li>
+</ul>
+<p>Если строгие автоматические Manifest checks отсутствуют, результат максимум <strong>Conditional Go для контролируемого пилота</strong>, не Go для масштабного внедрения. Потеря факта, совпадение ID, невозможность нового field print либо неизвестное место, незаметно принятое в Trip, — No Go для полного сценария.</p>
+<h3>Бюджет и формулы</h3>
+<p>Для четырех пользователей Orca Starter: <code>49 + max(0, 4 − 2) × 15 = $79/месяц</code>. Проверка: два пользователя → $49; три → $64; четыре → $79; пять → $94, рядом с Business $99 с API и более длинной историей. Для небольшого pilot без API Starter проще. <a href="https://orcascan.com/pricing">Orca prices</a>.</p>
+<p><code>Pilot cost = SaaS + printer rental/purchase + battery/charger + labels + optional scanner + shipping/tax + setup/training labor</code>.</p>
+<p>Телефоны/workstation можно использовать имеющиеся; их дополнительные затраты тогда ноль, но время сотрудников учитывается. Printer cost до quotation неизвестен. Не суммировать USD и EUR без согласованного курса/даты.</p>
+<p><code>Label count = places × (1 + reprint rate)</code>; при 100 places и резерве 20% нужно 120 labels, практический минимум — доступный roll не менее 200 labels. Резерв — предположение для теста.</p>
+<p><code>Monthly registry size = places created per day × retention days</code>, если все записи продолжают расходовать row/item cap. Пример: 100 мест/день × 30 дней = 3,000, выше Starter 2,000/sheet. Из этого не следует удалять историю или дробить каждую смену на sheet: сначала проверить archive billing, row add-ons и retained history.</p>
+<p><code>Operational benefit = minutes saved × operations per day × loaded labor cost per minute + avoided error cost</code>. До/после считать на одном наборе операций; расходы на ручную supervisor сверку и повторный ввод вычитать. Пилот оценивает и надежность, и трудоемкость; снижение потерь заранее не обещается.</p>
+<h2 id="section-13">13. Риски и ограничения</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Риск</th>
+<th>Влияние</th>
+<th>Практическая мера</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BT scanner принят за BT printer; BLE setup принят за print</td>
+<td>Несовместимая закупка</td>
+<td>Тест app × OS × printer SKU × connection × label; запись фактического способа</td>
+</tr>
+<tr>
+<td>Документированный RJ-4250WB discontinued</td>
+<td>Нет устройств/поддержки/расходников</td>
+<td>Demo актуального RuggedJet до bulk purchase; rental legacy только для теста</td>
+</tr>
+<tr>
+<td>iOS hardware MFi ≠ готовая iOS SaaS печать</td>
+<td>Невозможность полевого print</td>
+<td>Не обещать Bluetooth iPhone по datasheet; проверить приложение и PPID для Stage 2</td>
+</tr>
+<tr>
+<td>Offline только свой локальный subset</td>
+<td>Warehouse не узнает место водителя</td>
+<td>Синхронизация manifest/catalogue заранее и test другого actor</td>
+</tr>
+<tr>
+<td>Vendor Unique ID не UUIDv7</td>
+<td>Архитектурный тупик/смена labels</td>
+<td>Immutable mapping, namespace, запрет повторного использования ID</td>
+</tr>
+<tr>
+<td>Status overwrite вместо событий</td>
+<td>Потеря chain of custody и времени</td>
+<td>Проверить history/export, archived events; не считать last status достаточным</td>
+</tr>
+<tr>
+<td>SaaS разрешает unknown item creation</td>
+<td>Лишнее место/ошибочная loading</td>
+<td>Ограничения прав и stop procedure; автоматические checks в Stage 2</td>
+</tr>
+<tr>
+<td>Manual OrderID/TripID</td>
+<td>Ошибочная связь</td>
+<td>Подготовленные controlled lists, сверка supervisor; замер ручного времени</td>
+</tr>
+<tr>
+<td>Короткая history retention</td>
+<td>История истекает до расследования</td>
+<td>Ежедневный export; проверка event export до запуска; migration до окончания retention</td>
+</tr>
+<tr>
+<td>SKU licenses расходуются на каждое место</td>
+<td>Рост стоимости быстрее ожиданий</td>
+<td>Прогноз places/day × retention, archive/add-on rules; не объединять places ради тарифа</td>
+</tr>
+<tr>
+<td>Наклейки отклеиваются/выцветают; printer sleep/battery</td>
+<td>Остановка процесса/перепечатки</td>
+<td>Материал/adhesive test, power kit, spare roll, manual alias fallback</td>
+</tr>
+<tr>
+<td>API/events не равны исходному факту</td>
+<td>Дубли/потеря actor или original time</td>
+<td>Exit-test; event_id, idempotent adapter, server reconciliation в Stage 2</td>
+</tr>
+<tr>
+<td>Public vendor QR URL</td>
+<td>Раскрытие cargo/client data и зависимость домена</td>
+<td>Private records, минимум данных в коде, own opaque payload</td>
+</tr>
+<tr>
+<td>Onfleet/Odoo расширяют scope</td>
+<td>Маркировка превращается в ERP/dispatch проект</td>
+<td>Выбирать только при отдельной бизнес-необходимости</td>
+</tr>
+<tr>
+<td>Обновляющиеся тарифы и help pages</td>
+<td>Покупка неверного плана/функции</td>
+<td>Зафиксировать checkout/quotation и функции в аккаунте перед оплатой</td>
+</tr>
+</tbody></table></div>
+<p>Исследование выполнено по официальным открытым страницам. Реальные apps, firmware, offline conflicts, печать и API под credentials не тестировались. Отсутствие публичного доказательства отмечено как «не подтверждено», а не как доказанное отсутствие функции.</p>
+<h2 id="section-14">14. Open Questions и окончательная рекомендация</h2>
+<p>Перед закупкой/полевым запуском требуется определить:</p>
+<ol>
+<li><strong>Android-only допустим для первого пилота или iPhone обязателен для printing?</strong> Рекомендованное предположение: Android-only для print, iOS оценивается отдельно.</li>
+<li><strong>Где закупка и поддержка оборудования?</strong> Нужны страна, поставщик, аренда/demo, полный SKU, warranty и quotation.</li>
+<li><strong>Сколько places/day и срок хранения истории?</strong> Устанавливает row/item cap и пригодность временного SaaS.</li>
+<li><strong>Какой текущий Order/Dispatch master?</strong> Есть ли уже Onfleet/Odoo/иной сервис и CSV manifest? Существующая лицензия может изменить shortlist.</li>
+<li><strong>Какой источник TripID и фактически loaded manifest?</strong> Без него нельзя принимать unloading по надежному ожидаемому составу.</li>
+<li><strong>Какие поверхности, температура и длительность перевозки?</strong> Определяет расходники и пригодность direct thermal.</li>
+<li><strong>Кто вправе подтверждать missing/extra/damage и частичную передачу?</strong> До пилота назначить supervisor и запрет ложного complete.</li>
+<li><strong>Разрешен ли временный SaaS для production cargo data?</strong> Уточнить retention, доступ и export; для bench-test достаточно неперсональных тестовых данных.</li>
+<li><strong>Нужна ли invalidation старого QR при replacement?</strong> Stable PlaceID payload и отзыв конкретной наклейки требуют разных правил.</li>
+<li><strong>Требуют ли партнеры GS1 SSCC либо только внутренний code?</strong> По умолчанию внутренний QR, без GS1 procurement.</li>
+</ol>
+<p>Недостающие данные не мешают документальному выбору кандидата, но влияют на покупку и условия допуска. Никакие ответы здесь не считаются полученными по умолчанию; указанные предположения — предложения для пилота.</p>
+<p><strong>Решение:</strong> сначала провести bench-test Orca + Android + demo Brother RuggedJet, затем двухнедельный командный pilot без разработки. На Stage 1 временно использовать capture, карточки и history внешнего SaaS. На Stage 2 перенести CargoPlace, операции, Manifest validation, ID, scan, offline queue и audit в Zaberman, сохранив принтер и vendor SDK. Масштабирование допускается только после доказанной надежности учета; отсутствие полного готового продукта не является основанием начинать разработку до проверки shortlist.</p>
+<footer>Документ и исходный Markdown содержат одну редакцию исследования от 12 октября 2026 года.</footer></main></body></html>

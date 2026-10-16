@@ -1,5 +1,7 @@
 # Системный анализ будущего приложения Zaberman Mobile
 
+> **Design reference — 2026-10-16.** Предыдущее TO-BE проектирование. Принятые продуктовые правила сохранены в [Stage 0](STAGE_0_PRODUCT_DECISIONS.md) и [decision log](../decisions/DECISION_LOG.md); остальная архитектура/стек — рекомендации, не окончательный выбор. AS-IS и Open Questions: [PROJECT_BASELINE](../PROJECT_BASELINE.md). Упоминания ожидания приёмки owner и прежних test counts относятся к истории.
+
 Дата исходного анализа: 2026-09-01. Сверка AS-IS разделов: 2026-09-18.
 
 Статус: целевая системная модель сохранена; текущая реализация сверена с [CURRENT_STATE.md](CURRENT_STATE.md) и пользовательскими документами.

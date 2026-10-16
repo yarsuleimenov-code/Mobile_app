@@ -1,5 +1,7 @@
 # План реализации mobile-first wireframe Zaberman
 
+> **Historical — 2026-10-16.** План/отчёт прежнего этапа сохранён для истории решений и проверок. Прототип принят CEO; актуальные scope, статус и следующий этап — в [PROJECT_BASELINE](docs/PROJECT_BASELINE.md). Прежние формулировки «следующий показ/приёмка owner» не являются текущим заданием; рекомендации ниже не разрешают менять утверждённый UI.
+
 Статус на 2026-09-02: актуальная цель — hi-fi wireframe для демонстрации owner. Переписанная очередь этапов 3–7: [OWNER_DEMO_PLAN.md](docs/system-report/OWNER_DEMO_PLAN.md) и раздел 10 ниже. Фактическое состояние — [CURRENT_STATE.md](docs/system-report/CURRENT_STATE.md), бизнес-правила — [STAGE_0_PRODUCT_DECISIONS.md](docs/system-report/STAGE_0_PRODUCT_DECISIONS.md). Старый расширенный каталог экранов не является обязательным scope demo; production-требования не блокируют продолжение wireframe.
 
 ## 1. Цель, scope и минимальный готовый результат

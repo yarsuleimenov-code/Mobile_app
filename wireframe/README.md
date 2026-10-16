@@ -4,9 +4,9 @@
 
 Публичный прототип: https://yarsuleimenov-code.github.io/Mobile_app/
 
-Актуальная граница реализации: [`docs/system-report/CURRENT_STATE.md`](../docs/system-report/CURRENT_STATE.md). Бизнес- и пользовательская документация: [русская версия](../docs/mobile-app/ru/README.md) и [English version](../docs/mobile-app/README.md).
+Единая база проекта: [PROJECT_BASELINE](../docs/PROJECT_BASELINE.md), [индекс документации](../docs/README.md). Техническая граница реализации: [`docs/system-report/CURRENT_STATE.md`](../docs/system-report/CURRENT_STATE.md). Бизнес- и пользовательская документация: [русская версия](../docs/mobile-app/ru/README.md) и [English version](../docs/mobile-app/README.md).
 
-Текущая цель — hi-fi wireframe для демонстрации owner. Переписанный [план этапов 3–7](../docs/system-report/OWNER_DEMO_PLAN.md): mock-фото/offline → labels → eBOL/POD → данные заказа/Spoke preview → репетиция показа. Backend, реальные интеграции, оборудование и полевой пилот в demo-scope не входят.
+Прототип принят CEO (подтверждение owner от 2026-10-16). UI/UX и реализованная логика зафиксированы для подготовки ТЗ, архитектуры и плана разработки. [План этапов 3–7](../docs/system-report/OWNER_DEMO_PLAN.md) сохранён как historical; production-интеграции не реализованы.
 
 Правило показа: обычный UI без Simulate/demo/mock/prototype-пояснений; о природе прототипа ведущий предупреждает owner устно. Действия и статусы выглядят как будущий продукт, но интеграции остаются локальными имитациями. По запросу owner от 2026-09-03 служебная панель снова доступна через More → Administration, а также напрямую по `#/more/demo`. Вход показывает существующие настройки роли, филиала, сети, устройств и сценариев; новую систему прав доступа не добавляем.
 
@@ -32,7 +32,7 @@ pnpm docs:preview
 
 Локальный preview после сборки: `http://127.0.0.1:4174/Mobile_app/help/`. Конфигурация и статус реализации описаны в [`DOCUMENTATION_SITE_IMPLEMENTATION.md`](../docs/system-report/DOCUMENTATION_SITE_IMPLEMENTATION.md).
 
-Срез 2026-09-30: текущий source включает Pre-trip inspection и подтверждение контакта подписью или OTP во всех Pickup и Delivery. Этапы 3–6 приняты owner; отдельная бизнес-приёмка Этапа 7 документально не подтверждена. Повторная проверка frontend: 23 test-файла / 123 теста, TypeScript и Vite build проходят. Исторические две репетиции 7/7 на 320/390/1440 px описаны в [Этапе 7](../docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md).
+Статус и актуальные проверки на 2026-10-16: [baseline](../docs/PROJECT_BASELINE.md), [аудит](../docs/current/REPOSITORY_AUDIT.md). Старые этапные результаты ниже — история реализации, не актуальная очередь работ.
 
 ## Что оценивать
 
@@ -84,13 +84,13 @@ Order eBOL draft создаётся при продолжении из Pickup, �
 
 Tasks → Order details показывает external/internal names, источник, отдельный Qty, Special Cargo и Spoke preview. Dispatcher редактирует имя и обработку; Supervisor заполняет отсутствующее имя один раз. Fragile/Oversized и mapping Supervisor → crew lead — demo-допущения. Данные и audit сохраняются локально.
 
-В dimension groups неизвестные величины показаны пустыми, требуется причина перед review. Неполный объём исключён из известных итогов. Подписанные документы и reprint сохраняют имя/измерения своей версии; новые дополнения получают текущие данные. [Границы, сценарий и проверки](../docs/system-report/STAGE_6_ORDER_DATA_DEMO.md). Этап 7 включён в `main`; следующий бизнес-шаг — просмотр owner и фиксация решения по инструкции ниже.
+В dimension groups неизвестные величины показаны пустыми, требуется причина перед review. Неполный объём исключён из известных итогов. Подписанные документы и reprint сохраняют имя/измерения своей версии; новые дополнения получают текущие данные. [Границы, сценарий и проверки](../docs/system-report/STAGE_6_ORDER_DATA_DEMO.md). Этап 7 включён в `main`; прототип принят CEO; следующий этап — техническая документация.
 
 ## Этап 7: готовность к показу
 
 [Инструкция ведущему и семь сценариев](../docs/system-report/STAGE_7_OWNER_DEMO_REHEARSAL.md). Чистый старт: `#/more/demo` → Reset all mock data → подтверждение удаления локальных данных → preset. Cancel сохраняет данные; повторное открытие preset без Reset продолжает сохранённую работу. Перед owner-показом скрыть служебную панель.
 
-Исправлены смешивание заказов в Pickup/Dropoff, рассинхронизация номера в URL, переход locked Pickup → Dropoff, direct Back и сообщения пустого/несохранённого draft. Изменённый draft требует актуального review; unsigned Supplemental не попадает в Delivery, а ошибка сохранения документа не завершает Dropoff. Две репетиции 7/7 пройдены; это техническая готовность wireframe, не production и не подтверждение приёмки owner.
+Исправлены смешивание заказов в Pickup/Dropoff, рассинхронизация номера в URL, переход locked Pickup → Dropoff, direct Back и сообщения пустого/несохранённого draft. Изменённый draft требует актуального review; unsigned Supplemental не попадает в Delivery, а ошибка сохранения документа не завершает Dropoff. Две репетиции 7/7 пройдены; это историческая проверка готовности wireframe. Текущая приёмка прототипа CEO зафиксирована в baseline; production-приёмку она не подтверждает.
 
 ## Place labels
 

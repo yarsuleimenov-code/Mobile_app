@@ -1,5 +1,7 @@
 # Zaberman Mobile App — UI/UX audit
 
+> **Historical — 2026-10-16.** План/отчёт прежнего этапа сохранён для истории решений и проверок. Прототип принят CEO; актуальные scope, статус и следующий этап — в [PROJECT_BASELINE](PROJECT_BASELINE.md). Прежние формулировки «следующий показ/приёмка owner» не являются текущим заданием; рекомендации ниже не разрешают менять утверждённый UI.
+
 **Audit date:** 2026-09-26  
 **Audited baseline:** published `main` / GitHub Pages baseline described in `docs/system-report/CURRENT_STATE.md` (2026-09-21)  
 **Primary users:** drivers, warehouse staff, loading staff, delivery crew  

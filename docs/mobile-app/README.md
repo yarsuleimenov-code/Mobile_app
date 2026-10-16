@@ -1,5 +1,7 @@
 # Mobile App documentation
 
+> Prototype approved by CEO, as confirmed by the owner on 2026-10-16. Current UI/UX and implemented behavior are the reference for technical documentation. [Project baseline](../PROJECT_BASELINE.md). Implementation limits below still apply.
+
 [Русская версия](ru/README.md)
 
 Zaberman Mobile App is a business prototype for completing a required vehicle Pre-trip inspection, recording cargo at Pickup, verifying it at Dropoff, and handling Interstate loading, receiving, and documents. The active interface uses Home, Tasks, Scan, and More. All current operational data and actions in the wireframe are local simulations; this is not a production system.

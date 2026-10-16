@@ -1,0 +1,101 @@
+{
+  "package": "Mobile App Release 1 — ТЗ",
+  "version": "1.0",
+  "date": "2026-10-16",
+  "status": "Prepared for development handoff; unresolved details remain explicit",
+  "entrypoint": "docs/DEVELOPMENT_HANDOFF.md",
+  "referenceCommit": "1abe03ce0cd54697dedf713a0657c5f41f69ece3",
+  "referenceCommitNote": "Existing repository HEAD, not a commit of this documentation package. Files below identify its uncommitted content snapshot.",
+  "counts": {
+    "functionalRequirements": 50,
+    "nonFunctionalRequirements": 20,
+    "acceptanceCriteria": 140,
+    "useCases": 18,
+    "developmentSteps": 10
+  },
+  "decisions": {
+    "agreed": 12,
+    "deferred": 3
+  },
+  "requirementStatuses": {
+    "Confirmed": 55,
+    "Needs Decision": 9,
+    "Proposed": 6
+  },
+  "notes": [
+    "No application implementation, API access or live integration checks performed for this handoff.",
+    "Requirement IDs and individual draft statuses are preserved. Version is a package identifier, not production approval.",
+    "Transfer the listed files with repository context for source and historical links.",
+    "This manifest and the evolving checks report are excluded from the checksums."
+  ],
+  "files": [
+    {
+      "path": "docs/DEVELOPMENT_HANDOFF.md",
+      "sha256": "618c2c562e029947c9b4cd4f0c3ee212fb99e94f0a0474829ff448f8993d8b9a"
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "0b1668ac0fe44577922270714862cee0771e8fd76c56edccd6f3692956965200"
+    },
+    {
+      "path": "docs/PROJECT_BASELINE.md",
+      "sha256": "a459043f97894b3fe86377ac6b78972dc72026dd73fa448a3f54f06265a0a9ff"
+    },
+    {
+      "path": "docs/decisions/DECISION_LOG.md",
+      "sha256": "253b5f51a94a4f30316417946634a1360050d6acd545d4e3ecbdd74618d50379"
+    },
+    {
+      "path": "docs/requirements/RELEASE_1_DECISIONS.md",
+      "sha256": "f2002c16915daba6f80024b3d0226ca9ede119f37238aed213a0aa34bc8b12e2"
+    },
+    {
+      "path": "docs/requirements/TECHNICAL_SPECIFICATION.md",
+      "sha256": "91678382d732934510df689262ee20c9a35c2b0c220c52021a8bf2101923a84c"
+    },
+    {
+      "path": "docs/requirements/WORKFLOWS_AND_USE_CASES.md",
+      "sha256": "8f9fe863b7958d4d39e7ee5fd88d61708cafc18e0aaf1f6d288047907b6137a4"
+    },
+    {
+      "path": "docs/requirements/NON_FUNCTIONAL_REQUIREMENTS.md",
+      "sha256": "0a4870ee82bc238fff2e13e9fd1730e8648913136cd6d36dc3622f800b4cf0c8"
+    },
+    {
+      "path": "docs/requirements/REQUIREMENTS_TRACEABILITY.md",
+      "sha256": "5906f886d7eec7281ab5ad699d8fec77ec543e5624cb8ee35647b6a0b3482530"
+    },
+    {
+      "path": "docs/requirements/DEVELOPMENT_PLAN.md",
+      "sha256": "736370c24f641502d41a22de7422846b5293b4684614ec65e994293d4b61aa8c"
+    },
+    {
+      "path": "docs/architecture/SYSTEM_ARCHITECTURE_AND_INTEGRATIONS.md",
+      "sha256": "222fdc74da4060b73a0fe04d9fdb2e11bd12914b056ed1e5e16d164029f9146a"
+    },
+    {
+      "path": "docs/requirements/REQUIREMENTS_GAP_ANALYSIS.md",
+      "sha256": "381d25fe95f771d79da138f99265af3b8fb5424c1c3344d0c607c7f739a16eb4"
+    },
+    {
+      "path": "docs/requirements/OPEN_QUESTIONS_REVIEW.md",
+      "sha256": "40fd7b832c1e2e1988af11bbe368613c04c09fa20622ba5bf6b7c46363a8c648"
+    },
+    {
+      "path": "docs/requirements/BUSINESS_DECISIONS_REQUIRED.md",
+      "sha256": "1472d6f6d1d70291680a145c41f8c8abdb42b046cb4fd9fc9835b564feba9f92"
+    },
+    {
+      "path": "docs/current/DOCUMENTATION_HANDOFF.md",
+      "sha256": "0960589d481a34889d2033edf32f9281ea2897620cd1c75173f5c10e3c53ea57"
+    },
+    {
+      "path": "docs/current/REPOSITORY_AUDIT.md",
+      "sha256": "bc30a04848c15bb4636bafbd92f2f593358b2b19f6415dd5a1ab9849f8e35278"
+    },
+    {
+      "path": "docs/current/REPOSITORY_INVENTORY.md",
+      "sha256": "871bbc1b1b909c4296af6f5bfe801508e444d08c8cdb411a2cf46f63c44f873c"
+    }
+  ]
+}
