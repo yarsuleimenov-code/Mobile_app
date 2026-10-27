@@ -1066,6 +1066,8 @@
 
 **Звонок из диалога**
 
+Дополнение COM-001 от 2026-10-27: [Inbox / Messages & Calls](INBOX_CALLS_INCREMENT_2026_10_27.md) расширяет UI прототипа локальной историей, Missed и Call back, а также добавляет Inbox в нижнюю навигацию FR-001. Ниже сохранён исходный scope среза v1.0; ограничение реальной телефонии остаётся в силе.
+
 | Поле | Требование |
 |---|---|
 | Module / Workflow | Communications / [UC-16](WORKFLOWS_AND_USE_CASES.md#uc-16) |

@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
-import { ArrowLeft, Check, ClipboardCheck, Cloud, Home, ImagePlus, Menu, RefreshCw, ScanLine, WifiOff } from 'lucide-react'
+import { ArrowLeft, Check, ClipboardCheck, Cloud, Home, ImagePlus, Inbox, Menu, RefreshCw, ScanLine, WifiOff } from 'lucide-react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useCargo } from './cargoStore'
 import { usePrototypeScenario } from './prototypeScenarioStore'
 import { ZabermanLogo } from './brand-logo'
 import { PhotoGallery } from './PhotoEvidence'
 import type { EvidencePhoto } from './photoEvidenceDomain'
+import { useCommunications } from './communicationStore'
 
 export function CargoShell({ children }: { children: ReactNode }) {
   const { forceSync, pendingChanges, syncStatus } = useCargo()
@@ -56,15 +57,18 @@ export function CargoFlowHeader({ title, subtitle, showBack = true, onBack }: { 
 }
 
 export function CargoBottomNav() {
+  const { unreadTotal, newMissedTotal } = useCommunications()
+  const inboxTotal = unreadTotal + newMissedTotal
   const items = [
     { to: '/', label: 'Home', icon: Home, end: true },
     { to: '/tasks', label: 'Tasks', icon: ClipboardCheck },
     { to: '/scan', label: 'Scan', icon: ScanLine },
+    { to: '/communications', label: 'Inbox', icon: Inbox },
     { to: '/more', label: 'More', icon: Menu },
   ]
   return (
     <nav className="cargo-bottom-nav" aria-label="Primary navigation">
-      {items.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} className={({ isActive }) => isActive ? 'is-active' : ''}><Icon size={23} /><span>{label}</span></NavLink>)}
+      {items.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} className={({ isActive }) => isActive ? 'is-active' : ''}><Icon size={23} /><span>{label}{label === 'Inbox' && inboxTotal > 0 ? <b className="inbox-nav-badge" aria-label={`${inboxTotal} new items`}>{inboxTotal}</b> : null}</span></NavLink>)}
     </nav>
   )
 }

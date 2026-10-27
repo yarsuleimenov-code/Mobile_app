@@ -187,13 +187,14 @@ textarea { font: inherit; }
   height: calc(74px + env(safe-area-inset-bottom));
   padding: 8px 8px env(safe-area-inset-bottom);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   background: rgba(255,255,255,.98);
   border-top: 1px solid var(--cargo-line);
   backdrop-filter: blur(12px);
 }
 .cargo-bottom-nav a { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--cargo-navy); font-size: 11px; font-weight: 800; }
 .cargo-bottom-nav a.is-active { color: var(--cargo-blue); }
+.inbox-nav-badge { margin-left: 4px; padding: 1px 4px; border-radius: 8px; color: #fff; background: #b83232; font-size: 10px; }
 
 .dev-badge { margin-left: 5px; padding: 2px 5px; border-radius: 4px; color: #8b4b00; background: #fff0d6; font-size: 9px; font-style: normal; letter-spacing: .4px; }
 .prototype-controls { padding: 18px 18px 112px; }
@@ -986,6 +987,17 @@ textarea { font: inherit; }
 .communication-inbox-empty p { margin-top: 5px; font-size: 12px; line-height: 1.45; }
 .communication-inbox-empty button { min-height: 44px; margin-top: 14px; padding: 0 14px; border: 1px solid #9ebeea; border-radius: 8px; color: var(--cargo-blue); background: #f1f7ff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
 .communication-result-count { margin-top: 16px; color: var(--cargo-muted); font-size: 11px; text-align: center; }
+.customer-call-list { display: grid; gap: 10px; margin-top: 16px; }
+.customer-call-row { display: grid; gap: 6px; padding: 14px; border: 1px solid var(--cargo-line); border-radius: 11px; background: #fff; font-size: 13px; }
+.customer-call-heading { display: flex; align-items: center; gap: 9px; font-size: 15px; }
+.customer-call-row.is-missed .customer-call-heading { color: #b83232; }
+.customer-call-row time, .customer-call-row small { color: var(--cargo-muted); font-size: 12px; }
+.customer-call-context { display: grid; gap: 4px; margin-top: 4px; padding: 9px; border-radius: 8px; background: #edf3fa; font-size: 12px; overflow-wrap: anywhere; }
+.customer-call-row label { display: grid; gap: 5px; }
+.customer-call-row select { width: 100%; min-height: 44px; font: inherit; }
+.customer-call-actions { display: flex; justify-content: space-between; gap: 10px; }
+.customer-call-actions a { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; color: var(--cargo-blue); font-weight: 750; }
+.call-start-button:disabled { opacity: .55; cursor: not-allowed; }
 
 .message-thread-screen { min-height: calc(100vh - 72px); padding: 14px 14px 254px; background: #edf1f5; }
 .message-order-context { padding: 10px 10px 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 10px; background: #fff; }

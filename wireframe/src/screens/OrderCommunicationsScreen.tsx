@@ -58,7 +58,7 @@ export function OrderCommunicationsScreen() {
     <CargoFlowHeader title={thread.customerName} subtitle={`Order #${orderNumber} · ${thread.operation === 'pickup' ? 'Pickup' : 'Dropoff'}`} />
     <main className="message-thread-screen">
       <section className="message-order-context">
-        <div><strong>{orderTitle}</strong><span>{task?.address ?? 'Order address unavailable'}</span></div>
+        <div><strong>{orderTitle}</strong><span>{task?.address ?? 'Order address unavailable'}</span><span>Route date: {task ? route.workDate : 'Unavailable'}</span></div>
         <Link to={task ? spokeTaskPath(task, route.workDate) : `/orders/${orderNumber}/details`}>Open order</Link>
       </section>
       <section className="message-sender-identity">

@@ -9,6 +9,7 @@ import {
   type SmsMessage,
 } from './communicationDomain'
 import { usePrototypeScenario } from './prototypeScenarioStore'
+import { initialCustomerCalls, markCallsSeen, type CustomerCall } from './callDomain'
 
 const STORAGE_KEY = 'zaberman-communications:v1'
 const mockReplies = [
@@ -18,6 +19,10 @@ const mockReplies = [
 ]
 
 interface CommunicationContextValue {
+  calls: CustomerCall[]
+  newMissedTotal: number
+  seeMissedCalls: () => void
+  recordCall: (call: Omit<CustomerCall, 'id' | 'seen'>) => void
   threads: CommunicationThread[]
   unreadTotal: number
   getThread: (orderNumber: string) => CommunicationThread | undefined
@@ -45,6 +50,17 @@ function makeId(prefix: string) {
 export function CommunicationProvider({ children }: { children: ReactNode }) {
   const { network, smsOutcome } = usePrototypeScenario()
   const [threads, setThreads] = useState<CommunicationThread[]>(readThreads)
+  const [calls, setCalls] = useState<CustomerCall[]>(() => {
+    try {
+      const stored = localStorage.getItem('zaberman-calls:v1')
+      return stored ? JSON.parse(stored) : structuredClone(initialCustomerCalls)
+    } catch { return structuredClone(initialCustomerCalls) }
+  })
+  useEffect(() => { localStorage.setItem('zaberman-calls:v1', JSON.stringify(calls)) }, [calls])
+  const seeMissedCalls = useCallback(() => setCalls((current) => markCallsSeen(current)), [])
+  const recordCall = useCallback((call: Omit<CustomerCall, 'id' | 'seen'>) => {
+    setCalls((current) => [{ ...call, id: makeId('call'), seen: true }, ...current])
+  }, [])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(threads))
@@ -108,6 +124,10 @@ export function CommunicationProvider({ children }: { children: ReactNode }) {
   }, [updateThread])
 
   const value = useMemo<CommunicationContextValue>(() => ({
+    calls,
+    newMissedTotal: calls.filter((call) => call.outcome === 'missed' && !call.seen).length,
+    seeMissedCalls,
+    recordCall,
     threads,
     unreadTotal: threads.reduce((total, thread) => total + thread.unreadCount, 0),
     getThread: (orderNumber) => threads.find((thread) => thread.orderNumber === orderNumber),
@@ -115,7 +135,7 @@ export function CommunicationProvider({ children }: { children: ReactNode }) {
     retryMessage,
     markRead,
     receiveMockReply,
-  }), [markRead, receiveMockReply, retryMessage, sendMessage, threads])
+  }), [calls, seeMissedCalls, recordCall, markRead, receiveMockReply, retryMessage, sendMessage, threads])
 
   return <CommunicationContext.Provider value={value}>{children}</CommunicationContext.Provider>
 }

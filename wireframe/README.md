@@ -41,7 +41,7 @@ pnpm docs:preview
 - Locked Pickup: исходная версия read-only; новые места оформляются через Supplemental Pickup, новую document version и новые mock-подписи.
 - Фото: отдельные ID, пять категорий, фильтр/preview и удаление конкретного фото; mock camera/gallery, локальная очередь с persisted retry/conflict. Фото original/supplemental/Delivery отображаются отдельно в review/POD.
 - Dropoff: поиск заказа, сравнение Pickup evidence, Delivery-фотографии и фиксация damage/exception без блокировки передачи.
-- Нижнее меню: `Home | Tasks | Scan | More`; Pickup и Dropoff открываются из Home/Tasks, Interstate — из More.
+- Нижнее меню: `Home | Tasks | Scan | Inbox | More`; Pickup и Dropoff открываются из Home/Tasks, Interstate — из More. Inbox → Messages / Calls: история, Missed, Call back и отдельная дата маршрута. [Правила инкремента 2026-10-27](../docs/requirements/INBOX_CALLS_INCREMENT_2026_10_27.md).
 - Administration (`#/more/demo`): роль/филиал, online/offline/slow, результаты sync/print/email/SMS/OTP, доступность camera/scanner/printer и полный сброс локальных данных.
 - More → Cargo places: стабильный `PlaceID`, Order и `n/N`, размеры/источник веса, label, current location/status и короткая event history для каждого места.
 - Labels: all/selected/one, отдельные Original/Supplemental filters, точный preview и история mock print/reprint. Scan различает valid/duplicate/unknown и поддерживает ручной PlaceID/OrderID.

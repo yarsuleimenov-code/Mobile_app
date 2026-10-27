@@ -31,7 +31,7 @@ Owner согласовал 12 BD и отложил 3; актуальные от�
 | Фото / offline | Фото-ID, категории, фильтр/preview/remove, раздельное evidence версий; локальная очередь retry/conflict, Keep local changes, состояния offline/slow/error | `photoEvidenceDomain`, `useEvidenceSync`, `prototypeScenarioStore` |
 | Cargo / labels / Scan | Проекция отдельного места и событий; Code 128, `ZB-{ORDER}-{NN}`, печать all/selected/one, reprint/history. Общий Scan — lookup, а Loading/Unloading отмечают места внутри операции; duplicate/unknown и ручной ввод | `cargoDomain`, `cargoPlaceTracking`, `placeLabelsDomain`, `placeScanDomain` |
 | Interstate | Выбор origin/destination и truck → подходящие Pickup records → выбор/ввод PlaceID → review loaded manifest → Create Trip & BOL; отдельные incoming fixtures → receive → review missing → Confirm unloading; поиск/архив BOL | `interstateDomain`, `interstateStore`, активные Interstate screens |
-| Communications | Inbox/order thread, quick texts, unread, offline queue, retry; визуальный звонок с Mute/Speaker. Настоящих SMS, звонков и аудио нет | `communicationDomain`, `communicationStore` |
+| Communications | Inbox → Messages / Calls, индикаторы unread/new missed, поиск и Missed, дата маршрута отдельно от звонка, order thread/quick texts/offline queue/retry, Call back и локальная история исходящих, Mute/Speaker. [Инкремент 2026-10-27](requirements/INBOX_CALLS_INCREMENT_2026_10_27.md). Настоящих SMS, звонков и аудио нет | `communicationDomain`, `callDomain`, `communicationStore` |
 | Administration | Роль, филиал, сеть, устройства, outcomes, presets/reset; отдельный служебный маршрут и вход из More | `PrototypeControlsScreen`, AGENTS.md |
 
 Все указанные модули находятся в `wireframe/src/`. Подробные пользовательские правила: [RU guide](mobile-app/ru/user-guide.md), [EN guide](mobile-app/user-guide.md). Старые `HomeScreen`, `PickupScreen`, `DropoffScreen`, `OperationsScreen`, `SameDayScreen` не подключены к активному router; их наличие не расширяет утверждённый пользовательский сценарий.
@@ -40,7 +40,7 @@ Owner согласовал 12 BD и отложил 3; актуальные от�
 
 ## Current navigation
 
-Активные пути ниже указаны после `#` (`HashRouter`). Источник: [App.tsx](../wireframe/src/App.tsx). Нижнее меню: **Home | Tasks | Scan | More**.
+Активные пути ниже указаны после `#` (`HashRouter`). Источник: [App.tsx](../wireframe/src/App.tsx). Нижнее меню: **Home | Tasks | Scan | Inbox | More** (COM-001, 2026-10-27).
 
 | Путь / группа | Экран и переходы |
 |---|---|

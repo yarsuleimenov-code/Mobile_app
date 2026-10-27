@@ -19,7 +19,7 @@ import { StopNavigation } from '../StopNavigation'
 export function CargoHomeScreen() {
   const navigate = useNavigate()
   const { records, spokeRoute, isSpokeRouteLoading, loadTodaySpokeRoute, clearSpokeRoute, getOrderDetails, getOrderCargo } = useCargo()
-  const { unreadTotal, threads } = useCommunications()
+  const { unreadTotal, newMissedTotal } = useCommunications()
   const { inspection, postTrip, history, startNextCycle, saveError } = usePreTripInspection()
   const preTripStatus = inspectionStatus(inspection)
   const routeUnlocked = preTripStatus === 'passed' && !postTrip.completedAt
@@ -52,11 +52,11 @@ export function CargoHomeScreen() {
         </section>
 
         <button type="button" className="home-messages-card" onClick={() => navigate('/communications')}>
-          <span className="home-messages-icon"><MessageCircleMore size={26} />{unreadTotal ? <b>{unreadTotal}</b> : null}</span>
+          <span className="home-messages-icon"><MessageCircleMore size={26} />{unreadTotal + newMissedTotal ? <b>{unreadTotal + newMissedTotal}</b> : null}</span>
           <span>
-            <strong>Messages</strong>
-            <small>{unreadTotal ? `${unreadTotal} unread · ${threads.length} customer conversations` : `${threads.length} customer conversations`}</small>
-            <small>Corporate SMS · {CORPORATE_SMS_NUMBER_LABEL}</small>
+            <strong>Inbox</strong>
+            <small>{unreadTotal} unread messages · {newMissedTotal} new missed calls</small>
+            <small>Messages &amp; Calls · {CORPORATE_SMS_NUMBER_LABEL}</small>
           </span>
           <ChevronRight size={20} />
         </button>

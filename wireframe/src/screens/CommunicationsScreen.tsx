@@ -1,6 +1,6 @@
 import { ChevronRight, MessageCircleMore, Search } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
 import {
   communicationDayLabel,
@@ -11,11 +11,19 @@ import {
   type CommunicationThread,
 } from '../communicationDomain'
 import { useCommunications } from '../communicationStore'
+import { useCargo } from '../cargoStore'
+import { mockTodaySpokeRoute } from '../spokeDomain'
+import { CustomerCallsList } from './CustomerCallsList'
 
 const time = (value: string) => new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 
 export function CommunicationsScreen() {
-  const { threads, unreadTotal } = useCommunications()
+  const { threads, unreadTotal, newMissedTotal, seeMissedCalls } = useCommunications()
+  const { spokeRoute } = useCargo()
+  const route = spokeRoute ?? mockTodaySpokeRoute
+  const [params, setParams] = useSearchParams()
+  const callsActive = params.get('tab') === 'calls'
+  useEffect(() => { if (callsActive) seeMissedCalls() }, [callsActive, seeMissedCalls])
   const [query, setQuery] = useState('')
   const [unreadOnly, setUnreadOnly] = useState(false)
   const groups = useMemo(() => {
@@ -35,8 +43,13 @@ export function CommunicationsScreen() {
     <div className="communications-list-screen">
       <header className="communications-title">
         <span><MessageCircleMore size={25} /></span>
-        <div><h1>Messages</h1><p>{unreadTotal ? `${unreadTotal} unread customer messages` : 'Customer conversations by order'}</p></div>
+        <div><h1>Messages &amp; Calls</h1><p>Customer conversations by order</p></div>
       </header>
+      <div className="communication-inbox-tools"><div role="group" aria-label="Communication channel">
+        <button type="button" className={!callsActive ? 'is-active' : ''} aria-pressed={!callsActive} onClick={() => setParams({})}>Messages{unreadTotal ? <b aria-label={`${unreadTotal} unread messages`}>{unreadTotal}</b> : null}</button>
+        <button type="button" className={callsActive ? 'is-active' : ''} aria-pressed={callsActive} onClick={() => setParams({ tab: 'calls' })}>Calls{newMissedTotal ? <b aria-label={`${newMissedTotal} new missed calls`}>{newMissedTotal}</b> : null}</button>
+      </div></div>
+      {callsActive ? <CustomerCallsList /> : <>
       <div className="corporate-sender"><strong>Corporate SMS</strong><span>{CORPORATE_SMS_NUMBER_LABEL}</span></div>
       <section className="communication-inbox-tools" aria-label="Message filters">
         <label><Search size={19} /><input aria-label="Search customer messages" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Order, customer or message" /></label>
@@ -55,6 +68,7 @@ export function CommunicationsScreen() {
               <span className="communication-thread-main">
                 <span><strong>{thread.customerName}</strong><time>{last ? time(last.createdAt) : ''}</time></span>
                 <small>Order #{thread.orderNumber} · {thread.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</small>
+                <small>Route date: {route.tasks.some((task) => task.externalId === thread.orderNumber) ? route.workDate : 'Unavailable'}</small>
                 <p>{last?.body ?? 'No messages yet'}</p>
               </span>
               {thread.unreadCount ? <b className="message-unread" aria-label={`${thread.unreadCount} unread`}>{thread.unreadCount}</b> : <ChevronRight size={19} />}
@@ -63,6 +77,7 @@ export function CommunicationsScreen() {
         </div>
       </section>) : <div className="communication-inbox-empty"><MessageCircleMore size={28} /><strong>No conversations found</strong><p>{unreadOnly ? 'There are no unread customer messages.' : `No results for “${query.trim()}”.`}</p><button type="button" onClick={() => { setQuery(''); setUnreadOnly(false) }}>Show all messages</button></div>}
       {visibleCount ? <p className="communication-result-count">{visibleCount} conversation{visibleCount === 1 ? '' : 's'} shown</p> : null}
+      </>}
     </div>
   </CargoShell>
 }
