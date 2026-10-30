@@ -16,7 +16,7 @@ const statusMeta: Record<SmsMessage['status'], { label: string; icon: typeof Che
   failed: { label: 'Not sent', icon: AlertCircle },
   received: { label: 'Received', icon: Check },
 }
-const quickMessages = ['On my way', 'Arrived', 'Running late', 'Please confirm access']
+const quickMessages = ["We'll be there in 20 minutes", 'On my way', 'Arrived', 'Running late', 'Please confirm access']
 const messageTime = (value: string) => new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 const maskedPhone = (value: string) => `••• ${value.replace(/\D/g, '').slice(-4)}`
 
