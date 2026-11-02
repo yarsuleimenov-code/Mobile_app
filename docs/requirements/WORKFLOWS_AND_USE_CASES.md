@@ -314,19 +314,23 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 
 ### UC-16
 
-**Сообщения и визуальный call**
+**Inbox: сообщения, история звонков и перезвон**
 
 | Поле | Сценарий |
 |---|---|
 | Статус | Confirmed reference; real providers Needs Decision |
-| Начальное состояние | Есть Order thread/contact; доступ из Home/Tasks/Details/Pickup. |
-| Последовательность экранов/действий | Inbox search/All-Unread → thread → quick/custom message → status/retry; call → Start→connected→Mute/Speaker→End→return. |
-| Валидации | Контекст Order и corporate sender; сообщение не попадает в другой thread. |
-| Системные операции / изменение состояния | Reference message queue/unread/local incoming и call state; аудио/real SMS/телефония отсутствуют. |
-| Конечное состояние | Локальное сообщение/статус или завершённый visual call в том же контексте. |
-| Альтернативные ветки | Offline pending, failed retry; повтор call; нет сообщений — empty thread. |
+| Начальное состояние | Доступен Inbox из Home/нижнего меню; для отправки/звонка существует Order thread/contact. Прямые Message/Call из заказа сохранены. |
+| Последовательность экранов/действий | Inbox → Messages / Calls. Messages: search/All-Unread → thread → quick/custom message → status/retry. Calls: All calls/Missed/search → проверить Related/Suggested order либо выбрать Order → Call back → Start → connected → Mute/Speaker → End → Back to calls. |
+| Валидации | Сообщение остаётся в thread Order; входящий телефон не доказывает тему разговора. Несколько подходящих заказов требуют выбора; без thread перезвон недоступен; offline запрещает Start call. |
+| Системные операции / изменение состояния | Открытие Calls отмечает все текущие missed как seen, не меняя outcome. End создаёт отдельную исходящую запись: completed после соединения, cancelled до соединения. CustomerCall сохраняется в localStorage; реальных provider событий/аудио нет. |
+| Конечное состояние | Локальное сообщение/статус либо новая исходящая запись в истории. Исходный пропущенный остаётся missed, его бизнес-обработка автоматически не закрывается. |
+| Альтернативные ветки | Offline message pending/failed retry; offline чтение Calls; несколько заказов → Selected order; нет совпадений/пустой поиск; Call again; внутренний уход со страницы активного call сохраняет запись; reload/crash активного call не гарантирует сохранение. |
 | Ошибки / ограничения | Не выдавать local sent/connected за provider outcome; incoming webhooks/push/receipts, sender policy — OQ-11. |
 | Требования / источники | [FR-044](TECHNICAL_SPECIFICATION.md#fr-044), [FR-045](TECHNICAL_SPECIFICATION.md#fr-045) |
+
+Изменение COM-001: [scope и COM-AC-01–12](INBOX_CALLS_INCREMENT_2026_10_27.md), [состояния, модель данных и CALL-TC](../system-analysis/CALLS_BEHAVIOR_AND_DATA.md). Дата маршрута показывается отдельно от времени сообщения/звонка; новая исходящая запись сохраняет свой routeDate snapshot. R1-013/OQ-11 не закрыты.
+
+COM-002: в Messages первым доступен шаблон **We'll be there in 20 minutes** → заполненный draft → при необходимости изменить минуты/текст → Send. Нажатие шаблона само сообщение не отправляет; прежние шаблоны, offline queue и retry сохранены.
 
 ### UC-17
 

@@ -4,6 +4,8 @@
 
 ## Состав и порядок чтения
 
+Актуальное дополнение от 2026-10-27: [Inbox / Calls — состояния, данные и QA](CALLS_BEHAVIOR_AND_DATA.md), COM-001 поверх SA-0.1. Описывает принятые изменения прототипа `0c948b4`; не меняет R1-013/OQ-11 и не включает новые production-интеграции. Исходные ST/QRY/CMD/TC ниже сохранены; звонки используют отдельные COM-AC/CALL-TC ID.
+
 | Документ | Что получает команда |
 |---|---|
 | [SYSTEM_BEHAVIOR_AND_DATA_CONTRACTS.md](SYSTEM_BEHAVIOR_AND_DATA_CONTRACTS.md) | IDs/связи/revisions/время/units; бизнес-данные и missing validation; независимые состояния; ST-01–16; QRY-01–06, CMD-01–08, ERR; пять рабочих срезов SL-01–05 |

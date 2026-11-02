@@ -28,7 +28,7 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | Home, after Pre-trip | Post-trip inspection — `#/post-trip-inspection` | Record vehicle condition after use; view completed/archived inspections |
 | Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Dropoff stop; Order details |
 | Bottom nav | Scan — `#/scan` | Open place or order places |
-| Home / Tasks / Pickup draft / Order details | Messages — `#/communications`, `#/orders/{number}/communications` | Send or review customer SMS; start an Order-linked call |
+| Home / Inbox / Tasks / Pickup draft / Order details | Messages & Calls — `#/communications`, `#/communications?tab=calls`, `#/orders/{number}/communications` | Review messages and call history; send SMS or call the selected Order contact |
 | Bottom nav | More — `#/more` | Help & Instructions, Interstate, Cargo places, Sync now, Administration |
 | Home / Tasks | Pickup draft — `#/pickup?order={number}` | Pickup review or place labels |
 | Tasks / Pickup | Order details — `#/orders/{number}/details` | Return to operation |
@@ -160,16 +160,20 @@ The approved process model treats Pickup and Dropoff as separate operations link
 
 ## Customer messages and calls
 
-Open **Messages** from Home, **Message customer** from a task or Order details, or **SMS** from the order card in Pickup draft. Every conversation is tied to one Order and customer contact.
+Open **Inbox** from Home or the bottom navigation, then choose **Messages** or **Calls** under **Messages & Calls**. You can also open **Message customer** from a task or Order details, or **SMS** from the order card in Pickup draft. Every message conversation is tied to one Order and customer contact.
 
 1. In **Messages**, search by Order, customer or message text. Use **All** or **Unread** to narrow the inbox.
 2. Open the required conversation and verify the customer, Order and operation in the header. The sender identity is the Zaberman corporate SMS number **17178361039**; the employee's personal phone number is not used or shown.
-3. Select a quick message — **On my way**, **Arrived**, **Running late** or **Please confirm access** — or type a custom message. Review the text and select **Send**.
+3. The first quick message is **We'll be there in 20 minutes**. Select it to fill the editor; adjust the minutes or text if needed, then select **Send**. Selecting a template does not send it. **On my way**, **Arrived**, **Running late** and **Please confirm access** remain available, or you can type a custom message.
 4. Check the status: Sending, Sent, Queued until online or Not sent. Offline messages send automatically after the connection returns. For Not sent, use **Retry**.
 5. Incoming replies appear as unread in Messages, the related task and the **SMS** button. Opening the conversation clears its unread count. Use **Open order** to return to the related operation.
 6. To call the same customer, select **Call** in the conversation. Confirm the customer, Order and **Calling from** number, then select **Start call**. During a connected call you can toggle **Mute** or **Speaker** and select **End call**. Use **Call again** or **Back to messages** when it ends.
 
-In the current wireframe, SMS and call states are local demonstrations; no telephony provider, audio connection, webhook, push notification or production communication history is connected.
+To return a call, open **Inbox → Calls**. Search by customer, phone or Order; use **Missed** for missed calls. Check the Order and **Route date**, shown separately from the call time. **Suggested order** is an inferred match; if several orders match, choose one before **Call back**. Review the contact and select **Start call**. If no matching customer thread exists, callback is unavailable.
+
+Opening Calls clears the new missed indicator but keeps the missed entries. A callback adds a separate outgoing entry and does not mark the original missed call as resolved. Completed/cancelled entries and seen indicators are stored locally. Offline, you can read history but cannot start a call. The Inbox badge combines unread messages and new missed calls.
+
+In the current wireframe, SMS and call states/history are local demonstrations; no telephony provider, audio connection, webhook, push notification or production communication history is connected. An active call is not guaranteed to survive a reload; choosing an Order for an incoming entry is temporary.
 
 ## Cargo, Scan and labels
 

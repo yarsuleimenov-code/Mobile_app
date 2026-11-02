@@ -6,9 +6,11 @@
 
 ## Реализованные контуры
 
+Актуализация коммуникаций 2026-11-02 поверх исторического среза выше: COM-001 (`0c948b4`) — Inbox / Messages / Calls, локальная история и перезвон; COM-002 (`a524ea0`) — первый шаблон We'll be there in 20 minutes с редактированием перед Send. [ТЗ](../requirements/TECHNICAL_SPECIFICATION.md#fr-044), [модель звонков](../system-analysis/CALLS_BEHAVIOR_AND_DATA.md). Это сверка документации с принятым кодом, не повторная приёмка остальных контуров.
+
 | Контур | Факт | Граница |
 |---|---|---|
-| Wireframe | React/Vite + HashRouter; Home, Tasks, Scan, More; Pickup/Dropoff, осмотры, eBOL/POD, Cargo/labels, Interstate, communications | Fixtures и browser localStorage; без production identity, real sync/media/OTP/SMS/email/printer API |
+| Wireframe | React/Vite + HashRouter; Home, Tasks, Scan, Inbox, More; Pickup/Dropoff, осмотры, eBOL/POD, Cargo/labels, Interstate, Messages / Calls и quick texts | Fixtures и browser localStorage; без production identity, real sync/media/OTP/SMS/email/printer API |
 | Documentation site | Markdown RU/EN + knowledge-base → prepare-docs → VitePress → dist/help; Pages workflow | Только пользовательский help; внутренние audit/decisions/research автоматически не публикуются в help |
 | Backend POC | NestJS POST /api/cargo-places: permission, validation, idempotency, transaction/events/outbox | Development actor adapter; не вызывается wireframe; не готовый deployed backend |
 | SQL POC | 001_initial_schema.sql и optional 002_api_context_rls.sql | Нет подтверждения runtime migrations, RLS и production grants |

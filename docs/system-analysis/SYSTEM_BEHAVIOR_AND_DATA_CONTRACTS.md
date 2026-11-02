@@ -6,6 +6,8 @@
 
 ## Статусы положений
 
+Дополнение COM-001 от 2026-10-27: [CallStatus, CustomerCall, привязка к Order, seen и локальное сохранение](CALLS_BEHAVIOR_AND_DATA.md). Это AS-IS прототипа; состояния истории звонков не входят в operational sync/lock lifecycle ниже, а названия локальных функций не являются новыми backend commands.
+
 | Обозначение | Применение |
 |---|---|
 | B — Business confirmed | Правило прямо следует из BD/FR/принятых invariants. Источник указан в таблицах |

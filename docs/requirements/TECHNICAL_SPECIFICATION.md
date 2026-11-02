@@ -6,6 +6,10 @@
 
 ## Назначение и бизнес-цели
 
+Актуализация 2026-10-27: COM-001 описывает уже принятый блок Inbox/Calls прототипа `0c948b4`; FR-001/044/045 и UC-16 уточнены, добавлены отдельные COM-AC/CALL-TC. Остальные требования draft 1.2 и отложенный scope реальной телефонии сохраняются.
+
+Синхронизация 2026-11-02: COM-002 фиксирует принятый 2026-10-30 шаблон прибытия из прототипа `a524ea0`: первым в quick texts отображается **We'll be there in 20 minutes**. Выбор подставляет редактируемый draft; отправка только по Send. Нового SMS-контракта или требования телефонии это не добавляет.
+
 Приложение помогает экипажу и складу фиксировать физический груз по Order/PlaceID при Pickup, Delivery и Interstate, сохранять evidence передачи и документы, продолжать незавершённую работу. Цели: уменьшить повторный ввод и риск перепутать заказ/место; обеспечить сопоставимую историю передачи; сохранить понятную работу при нестабильной сети. Измеримые KPI, baseline значений и целевые улучшения не согласованы — не критерий приёмки текущего draft.
 
 Минимальный результат фазы: требования, проверяемые AC, use cases, data requirements, NFR и traceability, достаточные для предметного согласования с owner/Operations/IT. Приложение при подготовке не изменяется.
@@ -26,7 +30,7 @@
 
 | Граница | Состав и статус |
 |---|---|
-| Confirmed reference scope | Home/Tasks/Scan/More; ручные и назначенные Pickup/Dropoff; draft/groups/measurements/photos; Order details/Requirements/contacts/map-copy; eBOL/signature/OTP/Supplemental/POD/version actions/email-copy; Cargo/labels; Interstate load/review/Trip/BOL/receive/archive; Pre/Post-trip; communications; help и служебные reference controls |
+| Confirmed reference scope | Home/Tasks/Scan/Inbox/More; ручные и назначенные Pickup/Dropoff; draft/groups/measurements/photos; Order details/Requirements/contacts/map-copy; eBOL/signature/OTP/Supplemental/POD/version actions/email-copy; Cargo/labels; Interstate load/review/Trip/BOL/receive/archive; Pre/Post-trip; communications; help и служебные reference controls |
 | Accepted product concepts | Раздельные local handoffs; Same Day через RouteRun, Order-owned movement_type; UUIDv7 opaque identity/alias; immutable facts/versions, correction/reversal; PD-014 ownership |
 | Scope после ответов BD | Внутренний dispatch/Same Day orchestration не требуется; Interstate позднее; exceptions через диспетчера и skip. Полный доступ зарегистрированным, gate только route import, платформа iPhone/iPad. Mapping/session/conflicts/hardware/NFR параметры ещё открыты |
 | Не включать автоматически | Redesign, route optimization, payment/billing, полноценную ERP/desktop administration, shift accounting, repair management, новые incoming/missed calls/call history, barcode standalone Sheets scope, replacement label flow без решения |
@@ -59,7 +63,7 @@
 | Module / Workflow | Navigation / [UC-01](WORKFLOWS_AND_USE_CASES.md#uc-01) |
 | Статус | Confirmed |
 | Release 1 | Core / сохраняемая база первого этапа |
-| Описание | Сохранить Home, Tasks, Scan, More и вторичные экраны активного router. |
+| Описание | Сохранить Home, Tasks, Scan, Inbox, More и вторичные экраны активного router. Inbox добавлен COM-001 от 2026-10-27; его индикатор объединяет unread messages и new missed calls. |
 | Бизнес-правило | Interstate остаётся вторичным разделом; login/SameDay detail не объявляются существующими экранами. |
 | Пользователь / роль | Все операционные пользователи |
 | Предусловия | Приложение открыто. |
@@ -70,7 +74,7 @@
 | Источник | [Baseline](../PROJECT_BASELINE.md); [App.tsx](../../wireframe/src/App.tsx) |
 | Нерешённые зависимости | Нет отдельного OQ по ядру; общие production NFR применяются |
 
-- **FR-001-AC1:** Каждый из четырёх пунктов открывает свой экран.
+- **FR-001-AC1:** Каждый из пяти пунктов Home / Tasks / Scan / Inbox / More открывает свой экран (COM-001).
 - **FR-001-AC2:** Неизвестный путь открывает Home; Help доступен из More.
 
 ### FR-002
@@ -1048,8 +1052,9 @@
 | Module / Workflow | Communications / [UC-16](WORKFLOWS_AND_USE_CASES.md#uc-16) |
 | Статус | Confirmed |
 | Release 1 | Условно: device/provider contract и проверка готовности |
-| Описание | Сохранить inbox/search/All-Unread, order thread, quick/custom texts, unread и local pending/error/retry/incoming. |
+| Описание | Inbox с заголовком Messages & Calls → Messages / Calls. В Messages сохранить search/All-Unread, order thread, quick/custom texts, unread и local pending/error/retry/incoming; дату маршрута показывать отдельно от времени сообщения. |
 | Бизнес-правило | Thread связан с Order; corporate sender не заменяется личным номером сотрудника. Sample number не выбран production sender. |
+| Quick texts / COM-002 | Порядок: We'll be there in 20 minutes; On my way; Arrived; Running late; Please confirm access. Нажатие только подставляет текст в редактор; водитель может изменить 20 минут и остальной текст, затем явно нажать Send. |
 | Пользователь / роль | Водитель/экипаж |
 | Предусловия | Есть доступный Order thread. |
 | Основной сценарий | Home/Task/Details/Pickup SMS → прочитать/отправить → увидеть status. |
@@ -1064,24 +1069,24 @@
 
 ### FR-045
 
-**Звонок из диалога**
+**История звонков и звонок по заказу**
 
-Дополнение COM-001 от 2026-10-27: [Inbox / Messages & Calls](INBOX_CALLS_INCREMENT_2026_10_27.md) расширяет UI прототипа локальной историей, Missed и Call back, а также добавляет Inbox в нижнюю навигацию FR-001. Ниже сохранён исходный scope среза v1.0; ограничение реальной телефонии остаётся в силе.
+Актуализировано COM-001 от 2026-10-27 по реализованному прототипу, commit `0c948b4`. [Дополнение и COM-AC](INBOX_CALLS_INCREMENT_2026_10_27.md), [системное описание](../system-analysis/CALLS_BEHAVIOR_AND_DATA.md). Исходные FR/AC ID сохранены; новые критерии дополнения имеют отдельные ID COM-AC-01–12. Production-телефония остаётся отложенной по R1-013/OQ-11.
 
 | Поле | Требование |
 |---|---|
 | Module / Workflow | Communications / [UC-16](WORKFLOWS_AND_USE_CASES.md#uc-16) |
 | Статус | Confirmed |
-| Release 1 | Условно: device/provider contract и проверка готовности |
-| Описание | Сохранить визуальный сценарий call из thread: ready/calling/connected/ended, Mute/Speaker и повтор. |
-| Бизнес-правило | Прототип не выполняет телефонный звонок/аудио; реальная телефония и её scope требуют OQ-11. |
+| Release 1 | Reference UI сохранён; production-телефония Deferred по R1-013, параметры OQ-11 решаются при подключении |
+| Описание | Inbox → Calls: история по убыванию startedAt, поиск, All calls / Missed, контекст заказа и дата маршрута отдельно от времени звонка. Call back и Call из thread открывают ready/calling/connected/ended, Mute/Speaker, повтор и локальную запись исходящего звонка. |
+| Бизнес-правило | Просмотр снимает только признак new missed, не меняет missed на completed и не означает решение обращения. Зафиксированная связь с Order сохраняется; найденная по телефону — Suggested order; несколько кандидатов требуют выбора. Прототип не выполняет телефонный звонок/аудио. |
 | Пользователь / роль | Водитель/экипаж |
-| Предусловия | Открыт customer thread с call action. |
-| Основной сценарий | Открыть call → Start → connected state → End. |
-| Альтернативные сценарии | Повтор звонка возвращает сценарий; Mute/Speaker отражают выбранное состояние. |
-| Исключения / ошибки | Real incoming/missed/call history/background audio не считаются подтверждённым scope. |
-| Связанные сущности | Order, Contact, Call presentation state |
-| Источник | [OrderCallScreen](../../wireframe/src/screens/OrderCallScreen.tsx); [communicationDomain](../../wireframe/src/communicationDomain.ts) |
+| Предусловия | Для чтения — доступен Inbox; для перезвона — выбран Order и существует соответствующий customer thread/contact; для Start call сеть не offline. |
+| Основной сценарий | Inbox → Calls → при необходимости Missed/search → проверить/выбрать Order → Call back → Start → connected → End → Back to calls → новая исходящая запись. |
+| Альтернативные сценарии | Call из thread; отмена до соединения; повтор; внутренний уход с активного call; Mute/Speaker; пустая выдача; выбранный при нескольких совпадениях Order помечен Selected order. |
+| Исключения / ошибки | Offline запрещает Start, но не чтение истории; без подходящего thread перезвон недоступен. Входящие — fixtures, не provider events. Реальные incoming, receipts, background audio и recovery активного звонка после reload/crash отсутствуют. |
+| Связанные сущности | Order, Contact, CommunicationThread, CustomerCall; UI CallStatus отдельно от результата истории |
+| Источник | [OrderCallScreen](../../wireframe/src/screens/OrderCallScreen.tsx); [CustomerCallsList](../../wireframe/src/screens/CustomerCallsList.tsx); [callDomain](../../wireframe/src/callDomain.ts); [communicationStore](../../wireframe/src/communicationStore.tsx) |
 | Нерешённые зависимости | OQ-01, OQ-11 |
 
 - **FR-045-AC1:** UI Start/End переводит reference call в соответствующие состояния.
@@ -1227,7 +1232,7 @@
 | Trip / Loaded manifest → places | tripId, direction, truck, order/place counts, known weight/volume, createdAt, BOL ref; target confirmed manifest version/place membership | AS-IS generated Trip — totals, selected IDs отдельно in memory; incoming fixture имеет manifest array. Target обязан сверять confirmed состав по принятым правилам; final ownership/version/creation checkpoint — OQ-03/08 | FR-035–038; interstateDomain/Store, GAP-14 |
 | ReceiveDraft / Discrepancy → Trip/PlaceID | received IDs, missing computed against manifest; completed Trip marker в reference | Persisted receiving draft существует, отдельный authoritative Discrepancy lifecycle отсутствует. Case reason/resolution/actor/close requirements — Needs Decision, не новая БД схема | FR-037/038/042; UnloadingScreen/Store |
 | DocumentVersion / POD / BOL | document key/number/title, snapshot/version and stage; BOL Trip relation; action attempts/recipients/results | POD — projection completed eBOL. Reference numbering/sample date не production rules; actual PDF/storage/delivery, retention и void — OQ-08 | FR-023–026/039; orderDocumentDomain/BOL screens |
-| Communication → Order/thread | Message ID/text/sender/time/direction/read/delivery status; call presentation states | Reference corporate sender/sample contact не master. Target provider refs/receipts/retention/authorization — Needs Decision; audio recording не в scope | FR-044/045; communicationDomain |
+| Communication → Order/thread | Message ID/text/sender/time/direction/read/delivery status; CustomerCall id/contact/direction/outcome/startedAt/duration/seen, optional orderNumber/operation/routeDate; UI CallStatus отдельно | COM-001: история localStorage; найденная по телефону связь не доказанная тема входящего. Reference corporate sender/sample contact не master. Target provider refs/receipts/retention/authorization — Needs Decision; audio recording не в scope | FR-044/045; communicationDomain/callDomain; [системная модель](../system-analysis/CALLS_BEHAVIOR_AND_DATA.md) |
 | Operational event / sync entry | operation ID, entity/evidence reference, revision/fingerprint, pending/sync/retry/conflict/rejected; actor/device/source/time в target | Reference fingerprint/revision не full sync protocol. Original occurrence time отдельно от receipt time — принятая target event дисциплина; exact schema/version/order/TTL — OQ-07 | FR-046, NFR-001–006/015/019; Stage 0/POC |
 
 ### Расчёты и точность

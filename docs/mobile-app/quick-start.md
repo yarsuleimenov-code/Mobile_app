@@ -43,9 +43,9 @@ Open **Order details** in Pickup/Dropoff or Tasks and find **Team contacts** bel
 
 ## Message or call a customer
 
-Open **Messages** from Home, **Message customer** from a task or Order details, or **SMS** in the Pickup draft order card. Confirm the customer and Order, choose a quick message or type your own, then select **Send**. A queued message will send when the connection returns; use **Retry** if it shows **Not sent**. Messages are sent from corporate number **17178361039**, not the employee's personal number.
+Open **Inbox → Messages** from Home or the bottom navigation, **Message customer** from a task or Order details, or **SMS** in the Pickup draft order card. Confirm the customer and Order. The first template, **We'll be there in 20 minutes**, fills the editor; change the minutes/text if needed and select **Send**. It is not sent automatically. Other templates and custom text remain available. A queued message will send when the connection returns; use **Retry** for **Not sent**. The sender is corporate number **17178361039**, not the employee's personal number.
 
-For a call, open the customer's conversation, select **Call**, confirm the Order and corporate **Calling from** number, then select **Start call**. End with **End call** and return through **Back to messages**. The current build demonstrates the call flow but does not connect audio or a telephony provider.
+For a call, select **Call** in the conversation or **Inbox → Calls → Call back**; **Missed** filters missed calls. Confirm the Order, Route date and corporate **Calling from** number, then select **Start call**. Choose an Order if several match. End with **End call** and return through **Back to messages** or **Back to calls**. Viewing Calls clears the new indicator but keeps missed records. Offline history is readable; Start is unavailable. Calls/history are local demonstrations without audio or a telephony provider.
 
 ## Complete Pickup
 

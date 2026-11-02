@@ -4,6 +4,8 @@
 
 ## MAP — источники и mapping
 
+COM-001 от 2026-10-27: [история Calls и интеграционная граница](CALLS_BEHAVIOR_AND_DATA.md). CustomerCall сохраняется локально и не проходит operational sync queue/MAP ниже. Provider events, webhook/push, delivery и cross-device seen не реализованы; дополнительного контракта телефонии это изменение не утверждает. Отдельные CALL-TC-01–12 не перенумеровывают исходные TC-01–28.
+
 Колонка «внешний атрибут» намеренно не содержит выдуманных JSON paths. Известно только, что маршрут поступает из Spoke API. Имена `SpokeRoute/SpokeTask` — [локальные fixture types](../../wireframe/src/spokeDomain.ts), не официальный vendor schema. Team заполняет реальный mapping по мере разработки adapter; внутренние contracts можно разрабатывать независимо.
 
 | ID / внутреннее поле T | Semantic source / writer | Внешний атрибут / что проверить командой | Missing/stale behavior / граница |
