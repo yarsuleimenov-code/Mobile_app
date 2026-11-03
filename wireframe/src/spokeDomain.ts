@@ -8,6 +8,7 @@ export interface SpokeTask {
   scheduledTime: string
   title: string
   address: string
+  coordinates?: { latitude: number; longitude: number }
 }
 
 export interface SpokeRoute {

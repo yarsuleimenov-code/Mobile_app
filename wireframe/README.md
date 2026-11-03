@@ -1,5 +1,7 @@
 # Zaberman mobile wireframe
 
+Инкремент 2026-11-03: [HOV-001 — QR / заказ / геопозиция](../docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md). Перед финальным Pickup/Supplemental/Delivery lock: Scan label → Check QR & location → обычное подтверждение либо Return to check / обязательная причина для Continue & confirm. Document versions → QR & location history показывает результат. В More → Administration задаются QR/геосценарии, радиус (предварительно 100 м) и точность. Device location использует browser GPS, остальные геосценарии синтетические; камера/QR decoder и реальные координаты адресов не подключены. Кнопка Continue to Delivery review лишь готовит evidence; Delivery завершается после финальной проверки и подписи. Текстовое ТЗ и developer-handoff синхронизированы.
+
 Интерактивный mobile-first прототип фиксации груза менеджерами Pickup/Dropoff. Маршрут на день остаётся в Spoke и не дублируется в Zaberman.
 
 Публичный прототип: https://yarsuleimenov-code.github.io/Mobile_app/

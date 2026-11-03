@@ -6,6 +6,8 @@
 
 ## Сквозной handoff
 
+Уточнение **HOV-001, 2026-11-03** для UC-05/06/08: [правила QR, местоположения, предупреждений и 15 HOV-AC](QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md). Геопозиция обновляется непосредственно перед подтверждением. Неизвестный код требует retry; чужой заказ и неподтверждённая геопозиция требуют возврата к проверке либо обязательной причины. Сканирование не переключает Order. История хранится в версии операции; это текущий прототип / визуальное ТЗ, не production-приёмка.
+
 ```mermaid
 flowchart TD
   A[Home / Task: Pickup] --> B[Editable draft: groups, places, photos]
@@ -144,7 +146,7 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference; freeze checkpoint Needs Decision |
 | Начальное состояние | Planned/manual Order; original Pickup не locked; editable draft. |
-| Последовательность экранов/действий | Home/Task → Pickup → groups/measurements/photos → saved → Continue → draft ready → Open Pickup review → contact signature либо UC-07 OTP → driver signature → lock. |
+| Последовательность экранов/действий | Home/Task → Pickup → groups/measurements/photos → saved → Continue → draft ready → Open Pickup review → contact signature либо UC-07 OTP → driver signature → QR и свежая геопроверка HOV-001 → lock либо предупреждение с обязательной причиной. |
 | Валидации | Достоверный Order/place context, актуальный review; недоступные фото/размеры/вес/иные сведения — комментарий менеджера что отсутствует и почему; contact и driver confirmation остаются обязательны. |
 | Системные операции / изменение состояния | Draft→CargoRecord/local eBOL review; до lock evidence обновляется; после final driver lock eBOL pickup_locked и original snapshot immutable. |
 | Конечное состояние | Pickup snapshot locked локально; authoritative operation close и sync отдельны. |
@@ -160,7 +162,7 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference |
 | Начальное состояние | Original locked; есть новые физические места того же Order. |
-| Последовательность экранов/действий | Recent Add places/draft → supplemental draft → новые IDs/фото → create version → review → contact confirmation → driver → locked supplemental. |
+| Последовательность экранов/действий | Recent Add places/draft → supplemental draft → новые IDs/фото → create version → review → contact confirmation → driver → собственная проверка HOV-001 → locked supplemental. |
 | Валидации | Новые места >0; свой evidence и причины unknown; существующий unsigned supplement продолжается. |
 | Системные операции / изменение состояния | Добавить новую version/addedPlaceIds и confirmations; сохранить original без изменений; effective Pickup включает только locked supplements. |
 | Конечное состояние | Original + locked supplement читаемы; только подтверждённые additions доступны для Delivery. |
@@ -192,10 +194,10 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference; authoritative checkpoint Needs Decision |
 | Начальное состояние | Order CargoRecord найден; Delivery ещё не locked. |
-| Последовательность экранов/действий | Home/Task → Dropoff → Search/сверка Pickup → Delivery photos/condition → matches → Confirm Dropoff; если Pickup locked → Delivery review → contact signature/OTP → driver → completed eBOL. |
+| Последовательность экранов/действий | Home/Task → Dropoff → Search/сверка Pickup → Delivery photos/condition → matches → Continue to Delivery review (ещё не completed); если Pickup locked → Delivery review → contact signature/OTP → driver → QR и свежая геопроверка адреса Delivery HOV-001 → completed eBOL либо предупреждение с обязательной причиной. |
 | Валидации | Недоступные сведения/фото допускаются с комментарием BD-09; физическое несовпадение/отказ не маскировать matches. Нужны свой Order, актуальная версия и подтверждения; unsigned additions отдельно. |
-| Системные операции / изменение состояния | Сохранить Delivery draft. При Pickup locked сначала сохранить Delivery review, затем локальный dropoff_complete; lock Delivery завершает eBOL. |
-| Конечное состояние | При обеих locked snapshots eBOL completed и POD доступен; local record completion отдельно. |
+| Системные операции / изменение состояния | Сохранить Delivery draft; при Pickup locked подготовить Delivery review без завершения доставки. Финальный lock после проверки HOV-001 сохраняет audit, завершает eBOL и переводит локальный record в dropoff_complete. |
+| Конечное состояние | При обеих locked snapshots eBOL completed, POD доступен; локальный record завершён после финального подтверждения. Production authoritative close/sync остаются отдельными. |
 | Альтернативные ветки | Нет фото: сохранить причину и продолжить. Ошибка/отказ передачи: сообщить диспетчеру и открыть другую точку, не завершив проблемную (BD-05). Pickup не locked: сохранить draft и перейти к Pickup review. |
 | Ошибки / ограничения | Unknown Order, changed query, pending additions/storage/document failure не дают обычный success. Refused/partial не маскировать matches=true. |
 | Требования / источники | [FR-020](TECHNICAL_SPECIFICATION.md#fr-020), [FR-021](TECHNICAL_SPECIFICATION.md#fr-021), [FR-022](TECHNICAL_SPECIFICATION.md#fr-022) |

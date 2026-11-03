@@ -18,6 +18,8 @@ import { SignaturePad } from '../signature-components'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { ContactCommentView, HandoffCommentEditor, HandoffCommentSaveError, useHandoffComments } from '../orderReviewComments'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
+import { HandoffVerificationButton } from '../HandoffVerification'
+import type { HandoffVerification } from '../handoffVerificationDomain'
 
 interface PickupSignatureLocationState {
   confirmationInput: PickupEbolConfirmationInput
@@ -30,7 +32,7 @@ export function PickupSignatureScreen() {
   const location = useLocation()
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
-  const reviewPath = `/orders/${orderNumber}/ebol/pickup`
+  const reviewPath = `/orders/${orderNumber}/ebol/pickup${location.search}`
   const { findRecord, getOrderDetails } = useCargo()
   const { network, emailOutcome } = usePrototypeScenario()
   const record = findRecord(orderNumber)
@@ -79,9 +81,9 @@ export function PickupSignatureScreen() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const finishPickupSigning = () => {
+  const finishPickupSigning = (verification: HandoffVerification) => {
     if (!driverSigned || (startsWithContact && !contactSigned) || !changeComments(comments)) return
-    const input = { ...confirmationInput, contactComment: comments.contact, driverComment: comments.driver, sendEmailCopy: startsWithContact && sendEmailCopy, contactEmail: contactEmail.trim() }
+    const input = { ...confirmationInput, verification, contactComment: comments.contact, driverComment: comments.driver, sendEmailCopy: startsWithContact && sendEmailCopy, contactEmail: contactEmail.trim() }
     const current = withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? orderEbol, supplementVersion ?? 'pickup', getOrderDetails(orderNumber))!
     if ((supplementVersion === undefined && current.pickup.lockedAt) || current.pickupSupplements.find((item) => item.version === supplementVersion)?.lockedAt) { navigate(reviewPath, { replace: true }); return }
     const locked = supplementVersion === undefined
@@ -154,7 +156,7 @@ export function PickupSignatureScreen() {
             <HandoffCommentEditor party="driver" value={comments.driver} onChange={(value) => { setDriverSigned(false); changeComments({ ...comments, driver: value }) }} />
             <SignaturePad key={`driver:${comments.driver}`} label="Zaberman driver" onSignedChange={setDriverSigned} />
             {storageError ? <p className="ebol-storage-warning">Browser storage is unavailable. The Pickup snapshot was not locked.</p> : null}
-            <button type="button" className="cargo-primary" disabled={!driverSigned} onClick={finishPickupSigning}>Confirm & lock {supplement ? `version ${supplement.version}` : 'Pickup snapshot'}</button>
+            <HandoffVerificationButton order={orderNumber} operation="pickup" driver={confirmationInput.driverName} disabled={!driverSigned} label={`Confirm & lock ${supplement ? `version ${supplement.version}` : 'Pickup snapshot'}`} onConfirm={finishPickupSigning} />
           </section>
         )}
       </main>

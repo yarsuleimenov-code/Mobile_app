@@ -109,6 +109,8 @@ COM-001 от 2026-10-27: [12 COM-AC](INBOX_CALLS_INCREMENT_2026_10_27.md) и [12
 
 ## Проверяемость и правило обновления
 
+Инкремент [HOV-001: QR / заказ / местоположение](QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md) от 2026-11-03 добавляет HOV-AC-01–15 к UC-05/06/08 и FR-014/016/021/022/030/034/048/050. Проверяемые источники: `HandoffVerification.tsx`, `handoffVerificationDomain.ts`, `handoffVerificationStore.ts`, signing screens и `handoffVerification.test.ts`. HOV-AC-01–13 покрывают прототип, HOV-AC-14 — подтверждение двух production-зависимостей, HOV-AC-15 — будущую приёмку на устройствах iOS/Android. Базовые 70 FR/NFR и 140 AC сохраняются; новые 15 HOV-AC учитываются отдельно.
+
 Уникальные IDs FR-001–050 и NFR-001–020, AC1/AC2 для каждой записи, UC-01–18 и точные статусы сверяются с каталогами. При изменении requirement не переиспользовать ID для другого смысла; обновить source, AC, связанные UC/OQ и строку RTM. Не закрывать Needs Decision изменением слова в RTM без подтверждения источника решения.
 
 Функциональные data/validation clauses в ТЗ детализируют существующие FR; offline/parameter matrix — NFR-002 и соответствующие NFR, не отдельные неучтённые требования. UC — сценарии этих требований, не ещё 18 новых требований. Gap/OQ — unresolved analysis items, не обязательный implementation backlog.

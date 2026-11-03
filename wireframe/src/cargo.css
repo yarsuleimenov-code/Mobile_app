@@ -1237,3 +1237,16 @@ textarea { font: inherit; }
 .pretrip-flow a.ebol-secondary { margin-top: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
 .pretrip-flow .posttrip-record-note { margin-top: 14px; color: var(--cargo-muted); font-size: 12px; line-height: 1.5; }
 .handoff-comment-editor > p { margin-top: 8px; color: var(--cargo-muted); font-size: 11px; line-height: 1.4; }
+.handoff-check { margin-top: 20px; padding-top: 18px; border-top: 1px solid #dce3eb; }
+.handoff-check h3 { margin: 0 0 8px; }
+.handoff-check p, .handoff-history p { overflow-wrap: anywhere; }
+.handoff-check form, .handoff-check .measurement-warning { display: grid; gap: 12px; }
+.handoff-check > button { margin-top: 12px; }
+.handoff-check .measurement-warning .cargo-primary { color: #fff; background: var(--cargo-orange); font-size: 16px; font-weight: 900; text-decoration: none; padding: 12px; }
+.handoff-check .ebol-secondary:disabled { color: #8090a5; background: #f1f4f7; cursor: not-allowed; }
+.handoff-result { font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.handoff-result p { margin: 8px 0; }
+.handoff-success { padding: 14px; margin-top: 12px; border-radius: 12px; background: #effaf3; color: #185b38; }
+.handoff-history { margin-top: 10px; }
+.handoff-history summary { cursor: pointer; font-weight: 600; }
+.handoff-history small { display: block; overflow-wrap: anywhere; }

@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, FileText, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
 import {
@@ -36,6 +36,7 @@ export function DeliveryEbolScreen() {
 
 function DeliveryEbolContent() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
   const { getOrderDetails } = useCargo()
@@ -119,7 +120,7 @@ function DeliveryEbolContent() {
 
   const openSigning = () => {
     if (!changeComments(comments)) return
-    navigate(`/orders/${orderNumber}/ebol/delivery/sign`, { state: { confirmationInput } })
+    navigate(`/orders/${orderNumber}/ebol/delivery/sign${params.get('stop') ? `?stop=${encodeURIComponent(params.get('stop')!)}` : ''}`, { state: { confirmationInput } })
   }
 
   return (

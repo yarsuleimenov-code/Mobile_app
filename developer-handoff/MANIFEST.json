@@ -1,7 +1,7 @@
 {
   "package": "Mobile App developer handoff",
-  "version": "1.0+SA-0.1+COM-001+COM-002",
-  "date": "2026-11-02",
+  "version": "1.0+SA-0.1+COM-001+COM-002+HOV-001",
+  "date": "2026-11-03",
   "entrypoint": "README.md",
   "sourceRepository": "https://github.com/yarsuleimenov-code/Mobile_app",
   "referencePrototypeCommit": "a524ea0b8dda7701053c9fe25bc0eed73efa8119",
@@ -13,7 +13,8 @@
     "This manifest does not hash itself.",
     "sourceSha256 records the source text at export time per entry; unchanged historical entries retain their original provenance.",
     "COM-001: refreshed affected source copies; added 12 COM-AC and 12 CALL-TC. Production telephony remains deferred.",
-    "COM-002: first ETA quick message is editable and requires explicit Send; FR-044, UC-16, COM-AC-12 and CALL-TC-12 clarified."
+    "COM-002: first ETA quick message is editable and requires explicit Send; FR-044, UC-16, COM-AC-12 and CALL-TC-12 clarified.",
+    "HOV-001: current prototype increment, 15 HOV-AC; final QR/location verification and version audit. Radius/override provisional; production QR mapping, stop coordinates and native iOS/Android acceptance unresolved. referencePrototypeCommit remains the historical COM-002 reference, not a commit for this working increment."
   ],
   "files": [
     {
@@ -43,8 +44,8 @@
     {
       "path": "requirements/RELEASE_1_DECISIONS.md",
       "source": "docs/requirements/RELEASE_1_DECISIONS.md",
-      "sourceSha256": "f2002c16915daba6f80024b3d0226ca9ede119f37238aed213a0aa34bc8b12e2",
-      "sha256": "f2002c16915daba6f80024b3d0226ca9ede119f37238aed213a0aa34bc8b12e2"
+      "sourceSha256": "6cfaff5a36db7cba837779aacdce7500c5e6a1209f44a987756ffa30c697e21c",
+      "sha256": "6cfaff5a36db7cba837779aacdce7500c5e6a1209f44a987756ffa30c697e21c"
     },
     {
       "path": "requirements/REQUIREMENTS_GAP_ANALYSIS.md",
@@ -55,20 +56,20 @@
     {
       "path": "requirements/REQUIREMENTS_TRACEABILITY.md",
       "source": "docs/requirements/REQUIREMENTS_TRACEABILITY.md",
-      "sourceSha256": "914c332ade0354d82a96fdcb503511c83668686661c22c052e8ce1975d41433b",
-      "sha256": "672c0a7b2c0a3304f9ccad986336abee833897512c9a5798929b9001a7f13648"
+      "sourceSha256": "fc3743fda49b411a1d1fb42f2747fc8826ab5dbd5d9ad2df19fa4a8470f61365",
+      "sha256": "81fcc38186c9cf940a66b0781f32020de49c6ff5df928512f00c6d1087945df5"
     },
     {
       "path": "requirements/TECHNICAL_SPECIFICATION.md",
       "source": "docs/requirements/TECHNICAL_SPECIFICATION.md",
-      "sourceSha256": "90523185f877b8912fa56e87de34874bb62444f7b6d9e9f61518dab56eab426b",
-      "sha256": "6c7c8adb2547838ac6de41b15d158b6e29b2992a5a70bf0c8ffaba6a09d9e786"
+      "sourceSha256": "2bf53046fbd2fa10e306b67521b58a601a0272914de50f16fe98798feacfc20e",
+      "sha256": "d7b79ef78ee148f54938e2c173a397b016c0c0223358d375f29d8cb62f28db4f"
     },
     {
       "path": "requirements/WORKFLOWS_AND_USE_CASES.md",
       "source": "docs/requirements/WORKFLOWS_AND_USE_CASES.md",
-      "sourceSha256": "4e3c43d393123ef20ce93e38d36059ecb8e86fba04e12e952dfb3135d6835452",
-      "sha256": "4e3c43d393123ef20ce93e38d36059ecb8e86fba04e12e952dfb3135d6835452"
+      "sourceSha256": "47b4e004e717517cf1987da4d9d0ff75e1394c2dc7a6cedcf50db7a257b2ec97",
+      "sha256": "47b4e004e717517cf1987da4d9d0ff75e1394c2dc7a6cedcf50db7a257b2ec97"
     },
     {
       "path": "architecture/SYSTEM_ARCHITECTURE_AND_INTEGRATIONS.md",
@@ -91,20 +92,20 @@
     {
       "path": "system-analysis/SYSTEM_BEHAVIOR_AND_DATA_CONTRACTS.md",
       "source": "docs/system-analysis/SYSTEM_BEHAVIOR_AND_DATA_CONTRACTS.md",
-      "sourceSha256": "3f7b92d89c06b02d770ec95dfc55283fd962f15c888550a04c23adc46089630b",
-      "sha256": "3f7b92d89c06b02d770ec95dfc55283fd962f15c888550a04c23adc46089630b"
+      "sourceSha256": "8598cea1f5bb16d6bb1ddfa2b8821a901e60d2f021b230b3519a28df44fe55c9",
+      "sha256": "8598cea1f5bb16d6bb1ddfa2b8821a901e60d2f021b230b3519a28df44fe55c9"
     },
     {
       "path": "DEVELOPMENT_HANDOFF.md",
       "source": "docs/DEVELOPMENT_HANDOFF.md",
-      "sourceSha256": "9ef37a4b32b29cd476cacc2ab9ac0f1ed4401c1045d44c0fa9bcfb147d6d86a5",
-      "sha256": "9433b75cd3853c6b9f92023fd727146f95a92d13d92eb06e1a6f41f982e63f2b"
+      "sourceSha256": "226a140a7b31e75f2c19ffe4343d8e268c7b11a0b7321cebb38dc9091666d0f1",
+      "sha256": "247a46fce2adb1196e3d42acd3979074dc596751fd951a67601f12517a61a8e6"
     },
     {
       "path": "PROJECT_BASELINE.md",
       "source": "docs/PROJECT_BASELINE.md",
-      "sourceSha256": "87b4bed5da9868532e364550e369f1e8019c077340e7e76ea492f353ed3ff169",
-      "sha256": "2ec895ade851182e891da0d594599c10e8176223d65795b720e1e4ead7786275"
+      "sourceSha256": "82139b7c6ea741ef8db733959c57228dbf26b135a99008bb1d07c921a3125f6e",
+      "sha256": "09daf0e328d843c4de641dc9a6de8cca64bbed740270f90820be3500f8d2493a"
     },
     {
       "path": "decisions/DECISION_LOG.md",
@@ -158,7 +159,7 @@
       "path": "README.md",
       "source": null,
       "sourceSha256": null,
-      "sha256": "89de5fc4e2b75e33563c210b62b5e002a1d8345890fd39706c85f2fb5854a319"
+      "sha256": "bf4ee9b50dad8c9d59beb7c392308d96c1c7e4b06f914f6e587c9a84254a5827"
     },
     {
       "path": "requirements/INBOX_CALLS_INCREMENT_2026_10_27.md",
@@ -171,6 +172,12 @@
       "source": "docs/system-analysis/CALLS_BEHAVIOR_AND_DATA.md",
       "sourceSha256": "803e1113de2bbca01be0911b46dade665fbc498f068362a724a063a5bd83811f",
       "sha256": "630cb4cfe5bbf913d6c8cac21fff76dcad1ac7feb89e383a568a4de91b2a0b83"
+    },
+    {
+      "path": "requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md",
+      "source": "docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md",
+      "sourceSha256": "78b103dd34d5c6d684ca303e1dd9dddc21e98678836cfd5a39b3d66c2929bdb0",
+      "sha256": "78b103dd34d5c6d684ca303e1dd9dddc21e98678836cfd5a39b3d66c2929bdb0"
     }
   ]
 }

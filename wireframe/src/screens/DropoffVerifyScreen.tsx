@@ -24,7 +24,7 @@ export function DropoffVerifyScreen() {
 function DropoffVerifyForm() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { findRecord, completeDropoff, trackEvidenceOperation, getOrderDetails } = useCargo()
+  const { findRecord, trackEvidenceOperation, getOrderDetails } = useCargo()
   const [query, setQuery] = useState(params.get('order') ?? '11155599')
   const [record, setRecord] = useState<CargoRecord | undefined>()
   const [searched, setSearched] = useState(false)
@@ -113,12 +113,11 @@ function DropoffVerifyForm() {
         return
       }
     }
-    completeDropoff(record.orderNumber)
     setComplete(true)
   }
 
   if (complete && record) return (
-    <div className="cargo-flow"><CargoFlowHeader title="Dropoff" /><SuccessState title="Dropoff confirmed" message={deliveryEbolReady ? `Delivery evidence for order #${record.orderNumber} is ready for Order eBOL review.` : `Dropoff for order #${record.orderNumber} is saved. Lock the Pickup snapshot before Delivery signing.`} action={<div className="ebol-success-actions">{deliveryEbolReady ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery`)}>Open Delivery review</button> : <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/pickup`)}>Open Pickup review</button>}<button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>} /><CargoBottomNav /></div>
+    <div className="cargo-flow"><CargoFlowHeader title="Dropoff" /><SuccessState title="Delivery ready for review" message={deliveryEbolReady ? `Delivery evidence for order #${record.orderNumber} is ready for Order eBOL review.` : `Delivery evidence for order #${record.orderNumber} is saved. Lock the Pickup snapshot before Delivery signing.`} action={<div className="ebol-success-actions">{deliveryEbolReady ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery${params.get('stop') ? `?stop=${encodeURIComponent(params.get('stop')!)}` : ''}`)}>Open Delivery review</button> : <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/pickup`)}>Open Pickup review</button>}<button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>} /><CargoBottomNav /></div>
   )
 
   return (
@@ -179,7 +178,7 @@ function DropoffVerifyForm() {
 
             {documentSaveError ? <p role="alert" className="measurement-warning">{documentSaveError}</p> : null}
             {!deliveryLocked && !canConfirm && !pendingSupplement && !changingOrder ? <p className="measurement-warning">{!deliveryPhotoCount ? 'Add a Delivery photo. ' : ''}Confirm cargo matches Pickup, then select No visible damage or describe the damage.</p> : null}
-            <div className="flow-action">{deliveryLocked ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery`)}>Open locked Delivery review</button> : <button type="button" className="cargo-primary" disabled={!canConfirm} onClick={confirmDropoff}>Confirm Dropoff</button>}</div>
+            <div className="flow-action">{deliveryLocked ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery${params.get('stop') ? `?stop=${encodeURIComponent(params.get('stop')!)}` : ''}`)}>Open locked Delivery review</button> : <button type="button" className="cargo-primary" disabled={!canConfirm} onClick={confirmDropoff}>Continue to Delivery review</button>}</div>
           </>
         ) : null}
       </div>

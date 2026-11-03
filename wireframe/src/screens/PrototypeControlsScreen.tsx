@@ -7,6 +7,7 @@ import { roleLabels } from '../data'
 import type { Role } from '../domain'
 import { OTP_INVALID_CODE, type OtpOutcome } from '../deliveryOtpDomain'
 import { useCommunications } from '../communicationStore'
+import { HandoffVerificationSettings } from '../HandoffVerification'
 import {
   usePrototypeScenario,
   type DeviceKind,
@@ -74,6 +75,8 @@ export function PrototypeControlsScreen() {
           <details className="rehearsal-extra"><summary>Optional photo volume checks</summary><div className="scenario-options scenario-options--two">{rehearsalPresets.slice(8).map((preset) => <button type="button" key={preset.id} onClick={() => openPreset(preset.id)}>{preset.title}</button>)}</div></details>
           {presetError ? <p role="alert">{presetError}</p> : null}
         </section>
+
+        <HandoffVerificationSettings />
 
         <section className="scenario-section">
           <h2>Operator context</h2>

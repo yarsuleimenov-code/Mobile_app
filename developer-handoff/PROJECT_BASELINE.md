@@ -18,6 +18,8 @@ Owner согласовал 12 BD и отложил 3; актуальные от�
 
 ## Current application scope
 
+Инкремент **HOV-001, 2026-11-03** — [визуальное и текстовое ТЗ проверки QR, заказа и местоположения](requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md). Перед финальным Pickup/Supplemental/Delivery lock проверяется известная связь label → заказ и свежая геопозиция нужного stop; при предупреждении нужны возврат к проверке либо обязательная причина. Аудит сохраняется в соответствующей версии eBOL, показан в Document versions. Delivery review больше не завершает CargoRecord до финального lock. 100 м предварительно; реальные QR и координаты источника не подтверждены. Геосценарии и сканируемый код настраиваются отдельно в Administration. Это текущая работа над прототипом, не production-разработка и не отмена исторической приёмки reference.
+
 | Контур | Текущее поведение | Источник |
 |---|---|---|
 | Home / Tasks | Маршрут Spoke из fixtures, остановки Pickup/Dropoff, поиск/фильтры, manual operations, drafts, recent operations, документы | `CargoHomeScreen`, `TasksScreen`, `cargoStore`, `spokeDomain` |

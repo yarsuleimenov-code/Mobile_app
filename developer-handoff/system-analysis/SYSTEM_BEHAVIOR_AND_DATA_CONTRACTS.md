@@ -1,5 +1,7 @@
 # Системное поведение и внутренние контракты
 
+Уточнение **HOV-001, 2026-11-03**: [QR, заказ и геопозиция перед подтверждением](../requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md) дополняет ST-09/10/11 и CMD-05 FinalizeHandoff. Для нового handoff перед фиксацией требуется актуальный verification: контекст driver/order/type/stop, resolved QR order и результат, координаты/accuracy/time/distance, политика, overridden/reason. Сохранять вместе с фактом операции, не отдельной необязательной постзаписью; чужой код не меняет контекст, неизвестный не допускает finalize. В прототипе это поле соответствующей версии eBOL; прежние fixtures без него остаются read-only. Серверная проверка, реальная QR-связь, координаты и native permissions — последующая разработка, не готовые endpoints. Успех/override и 15 HOV-AC заданы в дополнении; подготовка Delivery review не является completed.
+
 **SA-0.1 · 2026-10-16 · Проект системной спецификации для команды.** Дополнение к [ТЗ v1.0](../DEVELOPMENT_HANDOFF.md). Не изменяет код, утверждённый UI, scope или статусы бизнес-решений. Это семантические контракты mobile/backend, а не объявленные существующими HTTP endpoints, SQL-таблицы или API Spoke.
 
 Основание: [review SA-01–12](../current/SYSTEM_ANALYSIS_REVIEW.md), [согласованные BD/RQ](../requirements/RELEASE_1_DECISIONS.md), [ТЗ](../requirements/TECHNICAL_SPECIFICATION.md), [NFR](../requirements/NON_FUNCTIONAL_REQUIREMENTS.md). Подробный обмен, очередь и recovery — [Integration mapping & sync](INTEGRATION_MAPPING_AND_SYNC.md).

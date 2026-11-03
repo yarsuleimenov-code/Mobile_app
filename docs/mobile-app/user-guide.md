@@ -1,5 +1,7 @@
 # User guide
 
+HOV-001 update, 2026-11-03: before final Pickup, Supplemental or Delivery confirmation, obtain the driver signature → **Scan label** → **Check QR & location**. Confirm normally when both checks pass. For a warning, the primary action is **Return to check**; **Continue & confirm** requires a reason. An unknown code requires another scan. **Document versions → QR & location history** shows results, driver, time, distance/accuracy and the reason. Scanning never switches the active order. Settings and managed scenarios are in More → Administration; the 100 m radius is provisional.
+
 This guide describes the **active** Mobile App interface. Buttons can change local prototype data; route loading, device actions, signatures, document sharing and sync are simulations. Use the on-screen order number and PlaceID when following an operation. Start with [Quick Start](quick-start.md) if you need the shortest route.
 
 ## Getting started and navigation
@@ -134,7 +136,7 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 2. Check the Order name, number of places, weight, volume, Pickup date, responsible manager and Pickup photos. An unfinished Supplemental Pickup must be completed and signed before Delivery can be confirmed.
 3. Add **Delivery photos** and compare the cargo against Pickup evidence.
 4. Select **Cargo matches pickup photos** only when the comparison is true. Select **No visible damage**, or choose **Report damage instead** and enter **Damage details**. Documented damage does not block the handoff.
-5. Select **Confirm Dropoff**. This saves the local Dropoff operation and prepares Delivery evidence. If the Pickup snapshot is not locked, use the offered **Open Pickup review** action first.
+5. Select **Continue to Delivery review**. This saves Delivery evidence; the handoff is not completed yet. If the Pickup snapshot is not locked, use the offered **Open Pickup review** action first.
 6. Open **Delivery review**. Check evidence and exceptions, enter the driver name and choose one contact confirmation method:
    - **Sign on device** — enter the contact name and obtain the contact signature;
    - **SMS code** — select **Send verification code**, ask the recipient for the code sent to the registered masked number, then select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`; three invalid attempts lock verification;

@@ -2,6 +2,7 @@ import { calculatePieces, calculateVolume, expandCargoPlaces, type CargoChangeEn
 import { orderDetailsIssues, initialOrderDetails, type OrderDetails } from './orderDetailsDomain'
 import { summarizeMeasurements, type MeasurementSummary } from './measurementDomain'
 import { evidencePhotos, type EvidencePhoto } from './photoEvidenceDomain'
+import { assertHandoffVerification, type HandoffVerification } from './handoffVerificationDomain'
 
 export type OrderEbolStatus =
   | 'draft'
@@ -47,6 +48,7 @@ export interface OrderEbolEvidenceSnapshot {
 }
 
 export interface OrderEbolHandoffSnapshot {
+  verification?: HandoffVerification
   evidence: OrderEbolEvidenceSnapshot | null
   comments?: HandoffComments
   contact: OrderEbolContactConfirmation
@@ -135,6 +137,7 @@ export function syncPickupOrderEbolDraft(
   } : draft
 }
 export interface PickupEbolConfirmationInput {
+  verification?: HandoffVerification
   contactComment?: string
   driverComment?: string
   contactMethod: 'signed' | 'otp'
@@ -168,6 +171,7 @@ export function lockPickupEbol(
   lockedAt = new Date().toISOString(),
 ): OrderEbol {
   if (orderEbol.pickup.lockedAt) throw new Error('Pickup eBOL is already locked')
+  assertHandoffVerification(input.verification, orderEbol.orderNumber, 'pickup', input.driverName, lockedAt)
   if (!canLockPickupEbol(input) || !canReviewOrderEvidence(orderEbol.pickup.evidence)) throw new Error('Pickup eBOL confirmation is incomplete')
 
   return {
@@ -176,6 +180,7 @@ export function lockPickupEbol(
     pickup: {
       ...orderEbol.pickup,
       comments: confirmedComments(input, orderEbol.pickup.comments),
+      verification: input.verification,
       evidence: orderEbol.pickup.evidence ? {
         ...orderEbol.pickup.evidence,
         hasDamage: input.hasDamage,
@@ -257,6 +262,7 @@ export function lockSupplementalPickup(
   lockedAt = new Date().toISOString(),
 ): OrderEbol {
   if (!canLockPickupEbol(input)) throw new Error('Supplemental Pickup confirmation is incomplete')
+  assertHandoffVerification(input.verification, orderEbol.orderNumber, 'pickup', input.driverName, lockedAt)
   const supplements = orderEbol.pickupSupplements ?? []
   const target = supplements.find((item) => item.version === version)
   if (!target || target.status !== 'draft' || !target.evidence || !canReviewOrderEvidence(target.evidence)) throw new Error('Supplemental Pickup draft is missing')
@@ -266,6 +272,7 @@ export function lockSupplementalPickup(
       ...item,
       status: 'locked',
       comments: confirmedComments(input, item.comments),
+      verification: input.verification,
       evidence: {
         ...item.evidence!,
         hasDamage: input.hasDamage,
@@ -357,6 +364,7 @@ export function lockDeliveryEbol(
   lockedAt = new Date().toISOString(),
 ): OrderEbol {
   if (orderEbol.delivery.lockedAt) throw new Error('Delivery eBOL is already locked')
+  assertHandoffVerification(input.verification, orderEbol.orderNumber, 'dropoff', input.driverName, lockedAt)
   if (!orderEbol.pickup.lockedAt) throw new Error('Pickup eBOL must be locked before Delivery')
   if (!orderEbol.delivery.evidence) throw new Error('Delivery evidence is missing')
   if (!canLockDeliveryEbol(input) || !canReviewOrderEvidence(orderEbol.delivery.evidence)) throw new Error('Delivery eBOL confirmation is incomplete')
@@ -367,6 +375,7 @@ export function lockDeliveryEbol(
     delivery: {
       ...orderEbol.delivery,
       comments: confirmedComments(input, orderEbol.delivery.comments),
+      verification: input.verification,
       evidence: {
         ...orderEbol.delivery.evidence,
         hasDamage: input.hasDamage,
