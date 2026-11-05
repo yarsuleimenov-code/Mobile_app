@@ -73,7 +73,7 @@ Units/precision: reference in/lb/cu ft сохраняет бизнес-смыс�
 | Confirmation | R: side=contact/driver, method, signer identity/name, review/evidence binding, partyCommentRevision, occurredAt; C: signature asset или trusted OTP proof | Contact signature либо verified OTP; driver signature обязателен. Contact signature не переиспользуется из другого handoff/review; сохранённая employee signature только с явным подтверждением/действующей делегацией по NFR-011. Поле userId клиента не доказывает actor; контакт не становится app user. OTP value не сохраняется в документе |
 | SignedVersion | R: versionId, ebolId, handoffId, immutable evidence, подтверждения, accepted revision; C: original/supplement link | Backend связывает обе стороны с согласованным evidence; PDF job отдельный. Freeze checkpoint D/RQ-01, correction D/RQ-02 |
 | DocumentResult | R: versionId, generation state; C: assetId/file reference при ready; O: delivery attempt | Ready означает реально доступный PDF этой версии. Generated ≠ sent ≠ delivered; email опционален. FR-025/026 |
-| Inspection | R при завершении: inspectionId, vehicleId/cycleId, type, checks, attestation, required photo refs; C: issue notes | Pre: 8 Pass, 5 ракурсов, attestation; Issue блокирует passed. Post Issue с описанием допустим, stops не закрывает. Cargo missing-comment не отменяет inspection gate |
+| Inspection | R при завершении: inspectionId, vehicleId/cycleId, type, checks, attestation, required photo refs; C: issue notes | Pre: 4 Pass, 13 обязательных фото, attestation. Issue блокирует passed. Post: те же 4 проверки и 13 фото. Issue с описанием допустим, stops не закрывает. Cargo missing-comment не отменяет inspection gate |
 
 ### VAL — матрица missing/invalid
 
@@ -108,7 +108,7 @@ Units/precision: reference in/lb/cu ft сохраняет бизнес-смыс�
 | ID | Исходное → действие → результат | Guard / authority | Side effects и ошибочная ветка | Источник |
 |---|---|---|---|---|
 | ST-01 | pre_required → сохранить осмотр → pre_in_progress | Проверенная/допустимая cached identity; vehicle/cycle | Устойчивый draft; write failure не saved | FR-009, NFR-001 |
-| ST-02 | pre_in_progress → завершить Pre → pre_passed либо pre_issue | Все checks Pass/ракурсы/attestation для passed | Issue не снимается reconnect; recovery RQ-04. Остальные функции не получают global gate | BD-11, FR-004/009 |
+| ST-02 | pre_in_progress → завершить Pre → pre_passed либо pre_issue | 4 Pass, 13 фото и attestation для passed | Issue не снимается reconnect; recovery RQ-04. Остальные функции не получают global gate | BD-11, FR-004/009 |
 | ST-03 | pre_passed → import route → refreshed/cached | Успешный актуальный vehicle cycle; доверенный import outcome | Атомарно применить projection; ошибка не заменяет route пустым. Import технически online, cached reading отдельно | FR-004/050 |
 | ST-04 | cached/Tasks → открыть stop → draft/review/locked view | Точный Order/stop и вид операции | Восстановить существующие IDs; открытие ничего не завершает | FR-002/003/011 |
 | ST-05 | editable draft → save → сохранённая local revision + pending | Валидно сохранён доступный partial ввод | Persistent file refs + draft/outbox; local write failure не создаёт ready entry | FR-011/013, NFR-001 |

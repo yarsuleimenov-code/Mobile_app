@@ -95,14 +95,15 @@ export function PreTripInspectionScreen() {
 
       {step === 'photos' ? (
         <main className="pretrip-body">
-          <div className="pretrip-intro"><span><Camera size={24} /></span><div><h1>Photograph all four sides and dashboard</h1><p>Capture the full vehicle and wheels on each side, then the instrument panel and any warning indicators.</p></div></div>
+          <div className="pretrip-intro"><span><Camera size={24} /></span><div><h1>Take the required photos</h1></div></div>
           {!devices.camera ? <div className="pretrip-warning"><CircleAlert size={20} /><span><strong>Camera unavailable</strong><small>Camera access is required to complete the inspection.</small></span></div> : null}
           <div className="pretrip-photo-grid">
             {preTripPhotos.map((photo) => {
               const captured = inspection.photos.includes(photo.id)
               return <button type="button" key={photo.id} className={captured ? 'is-captured' : ''} disabled={!devices.camera} onClick={() => capturePhoto(photo.id)}>
                 <span className="pretrip-photo-visual">{captured ? <><Truck size={34} /><b><Check size={15} /></b></> : <Camera size={27} />}</span>
-                <strong>{photo.label}</strong><small>{captured ? 'Captured just now · Tap to retake' : photo.detail}</small>
+                <strong>{photo.label}</strong>
+                {captured ? <small>Captured just now · Tap to retake</small> : 'detail' in photo ? <small>{photo.detail}</small> : null}
               </button>
             })}
           </div>

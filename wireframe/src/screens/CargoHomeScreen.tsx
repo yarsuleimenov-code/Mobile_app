@@ -12,7 +12,7 @@ import { getOrderDocumentNavigation } from '../orderEbolNavigation'
 import { readOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts } from '../pickupDraftStore'
 import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
-import { inspectionStatus, preTripChecks, preTripPhotos } from '../preTripInspectionDomain'
+import { inspectionStatus, preTripPhotos } from '../preTripInspectionDomain'
 import { usePreTripInspection } from '../preTripInspectionStore'
 import { StopNavigation } from '../StopNavigation'
 
@@ -63,7 +63,7 @@ export function CargoHomeScreen() {
 
         <section className={`pretrip-home-card pretrip-home-card--${preTripStatus}`} aria-labelledby="pretrip-home-title">
           <span className="pretrip-home-icon"><ShieldCheck size={25} /></span>
-          <div><p>{postTrip.completedAt ? 'PRE-TRIP RECORD' : routeUnlocked ? 'VEHICLE CLEARED' : preTripStatus === 'blocked' ? 'ROUTE LOCKED' : 'REQUIRED BEFORE ROUTE'}</p><h2 id="pretrip-home-title">Pre-trip inspection</h2><small>{preTripStatus === 'passed' ? `Van 08 · ${preTripChecks.length} checks · ${inspection.photos.length} photos complete` : preTripStatus === 'blocked' ? 'A reported issue must be cleared before departure' : `Van 08 · Safety checklist and ${preTripPhotos.length} required photos`}</small></div>
+          <div><p>{postTrip.completedAt ? 'PRE-TRIP RECORD' : routeUnlocked ? 'VEHICLE CLEARED' : preTripStatus === 'blocked' ? 'ROUTE LOCKED' : 'REQUIRED BEFORE ROUTE'}</p><h2 id="pretrip-home-title">Pre-trip inspection</h2><small>{preTripStatus === 'passed' ? `Van 08 · ${Object.keys(inspection.answers).length} checks · ${inspection.photos.length} photos complete` : preTripStatus === 'blocked' ? 'A reported issue must be cleared before departure' : `Van 08 · Safety checklist and ${preTripPhotos.length} required photos`}</small></div>
           <button type="button" onClick={() => navigate('/pre-trip-inspection')}>{preTripStatus === 'passed' ? 'View' : preTripStatus === 'in_progress' || preTripStatus === 'blocked' ? 'Continue' : 'Start'} <ChevronRight size={17} /></button>
         </section>
 

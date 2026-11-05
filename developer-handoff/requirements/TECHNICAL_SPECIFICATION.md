@@ -249,19 +249,19 @@
 | Module / Workflow | Inspections / [UC-04](WORKFLOWS_AND_USE_CASES.md#uc-04) |
 | Статус | Confirmed |
 | Release 1 | Core / сохраняемая база первого этапа |
-| Описание | Сохранить Check → Photos → Review: восемь проверок, пять camera-only ракурсов и attestation. |
-| Бизнес-правило | Все checks отвечены Pass; любой Issue блокирует completed. Ракурсы: Front, Rear, Driver side, Passenger side, Dashboard; gallery здесь нет. |
+| Описание | Сохранить Check → Photos → Review: четыре проверки, 13 обязательных фото с камеры и attestation. |
+| Бизнес-правило | На Check четыре пункта: Lights & reflectors, Windows, mirrors & wipers, Leaks under vehicle, Emergency equipment. Для завершения все четыре должны быть Pass. На Photos требуется по одному фото на карточку: Front, Rear, Driver side, Passenger side, Dashboard, Tires & wheels, 2x Dollies, Hand truck, Scales, 2x Utility knifes/Measuring tape, Lamp, DeWalt case, Milwaukee open bag. Загрузка из галереи недоступна. |
 | Пользователь / роль | Водитель |
 | Предусловия | Открыт незавершённый Pre-trip vehicle cycle. |
-| Основной сценарий | Ответить по checks → снять ракурсы → подтвердить attestation → завершить. |
+| Основной сценарий | Ответить по checks → сделать 13 фото → подтвердить attestation → завершить. |
 | Альтернативные сценарии | Прервать и продолжить сохранённый осмотр; завершённый результат read-only. |
-| Исключения / ошибки | Issue, недостающий ракурс, отсутствие attestation/camera или ошибка сохранения не дают объявить успешный осмотр. |
+| Исключения / ошибки | Issue, недостающее фото, отсутствие attestation/camera или ошибка сохранения не дают объявить успешный осмотр. |
 | Связанные сущности | Vehicle context, Inspection, Check, Photo |
 | Источник | [preTripInspectionDomain](https://github.com/yarsuleimenov-code/Mobile_app/blob/1abe03ce0cd54697dedf713a0657c5f41f69ece3/wireframe/src/preTripInspectionDomain.ts); [PreTripInspectionScreen](https://github.com/yarsuleimenov-code/Mobile_app/blob/1abe03ce0cd54697dedf713a0657c5f41f69ece3/wireframe/src/screens/PreTripInspectionScreen.tsx) |
 | Нерешённые зависимости | OQ-05, OQ-12 |
 
 - **FR-009-AC1:** При одном Issue осмотр не получает passed.
-- **FR-009-AC2:** Восемь Pass, пять ракурсов и attestation позволяют завершить; gallery не предлагается.
+- **FR-009-AC2:** Четыре Pass, все 13 обязательных фото и attestation позволяют завершить осмотр. Загрузка из галереи недоступна.
 
 ### FR-010
 
@@ -276,7 +276,7 @@
 | Бизнес-правило | Issue требует описания, но не запрещает Post-trip report; незавершённые stops требуют acknowledgment, не закрываются автоматически. |
 | Пользователь / роль | Водитель |
 | Предусловия | Есть completed Pre-trip; Post-trip ещё не завершён. |
-| Основной сценарий | Checks/issue notes → пять ракурсов → attestation → завершить; затем новый cycle. |
+| Основной сценарий | Те же четыре проверки и 13 фото, что в FR-009 → attestation → завершение → новый cycle. При Issue требуется описание. |
 | Альтернативные сценарии | Просмотр completed/history read-only; следующий cycle очищает текущий осмотр, сохраняя историю. |
 | Исключения / ошибки | Без issue reason, фото, attestation или acknowledgement при unfinished stops отчёт не завершается. |
 | Связанные сущности | Vehicle cycle, Pre/Post Inspection, Stop count |
@@ -1224,7 +1224,7 @@
 | Measurement / Totals | Dimensions state complete/partial/unknown/not_measurable, known dimensions, reason; weight value/source; counts incomplete/unknown | Прототип вычисляет часть state из значений; target explicit quality PD-011. Volume только при полных L/W/H; показатели known-only, не фиктивные нули. Units in/lb/cu ft — reference | FR-013, NFR-019; Stage 0/cargoDomain/measurementDomain |
 | Branch / Warehouse / Direction | Reference codes NJ1, CA1, CA2, TX1, FL1, AL1; origin/destination; organizational scope отдельно от physical location | Branch=Warehouse в текущем бизнес-scope по BD-03; source IDs/master/статусы — OQ-03. Reference Interstate не допускает одинаковых кодов, но full lanes policy отсутствует | FR-035/049/050; cargoDomain/interstateDomain |
 | Vehicle / Driver / User | Vehicle label, truck selection; responsible/signer; user capability/scope, assignment | Пример Van08 и truck list — fixtures. Нужны подтверждённые sources/identity, а не строки как authoritative user/vehicle key; полный доступ BD-06, session/source и vehicle recovery — OQ-06/12 | FR-009/010/017/048; inspection domains/PD |
-| Inspection / Vehicle cycle | Pre/Post answers, issue notes, пять photo-view markers, attested, completedAt; paired history; unfinishedStops | Pre все Pass; Post Issue с reason допускается; Post после Pre; новый cycle сохраняет предыдущую пару. Физические media/actor binding — production gap | FR-009/010; inspection domains |
+| Inspection / Vehicle cycle | Pre/Post answers, issue notes, 13 маркеров обязательных фото, attested, completedAt; paired history; unfinishedStops | Pre все Pass; Post Issue с reason допускается; Post после Pre; новый cycle сохраняет предыдущую пару. Физические media/actor binding — production gap | FR-009/010; inspection domains |
 | Order eBOL → Order | status, pickup/delivery handoff snapshots, pickupSupplements, created/updated time | Один document lifecycle на Order. Reference statuses draft/pickup_review/pickup_locked/in_transit/delivery_review/completed/correction_requested — declared vocabulary, не доказательство active flow каждой ветки | FR-016/022/023/043; orderEbolDomain |
 | HandoffSnapshot / SupplementalVersion | Evidence, contact/driver confirmations, separate comments, lockedAt; supplement version/documentNumber, addedPlaceIds | Snapshot одной передачи immutable после lock; draft supplements не effective confirmed cargo. Evidence freeze checkpoint — OQ-08. Не объявлять immutable после первой подписи уже реализованной гарантией | FR-015–019/022/024; orderEbolDomain |
 | EvidenceSnapshot → places/photos/order details | capturedAt/sourceDraftUpdatedAt, placeIds, piece/weight/volume totals, measurements quality, photo IDs, damage/exception, history | Содержимое версии фиксируется и не заменяется current Order projection; original и additions раздельны. Partial/refused shape пока неизвестен | FR-014–024/028; orderEbolDomain |

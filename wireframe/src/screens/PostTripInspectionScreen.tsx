@@ -5,6 +5,7 @@ import { CargoFlowHeader } from '../cargo-components'
 import { useCargo } from '../cargoStore'
 import { readOrderEbols } from '../orderEbolStore'
 import { postTripCanComplete, postTripChecklistComplete, postTripChecks, postTripIssues, postTripPhotos } from '../postTripInspectionDomain'
+import { legacyPreTripChecks } from '../preTripInspectionDomain'
 import { usePreTripInspection } from '../preTripInspectionStore'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 
@@ -23,8 +24,9 @@ export function PostTripInspectionScreen() {
     const document = documents.find((item) => item.orderNumber === task.externalId)
     return !(task.operation === 'pickup' ? document?.pickup.lockedAt : document?.delivery.lockedAt)
   }).length ?? 0
-  const issues = postTripIssues(post)
   const locked = Boolean(post.completedAt || archived)
+  const recordedChecks = legacyPreTripChecks.filter(({ id }) => post.answers[id])
+  const issues = locked ? recordedChecks.filter(({ id }) => post.answers[id] === 'issue') : postTripIssues(post)
   const photosComplete = postTripPhotos.every((item) => post.photos.includes(item.id))
   const header = <CargoFlowHeader title="Post-trip inspection" subtitle={cycle.vehicle} />
 
@@ -36,10 +38,10 @@ export function PostTripInspectionScreen() {
       {store.saveError ? <p className="ebol-storage-warning" role="alert">Inspection could not be saved. Check device storage and retry. Your last saved record has not changed.</p> : null}
       {locked ? <>
         <div className={`pretrip-review-state ${issues.length ? 'is-blocked' : ''}`}><span>{issues.length ? <AlertTriangle size={28} /> : <Check size={28} />}</span><p className="pretrip-eyebrow">POST-TRIP RECORDED</p><h1>{issues.length ? 'Completed — issues reported' : 'Post-trip completed'}</h1><p>{issues.length ? 'Vehicle needs attention. Report the recorded issues to dispatch before the next departure.' : 'Vehicle condition and equipment have been recorded.'}</p></div>
-        <dl className="pretrip-review-list"><div><dt>Vehicle</dt><dd>{cycle.vehicle}</dd></div><div><dt>Pre-trip completed</dt><dd>{new Date(cycle.inspection.completedAt).toLocaleString()}</dd></div><div><dt>Post-trip completed</dt><dd>{new Date(post.completedAt!).toLocaleString()}</dd></div><div><dt>Required photos</dt><dd>{post.photos.length}/{postTripPhotos.length}</dd></div><div><dt>Unfinished stops acknowledged</dt><dd>{post.unfinishedStops}</dd></div></dl>
-        <details className="order-detail-card"><summary>View linked Pre-trip record</summary><p>Completed {new Date(cycle.inspection.completedAt).toLocaleString()}</p>{Object.entries(cycle.inspection.answers).map(([id, answer]) => <p key={id}>{postTripChecks.find((item) => item.id === id)?.label}: {answer}</p>)}<p>Photos: {cycle.inspection.photos.join(', ')}</p></details>
-        <div className="pretrip-checklist">{postTripChecks.map((item) => <section key={item.id} className={post.answers[item.id] === 'issue' ? 'has-issue' : 'has-passed'}><div><strong>{item.label}</strong><small>{post.answers[item.id] === 'issue' ? `Issue: ${post.issues[item.id]}` : 'Pass'}</small></div></section>)}</div>
-        <div className="pretrip-photo-grid">{postTripPhotos.map((photo) => <div className="posttrip-record-note" key={photo.id}><Check size={16} /> {photo.label} · Captured</div>)}</div><p className="posttrip-record-note">Driver confirmed the record is accurate. This completed record is read-only.</p>
+        <dl className="pretrip-review-list"><div><dt>Vehicle</dt><dd>{cycle.vehicle}</dd></div><div><dt>Pre-trip completed</dt><dd>{new Date(cycle.inspection.completedAt).toLocaleString()}</dd></div><div><dt>Post-trip completed</dt><dd>{new Date(post.completedAt!).toLocaleString()}</dd></div><div><dt>Photos captured</dt><dd>{post.photos.length}</dd></div><div><dt>Unfinished stops acknowledged</dt><dd>{post.unfinishedStops}</dd></div></dl>
+        <details className="order-detail-card"><summary>View linked Pre-trip record</summary><p>Completed {new Date(cycle.inspection.completedAt).toLocaleString()}</p>{Object.entries(cycle.inspection.answers).map(([id, answer]) => <p key={id}>{legacyPreTripChecks.find((item) => item.id === id)?.label}: {answer}</p>)}<p>Photos: {cycle.inspection.photos.join(', ')}</p></details>
+        <div className="pretrip-checklist">{recordedChecks.map((item) => <section key={item.id} className={post.answers[item.id] === 'issue' ? 'has-issue' : 'has-passed'}><div><strong>{item.label}</strong><small>{post.answers[item.id] === 'issue' ? `Issue: ${post.issues[item.id]}` : 'Pass'}</small></div></section>)}</div>
+        <div className="pretrip-photo-grid">{postTripPhotos.filter(({ id }) => post.photos.includes(id)).map((photo) => <div className="posttrip-record-note" key={photo.id}><Check size={16} /> {photo.label} · Captured</div>)}</div><p className="posttrip-record-note">Driver confirmed the record is accurate. This completed record is read-only.</p>
         <Link className="ebol-secondary" to="/">Back to Home</Link>
       </> : null}
       {!locked && step === 'checklist' ? <>
@@ -52,9 +54,16 @@ export function PostTripInspectionScreen() {
         <div className="pretrip-sticky"><button type="button" className="cargo-primary" disabled={!postTripChecklistComplete(post)} onClick={() => setStep('photos')}>Continue to photos <ChevronRight size={19} /></button></div>
       </> : null}
       {!locked && step === 'photos' ? <>
-        <div className="pretrip-intro"><span><Camera size={24} /></span><div><h1>Record five required photos</h1><p>Capture all four sides and the dashboard, including any warning indicators.</p></div></div>
+        <div className="pretrip-intro"><span><Camera size={24} /></span><div><h1>Take the required photos</h1></div></div>
         {!devices.camera ? <div className="pretrip-warning" role="alert"><AlertTriangle size={20} /><span><strong>Camera unavailable</strong><small>Restore camera access to complete the inspection.</small></span></div> : null}
-        <div className="pretrip-photo-grid">{postTripPhotos.map((photo) => <button type="button" key={photo.id} disabled={!devices.camera} className={post.photos.includes(photo.id) ? 'is-captured' : ''} onClick={() => store.updatePostTrip({ photos: [...new Set([...post.photos, photo.id])] })}><span className="pretrip-photo-visual">{post.photos.includes(photo.id) ? <Check size={28} /> : <Camera size={28} />}</span><strong>{photo.label}</strong><small>{post.photos.includes(photo.id) ? 'Captured · Tap to retake' : photo.detail}</small></button>)}</div>
+        <div className="pretrip-photo-grid">{postTripPhotos.map((photo) => {
+          const captured = post.photos.includes(photo.id)
+          return <button type="button" key={photo.id} disabled={!devices.camera} className={captured ? 'is-captured' : ''} onClick={() => store.updatePostTrip({ photos: [...new Set([...post.photos, photo.id])] })}>
+            <span className="pretrip-photo-visual">{captured ? <Check size={28} /> : <Camera size={28} />}</span>
+            <strong>{photo.label}</strong>
+            {captured ? <small>Captured · Tap to retake</small> : 'detail' in photo ? <small>{photo.detail}</small> : null}
+          </button>
+        })}</div>
         <p className="pretrip-camera-note">Photos must be taken now. Gallery upload is not available.</p>
         <div className="pretrip-sticky pretrip-sticky--split"><button type="button" className="pretrip-back" onClick={() => setStep('checklist')}>Back</button><button type="button" className="cargo-primary" disabled={!photosComplete} onClick={() => setStep('review')}>Review inspection</button></div>
       </> : null}

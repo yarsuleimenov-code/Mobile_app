@@ -130,9 +130,9 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference |
 | Начальное состояние | Pre-trip required/in_progress либо Pre passed и Post-trip ещё не завершён. |
-| Последовательность экранов/действий | Pre: 8 checks Pass → пять camera-only ракурсов → attestation → passed. Post: 8 checks + issue descriptions → пять ракурсов → attestation → acknowledgment unfinished stops → complete → next cycle. |
+| Последовательность экранов/действий | Pre: 4 checks Pass → 13 обязательных фото с камеры → attestation → passed. Post: те же 4 checks и 13 фото, описание каждого Issue → attestation → acknowledgment unfinished stops → complete → next cycle. |
 | Валидации | Pre Issue блокирует; Post Issue требует reason, не блокирует report; все photo markers/attestation обязательны. |
-| Системные операции / изменение состояния | Сохранить current cycle и историю пар; завершённые записи read-only; next cycle архивирует пару и начинает новый Pre. |
+| Системные операции / изменение состояния | Сохранить current cycle и историю пар; завершённые записи сохраняют исходный набор ответов и фото. Следующий цикл архивирует пару и применяет текущие требования. |
 | Конечное состояние | Pre passed открывает Home gate; Post completed не завершает Order/Trip, новый Pre required. |
 | Альтернативные ветки | Прервать/возобновить; смотреть previous cycle; Post с описанными Issue завершить. |
 | Ошибки / ограничения | Camera/storage недоступны — нет ложного completed; fleet assignment/override/repair и global gate — OQ-12. |

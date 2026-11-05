@@ -1,4 +1,4 @@
-import { emptyPreTripInspection, inspectionCanComplete, preTripChecks, preTripPhotos, type PreTripAnswer, type PreTripCheckId, type PreTripInspectionState, type PreTripPhotoId } from './preTripInspectionDomain'
+import { emptyPreTripInspection, inspectionCanComplete, legacyPreTripChecks, legacyPreTripPhotos, preTripChecks, preTripPhotos, type PreTripAnswer, type PreTripCheckId, type PreTripInspectionState, type PreTripPhotoId } from './preTripInspectionDomain'
 
 export type PostTripCheckId = PreTripCheckId | 'equipment'
 export type PostTripPhotoId = PreTripPhotoId | 'dashboard'
@@ -16,7 +16,7 @@ export interface VehicleCycle {
   postTrip: PostTripInspectionState
 }
 export interface VehicleInspectionState extends VehicleCycle { history: VehicleCycle[] }
-export const postTripChecks = preTripChecks.map((item) => item.id === 'equipment' ? { ...item, detail: 'Confirm assigned tools and moving equipment are returned to the vehicle' } : item)
+export const postTripChecks = preTripChecks
 export const postTripPhotos = preTripPhotos
 export const emptyPostTripInspection: PostTripInspectionState = { answers: {}, issues: {}, photos: [], attested: false, completedAt: null, unfinishedStops: 0 }
 export const emptyVehicleInspection: VehicleInspectionState = { vehicle: 'Van 08 · Extended Van · NJ1', inspection: emptyPreTripInspection, postTrip: emptyPostTripInspection, history: [] }
@@ -40,26 +40,44 @@ export function restoreVehicleInspection(raw: string | null, legacy: string | nu
     const value = JSON.parse(raw ?? legacy ?? 'null')
     if (!value || typeof value !== 'object') return emptyVehicleInspection
     const normalizePre = (source: PreTripInspectionState, completedCycle = false): PreTripInspectionState => {
-      const answers = Object.fromEntries(preTripChecks.filter((item) => ['pass', 'issue'].includes(source?.answers?.[item.id] ?? '')).map((item) => [item.id, source.answers[item.id]]))
+      const answers = Object.fromEntries(legacyPreTripChecks.filter((item) => ['pass', 'issue'].includes(source?.answers?.[item.id] ?? '')).map((item) => [item.id, source.answers[item.id]]))
       const photos = preTripPhotos.filter((item) => Array.isArray(source?.photos) && source.photos.includes(item.id)).map((item) => item.id)
-      const draft = { answers, photos, attested: source?.attested === true, completedAt: null }
-      const historicalPass = completedCycle && draft.attested && preTripChecks.filter((item) => item.id !== 'equipment').every((item) => answers[item.id] === 'pass') && (answers.equipment === undefined || answers.equipment === 'pass') && preTripPhotos.filter((item) => item.id !== 'dashboard').every((item) => photos.includes(item.id))
-      const completedAt = (inspectionCanComplete(draft) || historicalPass) && typeof source?.completedAt === 'string' ? source.completedAt : null
-      return { ...draft, attested: source?.completedAt && !completedAt ? false : draft.attested, completedAt }
+      const currentAnswers = Object.fromEntries(preTripChecks.filter(({ id }) => answers[id]).map(({ id }) => [id, answers[id]]))
+      const draft = { answers: currentAnswers, photos, attested: source?.attested === true, completedAt: null }
+      const legacyPass = draft.attested
+        && legacyPreTripChecks.every(({ id }) => answers[id] === 'pass' || (completedCycle && id === 'equipment' && answers[id] === undefined))
+        && legacyPreTripPhotos.every(({ id }) => photos.includes(id) || (completedCycle && id === 'dashboard'))
+      const currentPass = inspectionCanComplete(draft)
+      if (typeof source?.completedAt === 'string' && (currentPass || legacyPass)) {
+        return { ...draft, answers: currentPass ? currentAnswers : answers, completedAt: source.completedAt }
+      }
+      return { ...draft, attested: currentPass }
     }
     const normalizeCycle = (source: VehicleCycle): VehicleCycle => {
       const p = source?.postTrip
       const postTrip: PostTripInspectionState = {
         ...emptyPostTripInspection,
-        answers: Object.fromEntries(postTripChecks.filter((item) => ['pass', 'issue'].includes(p?.answers?.[item.id] ?? '')).map((item) => [item.id, p.answers[item.id]])),
-        issues: Object.fromEntries(postTripChecks.filter((item) => typeof p?.issues?.[item.id] === 'string').map((item) => [item.id, p.issues[item.id]!.slice(0, 1000)])),
+        answers: Object.fromEntries(legacyPreTripChecks.filter((item) => ['pass', 'issue'].includes(p?.answers?.[item.id] ?? '')).map((item) => [item.id, p.answers[item.id]])),
+        issues: Object.fromEntries(legacyPreTripChecks.filter((item) => typeof p?.issues?.[item.id] === 'string').map((item) => [item.id, p.issues[item.id]!.slice(0, 1000)])),
         photos: postTripPhotos.filter((item) => Array.isArray(p?.photos) && p.photos.includes(item.id)).map((item) => item.id),
         attested: p?.attested === true,
         unfinishedStops: Number.isInteger(p?.unfinishedStops) && p.unfinishedStops >= 0 ? p.unfinishedStops : 0,
       }
-      const inspection = normalizePre(source?.inspection, typeof p?.completedAt === 'string' && postTripCanComplete(postTrip))
-      if (inspection.completedAt && postTripCanComplete(postTrip) && typeof p?.completedAt === 'string') postTrip.completedAt = p.completedAt
-      return { vehicle: emptyVehicleInspection.vehicle, inspection, postTrip }
+      const currentPostTrip = {
+        ...postTrip,
+        answers: Object.fromEntries(postTripChecks.filter(({ id }) => postTrip.answers[id]).map(({ id }) => [id, postTrip.answers[id]])),
+        issues: Object.fromEntries(postTripChecks.filter(({ id }) => postTrip.issues[id] !== undefined).map(({ id }) => [id, postTrip.issues[id]])),
+      }
+      const legacyComplete = postTrip.attested
+        && legacyPreTripChecks.every(({ id }) => postTrip.answers[id] === 'pass' || (postTrip.answers[id] === 'issue' && Boolean(postTrip.issues[id]?.trim())))
+        && legacyPreTripPhotos.every(({ id }) => postTrip.photos.includes(id))
+      const currentComplete = postTripCanComplete(currentPostTrip)
+      const completedCycle = typeof p?.completedAt === 'string' && (currentComplete || legacyComplete)
+      const inspection = normalizePre(source?.inspection, completedCycle)
+      const restoredPostTrip = completedCycle && legacyComplete && !currentComplete ? postTrip : currentPostTrip
+      if (inspection.completedAt && completedCycle) restoredPostTrip.completedAt = p.completedAt
+      else if (!currentComplete) restoredPostTrip.attested = false
+      return { vehicle: emptyVehicleInspection.vehicle, inspection, postTrip: restoredPostTrip }
     }
     if (!raw) return { ...emptyVehicleInspection, inspection: normalizePre(value) }
     return { ...normalizeCycle(value), history: Array.isArray(value.history) ? value.history.map(normalizeCycle).filter((cycle: VehicleCycle) => cycle.postTrip.completedAt) : [] }

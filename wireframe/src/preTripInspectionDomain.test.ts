@@ -35,25 +35,25 @@ describe('pre-trip inspection', () => {
   })
 
   it('blocks completion when an issue is reported', () => {
-    const inspection = completeInspection({ answers: { ...completeInspection().answers, tires: 'issue' } })
+    const inspection = completeInspection({ answers: { ...completeInspection().answers, lights: 'issue' } })
     expect(inspectionHasIssue(inspection)).toBe(true)
     expect(inspectionStatus(inspection)).toBe('blocked')
     expect(inspectionCanComplete(inspection)).toBe(false)
   })
 
-  it('requires dashboard even when all four exterior photos are captured', () => {
-    const inspection = completeInspection({ photos: preTripPhotos.filter((item) => item.id !== 'dashboard').map((item) => item.id) })
+  it('requires the Milwaukee bag photo even when the other twelve are captured', () => {
+    const inspection = completeInspection({ photos: preTripPhotos.filter((item) => item.id !== 'milwaukee_bag').map((item) => item.id) })
     expect(inspectionPhotosComplete(inspection)).toBe(false)
     expect(inspectionCanComplete(inspection)).toBe(false)
-    expect(inspectionCanComplete({ ...inspection, photos: [...inspection.photos, 'dashboard'] })).toBe(true)
+    expect(inspectionCanComplete({ ...inspection, photos: [...inspection.photos, 'milwaukee_bag'] })).toBe(true)
   })
 
-  it('requires company equipment separately from emergency equipment and blocks an issue', () => {
-    const inspection = completeInspection({ answers: { ...completeInspection().answers, equipment: undefined } })
+  it('requires emergency equipment to be checked separately from equipment photos', () => {
+    const inspection = completeInspection({ answers: { ...completeInspection().answers, emergency: undefined } })
     expect(inspectionChecklistComplete(inspection)).toBe(false)
     expect(inspectionCanComplete(inspection)).toBe(false)
-    expect(inspectionCanComplete({ ...inspection, answers: { ...inspection.answers, equipment: 'pass' } })).toBe(true)
-    const issue = { ...inspection, answers: { ...inspection.answers, equipment: 'issue' as const } }
+    expect(inspectionCanComplete({ ...inspection, answers: { ...inspection.answers, emergency: 'pass' } })).toBe(true)
+    const issue = { ...inspection, answers: { ...inspection.answers, emergency: 'issue' as const } }
     expect(inspectionCanComplete(issue)).toBe(false)
     expect(inspectionStatus(issue)).toBe('blocked')
   })

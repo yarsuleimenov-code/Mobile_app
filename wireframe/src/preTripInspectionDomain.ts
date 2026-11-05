@@ -8,7 +8,7 @@ export type PreTripCheckId =
   | 'emergency'
   | 'equipment'
 
-export type PreTripPhotoId = 'front' | 'rear' | 'driver_side' | 'passenger_side' | 'dashboard'
+export type PreTripPhotoId = typeof preTripPhotos[number]['id']
 export type PreTripAnswer = 'pass' | 'issue'
 
 export interface PreTripInspectionState {
@@ -18,7 +18,7 @@ export interface PreTripInspectionState {
   completedAt: string | null
 }
 
-export const preTripChecks: Array<{ id: PreTripCheckId; label: string; detail: string }> = [
+export const legacyPreTripChecks: Array<{ id: PreTripCheckId; label: string; detail: string }> = [
   { id: 'tires', label: 'Tires & wheels', detail: 'Inflation, tread, visible damage and loose hardware' },
   { id: 'lights', label: 'Lights & reflectors', detail: 'Headlights, brake lights, signals and reflectors' },
   { id: 'windows', label: 'Windows, mirrors & wipers', detail: 'Clear view, secure mirrors and working wipers' },
@@ -29,13 +29,29 @@ export const preTripChecks: Array<{ id: PreTripCheckId; label: string; detail: s
   { id: 'equipment', label: 'Company equipment & tools', detail: 'Confirm assigned tools and moving equipment are present before departure' },
 ]
 
-export const preTripPhotos: Array<{ id: PreTripPhotoId; label: string; detail: string }> = [
+export const preTripChecks = legacyPreTripChecks.filter(({ id }) =>
+  id === 'lights' || id === 'windows' || id === 'leaks' || id === 'emergency',
+)
+
+export const legacyPreTripPhotos = [
   { id: 'front', label: 'Front', detail: 'Full front and windshield' },
   { id: 'rear', label: 'Rear', detail: 'Doors, lights and bumper' },
   { id: 'driver_side', label: 'Driver side', detail: 'Full side, wheels visible' },
   { id: 'passenger_side', label: 'Passenger side', detail: 'Full side, wheels visible' },
   { id: 'dashboard', label: 'Dashboard', detail: 'Instrument panel and any warning indicators' },
-]
+] as const
+
+export const preTripPhotos = [
+  ...legacyPreTripPhotos,
+  { id: 'tires', label: 'Tires & wheels' },
+  { id: 'dollies', label: '2x Dollies' },
+  { id: 'hand_truck', label: 'Hand truck' },
+  { id: 'scales', label: 'Scales' },
+  { id: 'utility_knives_tape', label: '2x Utility knifes/Measuring tape' },
+  { id: 'lamp', label: 'Lamp' },
+  { id: 'dewalt_case', label: 'DeWalt case' },
+  { id: 'milwaukee_bag', label: 'Milwaukee open bag' },
+] as const satisfies ReadonlyArray<{ id: string; label: string; detail?: string }>
 
 export const emptyPreTripInspection: PreTripInspectionState = {
   answers: {},

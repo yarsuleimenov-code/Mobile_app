@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { preTripChecks, preTripPhotos } from './preTripInspectionDomain'
+import { legacyPreTripChecks, legacyPreTripPhotos, preTripChecks, preTripPhotos } from './preTripInspectionDomain'
 import { emptyVehicleInspection, finishPostTrip, postTripCanComplete, postTripChecks, postTripPhotos, restoreVehicleInspection, startNextVehicleCycle, type VehicleInspectionState } from './postTripInspectionDomain'
 
 function ready(): VehicleInspectionState {
@@ -8,25 +8,32 @@ function ready(): VehicleInspectionState {
     postTrip: { ...emptyVehicleInspection.postTrip, answers: Object.fromEntries(postTripChecks.map((item) => [item.id, 'pass'])), photos: postTripPhotos.map((item) => item.id), attested: true },
   }
 }
+function legacyReady(): VehicleInspectionState {
+  const state = ready()
+  const answers = Object.fromEntries(legacyPreTripChecks.map(({ id }) => [id, 'pass']))
+  const photos = legacyPreTripPhotos.map(({ id }) => id)
+  return { ...state, inspection: { ...state.inspection, answers: { ...answers }, photos: [...photos] },
+    postTrip: { ...state.postTrip, answers, photos } }
+}
 describe('post-trip vehicle cycle', () => {
   it('requires a completed pre-trip', () => {
     const state = { ...ready(), inspection: emptyVehicleInspection.inspection }
     expect(finishPostTrip(state, 0, false, 'now')).toBe(state)
   })
-  it('requires all five photos, all checks and attestation', () => {
+  it('requires all thirteen photos, all four checks and attestation', () => {
     const post = ready().postTrip
     expect(postTripCanComplete(post)).toBe(true)
-    expect(postTripCanComplete({ ...post, photos: post.photos.filter((id) => id !== 'dashboard') })).toBe(false)
-    expect(postTripCanComplete({ ...post, answers: { ...post.answers, equipment: undefined } })).toBe(false)
+    expect(postTripCanComplete({ ...post, photos: post.photos.filter((id) => id !== 'tires') })).toBe(false)
+    expect(postTripCanComplete({ ...post, answers: { ...post.answers, emergency: undefined } })).toBe(false)
     expect(postTripCanComplete({ ...post, attested: false })).toBe(false)
   })
   it('requires an issue description, but allows submission with defects', () => {
     const state = ready()
-    state.postTrip.answers.tires = 'issue'
+    state.postTrip.answers.lights = 'issue'
     expect(postTripCanComplete(state.postTrip)).toBe(false)
-    state.postTrip.issues.tires = '  '
+    state.postTrip.issues.lights = '  '
     expect(postTripCanComplete(state.postTrip)).toBe(false)
-    state.postTrip.issues.tires = 'Rear tire damaged'
+    state.postTrip.issues.lights = 'Left light damaged'
     expect(finishPostTrip(state, 0, false, '2026-10-05T18:00:00Z').postTrip.completedAt).toBeTruthy()
   })
   it('requires explicit acknowledgement of unfinished stops', () => {
@@ -55,7 +62,8 @@ describe('post-trip vehicle cycle', () => {
     expect(restoreVehicleInspection(JSON.stringify(next), null)).toEqual(next)
   })
   it('migrates a valid legacy pre-trip without discarding it', () => {
-    expect(restoreVehicleInspection(null, JSON.stringify(ready().inspection)).inspection).toEqual(ready().inspection)
+    const { inspection } = legacyReady()
+    expect(restoreVehicleInspection(null, JSON.stringify(inspection)).inspection).toEqual(inspection)
   })
   it('rejects malformed stored data and invalid completion flags', () => {
     expect(restoreVehicleInspection('{broken', null)).toEqual(emptyVehicleInspection)
@@ -67,7 +75,7 @@ describe('post-trip vehicle cycle', () => {
   })
 
   it('requires dashboard and a fresh attestation for an old active four-photo pre-trip', () => {
-    const state = ready()
+    const state = legacyReady()
     state.inspection.photos = state.inspection.photos.filter((id) => id !== 'dashboard')
     const restored = restoreVehicleInspection(JSON.stringify(state), null)
     expect(restored.inspection.completedAt).toBeNull()
@@ -77,31 +85,37 @@ describe('post-trip vehicle cycle', () => {
   })
 
   it('preserves finalized and archived cycles with historical four-photo pre-trips', () => {
-    const state = finishPostTrip(ready(), 0, false, '2026-10-05T18:00:00Z')
+    const state = legacyReady()
+    state.postTrip.completedAt = '2026-10-05T18:00:00Z'
     state.inspection.photos = state.inspection.photos.filter((id) => id !== 'dashboard')
     expect(restoreVehicleInspection(JSON.stringify(state), null).inspection).toEqual(state.inspection)
     const next = startNextVehicleCycle(state)
     expect(restoreVehicleInspection(JSON.stringify(next), null).history[0]).toEqual(next.history[0])
-    expect(postTripPhotos.map((item) => item.id)).toHaveLength(5)
-    expect(new Set(postTripPhotos.map((item) => item.id)).size).toBe(5)
+    expect(postTripPhotos).toHaveLength(13)
+    expect(new Set(postTripPhotos.map((item) => item.id)).size).toBe(13)
   })
 
-  it('requires equipment confirmation and fresh attestation for an old active pre-trip', () => {
-    const state = ready()
-    delete state.inspection.answers.equipment
+  it('keeps compatible draft progress and requires new photos before completion', () => {
+    const state = legacyReady()
+    state.inspection.completedAt = null
+    state.inspection.answers.equipment = 'issue'
     const restored = restoreVehicleInspection(JSON.stringify(state), null)
     expect(restored.inspection.completedAt).toBeNull()
     expect(restored.inspection.attested).toBe(false)
     expect(restored.inspection.answers.equipment).toBeUndefined()
+    expect(restored.inspection.answers.lights).toBe('pass')
     expect(restored.inspection.photos).toHaveLength(5)
   })
 
-  it('preserves historical seven-check pre-trips without duplicating post-trip equipment', () => {
-    const state = finishPostTrip(ready(), 0, false, '2026-10-05T18:00:00Z')
+  it('preserves historical checks and reported equipment issues in completed cycles', () => {
+    const state = legacyReady()
+    state.postTrip.completedAt = '2026-10-05T18:00:00Z'
     delete state.inspection.answers.equipment
+    state.postTrip.answers.equipment = 'issue'
+    state.postTrip.issues.equipment = 'Missing equipment'
     const archived = startNextVehicleCycle(state)
     expect(restoreVehicleInspection(JSON.stringify(archived), null).history[0]).toEqual(archived.history[0])
-    expect(postTripChecks).toHaveLength(8)
-    expect(postTripChecks.filter((item) => item.id === 'equipment')).toHaveLength(1)
+    expect(postTripChecks).toHaveLength(4)
+    expect(postTripChecks.some((item) => item.id === 'equipment')).toBe(false)
   })
 })

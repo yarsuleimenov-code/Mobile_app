@@ -1,7 +1,7 @@
 {
   "package": "Mobile App developer handoff",
   "version": "1.0+SA-0.1+COM-001+COM-002+HOV-001",
-  "date": "2026-11-03",
+  "date": "2026-11-05",
   "entrypoint": "README.md",
   "sourceRepository": "https://github.com/yarsuleimenov-code/Mobile_app",
   "referencePrototypeCommit": "a524ea0b8dda7701053c9fe25bc0eed73efa8119",
@@ -14,7 +14,8 @@
     "sourceSha256 records the source text at export time per entry; unchanged historical entries retain their original provenance.",
     "COM-001: refreshed affected source copies; added 12 COM-AC and 12 CALL-TC. Production telephony remains deferred.",
     "COM-002: first ETA quick message is editable and requires explicit Send; FR-044, UC-16, COM-AC-12 and CALL-TC-12 clarified.",
-    "HOV-001: current prototype increment, 15 HOV-AC; final QR/location verification and version audit. Radius/override provisional; production QR mapping, stop coordinates and native iOS/Android acceptance unresolved. referencePrototypeCommit remains the historical COM-002 reference, not a commit for this working increment."
+    "HOV-001: current prototype increment, 15 HOV-AC; final QR/location verification and version audit. Radius/override provisional; production QR mapping, stop coordinates and native iOS/Android acceptance unresolved. referencePrototypeCommit remains the historical COM-002 reference, not a commit for this working increment.",
+    "2026-11-05: updated Pre-trip and Post-trip to four checks and thirteen required photos, preserving completed inspection records."
   ],
   "files": [
     {
@@ -62,14 +63,14 @@
     {
       "path": "requirements/TECHNICAL_SPECIFICATION.md",
       "source": "docs/requirements/TECHNICAL_SPECIFICATION.md",
-      "sourceSha256": "2bf53046fbd2fa10e306b67521b58a601a0272914de50f16fe98798feacfc20e",
-      "sha256": "d7b79ef78ee148f54938e2c173a397b016c0c0223358d375f29d8cb62f28db4f"
+      "sourceSha256": "b5765c4de416cf85ea72533b0faf752ce6d6be3afab92edc26cdde27696df9f4",
+      "sha256": "6413600dd10d05431ec93220b8fc25dcc7a91f03e3e252e50d19052de458f6f8"
     },
     {
       "path": "requirements/WORKFLOWS_AND_USE_CASES.md",
       "source": "docs/requirements/WORKFLOWS_AND_USE_CASES.md",
-      "sourceSha256": "47b4e004e717517cf1987da4d9d0ff75e1394c2dc7a6cedcf50db7a257b2ec97",
-      "sha256": "47b4e004e717517cf1987da4d9d0ff75e1394c2dc7a6cedcf50db7a257b2ec97"
+      "sourceSha256": "c39cf989e3aa293cad848e4fbe054857365dc0b37db6b2e558e5aeac5aee16eb",
+      "sha256": "c39cf989e3aa293cad848e4fbe054857365dc0b37db6b2e558e5aeac5aee16eb"
     },
     {
       "path": "architecture/SYSTEM_ARCHITECTURE_AND_INTEGRATIONS.md",
@@ -92,8 +93,8 @@
     {
       "path": "system-analysis/SYSTEM_BEHAVIOR_AND_DATA_CONTRACTS.md",
       "source": "docs/system-analysis/SYSTEM_BEHAVIOR_AND_DATA_CONTRACTS.md",
-      "sourceSha256": "8598cea1f5bb16d6bb1ddfa2b8821a901e60d2f021b230b3519a28df44fe55c9",
-      "sha256": "8598cea1f5bb16d6bb1ddfa2b8821a901e60d2f021b230b3519a28df44fe55c9"
+      "sourceSha256": "3f40979208e4bc8569577b9f0481dd0d9f20e30bc7bd6309fb9fab1397e78d51",
+      "sha256": "3f40979208e4bc8569577b9f0481dd0d9f20e30bc7bd6309fb9fab1397e78d51"
     },
     {
       "path": "DEVELOPMENT_HANDOFF.md",
@@ -104,8 +105,8 @@
     {
       "path": "PROJECT_BASELINE.md",
       "source": "docs/PROJECT_BASELINE.md",
-      "sourceSha256": "82139b7c6ea741ef8db733959c57228dbf26b135a99008bb1d07c921a3125f6e",
-      "sha256": "09daf0e328d843c4de641dc9a6de8cca64bbed740270f90820be3500f8d2493a"
+      "sourceSha256": "0c7af25f3d134eafbe6faa28fc0811f666ab66b2c08756e38e913377585e916b",
+      "sha256": "ec11f3ab428f3c619beb5c5863de8d65cc12d3fecfb319650e20fb1bfa82721d"
     },
     {
       "path": "decisions/DECISION_LOG.md",
@@ -159,7 +160,7 @@
       "path": "README.md",
       "source": null,
       "sourceSha256": null,
-      "sha256": "bf4ee9b50dad8c9d59beb7c392308d96c1c7e4b06f914f6e587c9a84254a5827"
+      "sha256": "348052c6f43cd0017e97e2663f7e698348c403e9fb589881ba5f7fbeaefd93f1"
     },
     {
       "path": "requirements/INBOX_CALLS_INCREMENT_2026_10_27.md",
