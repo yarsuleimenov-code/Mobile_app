@@ -62,7 +62,7 @@ The first confirmation screen means the draft is ready; the Pickup handoff is lo
 
 1. Open the Delivery stop or search its Order number.
 2. Compare places and Pickup photos with delivered cargo.
-3. Add at least one Delivery photo. Mark **Cargo matches pickup photos** and either **No visible damage** or **Report damage instead** with details.
+3. Add at least one Delivery photo. If you find damage, select **Record damage**, add a damage photo and describe what you found.
 4. Select **Continue to Delivery review**, then **Open Delivery review**. If prompted, lock Pickup first.
 5. Review evidence and choose **Sign on device** or **SMS code** for the contact. For SMS code, send the code to the displayed masked number and enter the recipient's code. In the prototype, every six-digit code succeeds except `111111`, which demonstrates an invalid code.
 6. Obtain the driver signature, select **Complete Order eBOL** and open POD.

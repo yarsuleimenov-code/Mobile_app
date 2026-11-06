@@ -26,6 +26,7 @@ import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { teamContactsPath } from '../teamContactsDomain'
 import { OrderStopNavigation, useOrderStopContext } from '../StopNavigation'
 import { OrderStopSummary } from '../OrderStopSummary'
+import { RouteStopGate } from '../RouteStopExecution'
 
 const groupFields: Array<{ field: 'quantity' | 'length' | 'width' | 'height' | 'weight'; label: string; suffix: string }> = [
   { field: 'quantity', label: 'Qty', suffix: 'pcs' },
@@ -41,7 +42,8 @@ function updateDraftMeta<K extends keyof PickupDraft>(draft: PickupDraft, field:
 
 export function PickupCaptureScreen() {
   const [params] = useSearchParams()
-  return <PickupCaptureForm key={params.toString()} />
+  const order = normalizeOrderNumber(params.get('order') ?? '11155599')
+  return <RouteStopGate key={params.toString()} order={order} operation="pickup"><PickupCaptureForm /></RouteStopGate>
 }
 
 function PickupCaptureForm() {
@@ -82,6 +84,8 @@ function PickupCaptureForm() {
   const details = getOrderDetails(draft.orderNumber)
   const communicationThread = getThread(normalizeOrderNumber(draft.orderNumber))
   const measurements = summarizeMeasurements(groups)
+  const placeCount = draft.places.length
+  const supplemental = draft.mode === 'supplemental'
   const issues = [...orderDetailsIssues(details), ...measurementIssues(groups)]
   const photos = evidencePhotos(draft, normalizeOrderNumber(draft.orderNumber), 'pickup', draft.createdAt)
   const operationId = `pickup:${draft.orderNumber}:${draft.mode}:${draft.createdAt}`
@@ -147,7 +151,6 @@ function PickupCaptureForm() {
 
   if (saved) {
     const orderNumber = normalizeOrderNumber(draft.orderNumber)
-    const supplemental = draft.mode === 'supplemental'
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title={supplemental ? 'Supplemental Pickup' : 'Pickup'} />
@@ -198,13 +201,8 @@ function PickupCaptureForm() {
         {changingOrder ? <div className="measurement-warning"><p>You are viewing order #{draft.orderNumber}. Open the selected order to load its own cargo and draft.</p><button type="button" disabled={!normalizeOrderNumber(orderLookup) || saveState !== 'saved'} onClick={() => navigate(`/pickup?order=${normalizeOrderNumber(orderLookup)}`)}>Open selected order</button></div> : null}
         <OrderStopNavigation order={draft.orderNumber} operation="pickup" stop={stop} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Open the selected order before navigating' : undefined} />
 
-        <section className="cargo-totals">
-          <label><span>{draft.mode === 'supplemental' ? 'Added places' : 'Places'}</span><span><input aria-label="Places" value={draft.places.length} readOnly /> pcs</span></label>
-          <label><span>{measurements.unknownWeightPlaces ? 'Known weight' : draft.mode === 'supplemental' ? 'Added weight' : 'Total weight'}</span><strong>{weightText(addedWeight, measurements)}</strong></label>
-        </section>
-
         <section className="draft-places-section">
-          <div className="form-section-title"><h2>{draft.mode === 'supplemental' ? 'New dimension groups' : 'Dimension groups'}</h2><span>{groups.length} {groups.length === 1 ? 'group' : 'groups'} · {draft.places.length} pcs</span></div>
+          <div className="form-section-title"><h2>{supplemental ? 'New dimension groups' : 'Dimension groups'}</h2><span>{groups.length} {groups.length === 1 ? 'group' : 'groups'}</span></div>
           <p className="dimension-group-help">One group for places with the same dimensions and weight. Each place keeps its own label.</p>
           <div className="draft-place-list">
             {groups.map((group, index) => (
@@ -220,13 +218,17 @@ function PickupCaptureForm() {
             {!draft.places.length ? <div className="draft-places-empty">No editable groups yet. Add a dimension group and enter its quantity.</div> : null}
           </div>
           <button type="button" className="add-dimension" onClick={addGroup}><Plus size={18} /> Add dimension group</button>
-          <div className="volume-total"><span>{measurements.incompletePlaces ? 'Known volume' : draft.mode === 'supplemental' ? 'Added volume' : 'Total volume'}</span><strong>{volumeText(volume, measurements)}</strong></div>
+          <dl className="cargo-totals" aria-label="Measurement totals">
+            <div><dt>{supplemental ? 'Added places' : 'Places'}</dt><dd>{placeCount} pcs</dd></div>
+            <div><dt>{supplemental ? 'Added weight' : 'Weight'}</dt><dd>{placeCount ? weightText(addedWeight, measurements) : 'Not measured'}</dd></div>
+            <div><dt>{supplemental ? 'Added volume' : 'Volume'}</dt><dd>{placeCount ? volumeText(volume, measurements) : 'Not measured'}</dd></div>
+          </dl>
           <MeasurementNotice summary={measurements} />
         </section>
 
         <section className="photo-section">
           <div className="form-section-title"><h2>{draft.mode === 'supplemental' ? 'New-place photos' : 'Cargo photos'}</h2><span>{draft.photoCount} photos</span></div>
-          <p>Photograph the places and packing condition included in this version.</p>
+          <p>Photograph the cargo included in this version and document any visible damage.</p>
           <EvidenceEditor photos={photos} orderNumber={draft.orderNumber} handoff="pickup" operationId={operationId}
             onChange={(nextPhotos, detail) => setDraft((current) => ({ ...current, photos: nextPhotos, photoCount: nextPhotos.length,
               updatedAt: new Date().toISOString(), history: [...current.history,

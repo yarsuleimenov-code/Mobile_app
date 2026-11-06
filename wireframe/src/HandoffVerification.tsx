@@ -29,8 +29,9 @@ export function HandoffVerificationButton({ order, operation, driver, disabled, 
   const { devices } = usePrototypeScenario()
   const [params] = useSearchParams()
   const tasks = orderContextTasks((spokeRoute ?? mockTodaySpokeRoute).tasks, order, operation)
+  const routeTask = tasks.find((item) => item.stopId === params.get('stop'))
   const [selectedStop, setSelectedStop] = useState(params.get('stop') ?? '')
-  const task = tasks.length === 1 && !selectedStop ? tasks[0] : tasks.find((item) => item.stopId === selectedStop)
+  const task = routeTask ?? (tasks.length === 1 && !selectedStop ? tasks[0] : tasks.find((item) => item.stopId === selectedStop))
   const [code, setCode] = useState('')
   const [check, setCheck] = useState<HandoffVerification | null>(null)
   const [reason, setReason] = useState('')
@@ -79,7 +80,7 @@ export function HandoffVerificationButton({ order, operation, driver, disabled, 
       const place = labelsForScan().find((item) => mode === 'wrong_order' ? item.orderNumber !== order : item.orderNumber === order)
       setCheck(null); setReason(''); setCode(mode === 'unknown' ? 'UNRECOGNIZED-LABEL' : place?.placeId ?? 'UNRECOGNIZED-LABEL')
     }}>{devices.scanner ? 'Scan label' : 'Scanner unavailable · enter code below'}</button>
-    {tasks.length > 1 || (selectedStop && !task) ? <label className="ebol-field">{operation === 'pickup' ? 'Pickup' : 'Delivery'} stop<select value={selectedStop} disabled={busy} onChange={(event) => setSelectedStop(event.target.value)}><option value="">Select this stop</option>{tasks.map((item) => <option key={item.stopId} value={item.stopId}>{item.sequence}. {item.address}</option>)}</select></label> : null}
+    {!routeTask && (tasks.length > 1 || (selectedStop && !task)) ? <label className="ebol-field">{operation === 'pickup' ? 'Pickup' : 'Delivery'} stop<select value={selectedStop} disabled={busy} onChange={(event) => setSelectedStop(event.target.value)}><option value="">Select this stop</option>{tasks.map((item) => <option key={item.stopId} value={item.stopId}>{item.sequence}. {item.address}</option>)}</select></label> : null}
     <form onSubmit={(event) => { event.preventDefault(); void run(false) }}>
       <label className="ebol-field">QR / label code<input value={code} onChange={(event) => setCode(event.target.value)} disabled={busy} placeholder="Scan or enter label code" autoComplete="off" /></label>
       <button type="submit" className="ebol-secondary" disabled={disabled || busy || !code.trim() || multipleUnselected}>{busy ? 'Checking location…' : check ? 'Check again' : 'Check QR & location'}</button>

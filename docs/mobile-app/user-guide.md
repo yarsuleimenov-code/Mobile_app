@@ -83,10 +83,10 @@ Open a thumbnail in **Reference photos** to inspect the image. This gallery cont
 
 1. After **Vehicle cleared**, select **Load today’s route** on Home if Today's stops are not shown. This loads a local fixture; it does not connect to Spoke.
 2. Open **Tasks**. Search by Order ID or title, or choose All, Pickup or Delivery.
-3. Select the task card to open the correct operation. The compact **Order details** link opens its stop summary and team contacts; the message icon opens the customer conversation, with a badge for unread messages. **Spoke preview** remains available inside Order details.
-4. Use the screen's own primary action to save or confirm. Opening a task alone does not mark it complete.
+3. Select a stop to review its order, open **Order details**, send an SMS or use **Navigate**. Select **Start Pickup** or **Start Delivery** when work begins at the stop.
+4. Confirm the handoff through Order eBOL. When work at that location is finished, select **Complete stop**. Until then, other stops can be viewed and **Return to active stop** opens the one in progress.
 
-The current Tasks list does not show a universal task-status lifecycle. It shows scheduled stops; Pickup, Delivery and Order eBOL have separate local states. Avoid interpreting a task row as server assignment or completion.
+Home and Tasks display **In progress** and **Completed** for route stops. The prototype saves start and completion times locally. Handoff confirmation and stop completion are separate actions.
 
 On Home and Tasks, each stop is enclosed in a compact white card with a thin border, rounded corners and a small gap between cards. The Order number and name form one emphasized heading: **#23343775 · Dining Chair**. Below it are the purple **Pickup** or green **Delivery** label, the stop number and quantity, the scheduled time, and the full address with map/copy icons. Long names wrap without truncation. There is no internal divider, shadow or extra action panel.
 
@@ -118,8 +118,8 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 
 1. Check the **Order #**, operational name and **Order details**. If you need to contact the customer without leaving the order, select **SMS** in the order card; an unread badge shows new replies. If the name or handling details are incomplete, open Order details and fill fields available to your current role.
 2. Check **Items** and **Pickup Notes** in the order card. Add an **Order comment** if needed. For a stop opened from the route, the order number, planned date and address are read-only. When opening Pickup manually, enter the order number and Pickup date.
-3. For each **dimension group**, enter **Qty**, L/W/H in inches and weight per place in pounds. Groups represent places with the same attributes; each place retains its own PlaceID. Add or remove groups as needed. If a measurement cannot be supplied, mark it or leave it unknown and record **Reason for unmeasured values**. The screen displays known totals separately from incomplete places.
-4. Inspect **Cargo photos**. Add with **Take photo** or **Choose from gallery**, select a category and review the thumbnails. An individual photo can be previewed and removed while editing. In this wireframe these actions use local sample assets/metadata.
+3. For each **dimension group**, enter **Qty**, L/W/H in inches and weight per place in pounds. Groups represent places with the same attributes, and each place retains its own PlaceID. Add or remove groups as needed. If a measurement is unavailable, record **Reason for unmeasured values**. Below the groups, check **Places**, **Weight** and **Volume** together. Partial totals show the known weight or volume, and Supplemental Pickup shows only the added places.
+4. Use **Take photo** or **Choose from gallery** for ordinary cargo photos. Use **Damage photo** or **Damage from gallery** to document visible damage. An individual photo can be previewed and removed while editing. In this wireframe these actions use local sample assets/metadata.
 5. Wait for the draft status to say saved. The form autosaves locally and can be resumed from Home. Correct any **Order data incomplete** or measurement warnings. **Continue to Pickup review** enables only when the Order number, at least one place, at least one photo and required details are present and the draft saved.
 6. Select **Continue to Pickup review**. The confirmation page says **Pickup draft ready**. You may open **Place labels** first: choose all, selected or one label, check the preview and select **Print**. If the printer is unavailable, continue to review and use the PlaceID check path.
 7. Open **Pickup review**. Check pieces, weight, volume, photos, condition and any exception. Comments are entered during confirmation, not on Review. If evidence changed after review, return and review it again.
@@ -137,7 +137,7 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 1. Open the Delivery stop from Home/Tasks. The card displays the order number, planned date and address from the route. For a manual lookup, choose **Delivery**, enter the order number and select **Search**. “Order not found” means the current local state has no recorded Pickup for that number.
 2. Check the name, **Items**, **Delivery Notes** and order comment. Review the actual places, weight, volume, Pickup date and Pickup photos separately. Complete and sign any unfinished Supplemental Pickup before confirming Delivery.
 3. Add **Delivery photos** and compare the cargo against Pickup evidence.
-4. Select **Cargo matches pickup photos** only when the comparison is true. Select **No visible damage**, or choose **Report damage instead** and enter **Damage details**. Documented damage does not block the handoff.
+4. If there is visible damage, select **Record damage**, add at least one **Damage photo**, and enter **Damage details**.
 5. Select **Continue to Delivery review**. This saves Delivery evidence; the handoff is not completed yet. If the Pickup snapshot is not locked, use the offered **Open Pickup review** action first.
 6. Open **Delivery review**. Check evidence and exceptions, enter the driver name and choose one contact confirmation method:
    - **Sign on device** — enter the contact name and obtain the contact signature;
@@ -189,7 +189,7 @@ To look up cargo, open **Scan**. Use **Scan label** if the simulated scanner is 
 
 ## Photos
 
-Pickup and Delivery forms each require at least one photo for their primary confirmation action in the active UI. The editor supports categories **Before pickup**, **After delivery**, **Packaging**, **Condition** and **Damage**, preview and removal during editing. Pickup and Delivery galleries stay separate in review/POD; Supplemental Pickup has its own photos. The current camera/gallery actions use bundled sample images and local metadata. The app does not establish a production policy for required angles or exact subject matter. [Photo editor](../../wireframe/src/PhotoEvidence.tsx).
+Pickup and Delivery forms each require at least one photo for their primary confirmation action in the active UI. Use the direct photo actions to capture ordinary cargo or damage. Preview and removal are available while editing. Earlier **Packaging** and **Condition** photos remain visible in galleries. Pickup and Delivery galleries stay separate in review/POD; Supplemental Pickup has its own photos. The current camera/gallery actions use bundled sample images and local metadata. The app does not establish a production policy for required angles or exact subject matter. [Photo editor](../../wireframe/src/PhotoEvidence.tsx).
 
 ## Order eBOL, POD and documents
 

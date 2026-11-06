@@ -11,10 +11,12 @@ import { useCommunications } from '../communicationStore'
 import { getOrderDocumentNavigation } from '../orderEbolNavigation'
 import { readOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts } from '../pickupDraftStore'
-import { filterSpokeTasks, spokeTaskPath, spokeOperationLabels } from '../spokeDomain'
+import { filterSpokeTasks, mockTodaySpokeRoute, spokeTaskPath, spokeOperationLabels } from '../spokeDomain'
 import { inspectionStatus, preTripPhotos } from '../preTripInspectionDomain'
 import { usePreTripInspection } from '../preTripInspectionStore'
 import { StopNavigation } from '../StopNavigation'
+import { progressForStop } from '../routeStopProgress'
+import { useRouteStopProgress } from '../useRouteStopProgress'
 
 export function CargoHomeScreen() {
   const navigate = useNavigate()
@@ -27,6 +29,7 @@ export function CargoHomeScreen() {
   const [recentRecordsExpanded, setRecentRecordsExpanded] = useState(false)
   const [orderEbols] = useState(() => readOrderEbols())
   const [pickupDrafts] = useState(() => readPickupDrafts())
+  const stopProgress = useRouteStopProgress(spokeRoute ?? mockTodaySpokeRoute)
   const visibleTasks = useMemo(() => filterSpokeTasks(spokeRoute?.tasks ?? [], routeQuery), [spokeRoute, routeQuery])
   const pickupCount = spokeRoute?.tasks.filter((task) => task.operation === 'pickup').length ?? 0
   const dropoffCount = (spokeRoute?.tasks.length ?? 0) - pickupCount
@@ -83,12 +86,14 @@ export function CargoHomeScreen() {
             <div className="spoke-sync-state"><CheckCircle2 size={20} /><span><strong>{spokeRoute.tasks.length} stops loaded</strong><small>{pickupCount} Pickup · {dropoffCount} Delivery · Updated just now</small></span></div>
             <label className="spoke-task-search"><Search size={19} /><input aria-label="Find stop by External ID" inputMode="numeric" placeholder="Find order by External ID" value={routeQuery} onChange={(event) => setRouteQuery(event.target.value)} /></label>
             <div className="spoke-task-list">
-              {visibleTasks.map((task) => (
-                <div className="home-stop-with-directions" key={task.stopId}><button type="button" disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
+              {visibleTasks.map((task) => {
+                const progress = progressForStop(stopProgress, task)
+                return <div className="home-stop-with-directions" key={task.stopId}><button type="button" disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
                   <span className="stop-card-heading"><span className="stop-card-title"><span className="stop-card-order">#{task.externalId}</span> · {operationalName(getOrderDetails(task.externalId), task.externalId)}</span><ChevronRight size={19} aria-hidden="true" /></span>
                   <span className="stop-card-meta"><span><b className={`spoke-task-operation spoke-task-operation--${task.operation}`}>{spokeOperationLabels[task.operation]}</b> · Stop {task.sequence} · {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</span><time>{task.scheduledTime}</time></span>
+                  {progress ? <small className="route-stop-list-status">{progress.completedAt ? 'Completed' : 'In progress'}</small> : null}
                 </button><StopNavigation task={task} compact blockedMessage={!routeUnlocked ? 'Complete Pre-trip inspection before departure' : undefined} /></div>
-              ))}
+              })}
               {!visibleTasks.length ? <div className="spoke-task-empty">No stop found for this External ID.</div> : null}
             </div>
           </section>

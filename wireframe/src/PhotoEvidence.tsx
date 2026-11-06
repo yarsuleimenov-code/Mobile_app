@@ -1,5 +1,5 @@
 import { Camera, ImagePlus, RefreshCw, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useCargo } from './cargoStore'
 import { addEvidencePhoto, photoCategories, removeEvidencePhoto, type EvidencePhoto, type EvidenceSyncStatus, type PhotoCategory, type PhotoHandoff } from './photoEvidenceDomain'
@@ -85,26 +85,36 @@ export function EvidenceQueuePanel({ operationId }: { operationId?: string }) {
   </section>
 }
 
-export function EvidenceEditor({ photos, orderNumber, handoff, operationId, onChange }: {
+export function EvidenceEditor({ photos, orderNumber, handoff, operationId, showDamagePhotos = handoff === 'pickup', onChange, children }: {
   photos: EvidencePhoto[]; orderNumber: string; handoff: PhotoHandoff; operationId: string;
+  showDamagePhotos?: boolean
   onChange: (photos: EvidencePhoto[], detail: string) => void
+  children?: ReactNode
 }) {
   const { devices } = usePrototypeScenario()
   const { evidenceQueue } = useCargo()
-  const [category, setCategory] = useState<PhotoCategory>(handoff === 'pickup' ? 'before' : 'after')
+  const cargoCategory = handoff === 'pickup' ? 'before' : 'after'
+  const atLimit = photos.length >= 100
   const statuses = new Map(evidenceQueue.filter((item) => item.operationId === operationId && item.kind === 'photo')
     .map((item) => [item.detail, item.status]))
-  const add = (source: 'camera' | 'gallery') => {
+  const add = (source: 'camera' | 'gallery', category: PhotoCategory) => {
     const photo: EvidencePhoto = { id: crypto.randomUUID(), orderNumber, handoff, category, source, asset: photos.length % 4 }
     onChange(addEvidencePhoto(photos, photo), `${photoCategories[category]} photo added`)
   }
   return <>
-    <PhotoGallery photos={photos} statuses={statuses} onRemove={(id) => onChange(removeEvidencePhoto(photos, id), 'Photo removed from draft')} />
     <div className="photo-add-controls">
-      <label>New photo category<select value={category} onChange={(event) => setCategory(event.target.value as PhotoCategory)}>{Object.entries(photoCategories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-      <div><button type="button" disabled={!devices.camera || photos.length >= 100} onClick={() => add('camera')}><Camera size={18} />{devices.camera ? 'Take photo' : 'Camera unavailable'}</button><button type="button" disabled={photos.length >= 100} onClick={() => add('gallery')}><ImagePlus size={18} />Choose from gallery</button></div>
-      {photos.length >= 100 ? <small>Maximum 100 photos per handoff.</small> : null}
+      <div className="photo-add-row">
+        <button type="button" disabled={!devices.camera || atLimit} onClick={() => add('camera', cargoCategory)}><Camera size={18} />{devices.camera ? 'Take photo' : 'Camera unavailable'}</button>
+        <button type="button" disabled={atLimit} onClick={() => add('gallery', cargoCategory)}><ImagePlus size={18} />Choose from gallery</button>
+      </div>
+      {showDamagePhotos ? <div className="photo-add-row photo-damage-actions">
+        <button type="button" disabled={!devices.camera || atLimit} onClick={() => add('camera', 'damage')}><Camera size={18} />Damage photo</button>
+        <button type="button" disabled={atLimit} onClick={() => add('gallery', 'damage')}><ImagePlus size={18} />Damage from gallery</button>
+      </div> : null}
+      {atLimit ? <small>Maximum 100 photos per handoff.</small> : null}
     </div>
+    {children}
+    <PhotoGallery photos={photos} statuses={statuses} onRemove={(id) => onChange(removeEvidencePhoto(photos, id), 'Photo removed from draft')} />
     <EvidenceQueuePanel operationId={operationId} />
   </>
 }

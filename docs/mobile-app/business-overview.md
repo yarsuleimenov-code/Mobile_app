@@ -81,7 +81,7 @@ flowchart LR
   G --> H["Order eBOL completed; POD available"]
 ```
 
-The Delivery screen requires a recorded order, matching cargo, at least one Delivery photo, and either no visible damage or a damage report with details. An unsigned Supplemental Pickup blocks confirmation. “Delivery ready for review” means the evidence was saved. Delivery review offers contact signature or SMS code. SMS code must be verified before the driver can sign; POD stores the confirmation method and masked phone reference, not the code. Delivery signing locks the snapshot and completes the Order eBOL. If Pickup is not yet locked, the app directs the user to Pickup review first. [Delivery screen](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../wireframe/src/screens/OrderPodScreen.tsx).
+The Delivery screen requires a recorded order and at least one Delivery photo. A damage report requires a damage photo and a description. An unsigned Supplemental Pickup blocks confirmation. “Delivery ready for review” means the evidence was saved. Delivery review offers contact signature or SMS code. SMS code must be verified before the driver can sign; POD stores the confirmation method and masked phone reference, not the code. Delivery signing locks the snapshot and completes the Order eBOL. If Pickup is not yet locked, the app directs the user to Pickup review first. [Delivery screen](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../wireframe/src/screens/OrderPodScreen.tsx).
 
 ### Same Day
 

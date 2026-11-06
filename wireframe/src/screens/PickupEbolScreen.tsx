@@ -20,6 +20,7 @@ import { DeliveryOtpVerification } from '../DeliveryOtpVerification'
 import { otpRecipient } from '../deliveryOtpDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { useCommunications } from '../communicationStore'
+import { CompleteRouteStop, RouteStopGate } from '../RouteStopExecution'
 
 function EvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) {
   return (
@@ -33,8 +34,9 @@ function EvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) 
 }
 
 export function PickupEbolScreen() {
-  const { orderNumber } = useParams()
-  return <PickupEbolContent key={orderNumber} />
+  const { orderNumber = '' } = useParams()
+  const [params] = useSearchParams()
+  return <RouteStopGate key={`${orderNumber}:${params}`} order={normalizeOrderNumber(orderNumber)} operation="pickup" review><PickupEbolContent /></RouteStopGate>
 }
 
 function PickupEbolContent() {
@@ -42,6 +44,7 @@ function PickupEbolContent() {
   const [params] = useSearchParams()
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
+  const stopQuery = params.get('stop') ? `&stop=${encodeURIComponent(params.get('stop')!)}` : ''
   const { findRecord, getOrderDetails } = useCargo()
   const { getThread } = useCommunications()
   const { otpOutcome, network } = usePrototypeScenario()
@@ -77,7 +80,7 @@ function PickupEbolContent() {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL" subtitle={`Pickup · Order #${orderNumber || 'unknown'}`} />
-        <div className="ebol-not-found"><FileText size={42} /><h2>Pickup record not found</h2><p>Save the Pickup record before starting its Order eBOL.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/pickup?order=${orderNumber}`)}>Open Pickup</button></div>
+        <div className="ebol-not-found"><FileText size={42} /><h2>Pickup record not found</h2><p>Save the Pickup record before starting its Order eBOL.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/pickup?order=${orderNumber}${stopQuery}`)}>Open Pickup</button></div>
         <CargoBottomNav />
       </div>
     )
@@ -108,6 +111,7 @@ function PickupEbolContent() {
         <CargoFlowHeader title="Order eBOL" subtitle={`Pickup locked · Order #${orderNumber}`} />
         <main className="pickup-ebol-body">
           <section className="ebol-locked-state"><span><LockKeyhole size={30} /></span><h2>Pickup snapshot locked</h2><p>Version 1 and its confirmations cannot be edited.</p></section>
+          <CompleteRouteStop order={orderNumber} operation="pickup" />
           <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Pickup evidence</h2></div><EvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />{evidence.hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
           <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'otp' ? 'Pickup contact · OTP verified' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
           <PickupEmailDeliveryStatus documentNumber={`${orderNumber}-PU-1`} request={orderEbol.pickup.contact.emailCopyRequest} />
@@ -123,7 +127,10 @@ function PickupEbolContent() {
           ))}
           <p className="ebol-lock-note">Previously signed facts stay unchanged. Add physical places through a Supplemental Pickup with a new document version and new confirmations.</p>
           <button type="button" className="ebol-secondary ebol-add-supplement" onClick={() => navigate(`/pickup?order=${orderNumber}&supplemental=1`)}><FilePlus2 size={19} /> Add places · Supplemental Pickup</button>
-          <div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(orderEbol.delivery.lockedAt ? `/orders/${orderNumber}/ebol/pod` : `/dropoff?order=${orderNumber}`)}>{orderEbol.delivery.lockedAt ? 'View POD' : 'Continue to Delivery'}</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>
+          <div className="ebol-success-actions">
+            {orderEbol.delivery.lockedAt || !stopQuery ? <button type="button" className="cargo-primary" onClick={() => navigate(orderEbol.delivery.lockedAt ? `/orders/${orderNumber}/ebol/pod` : `/dropoff?order=${orderNumber}`)}>{orderEbol.delivery.lockedAt ? 'View POD' : 'Continue to Delivery'}</button> : null}
+            <button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button>
+          </div>
         </main>
         <CargoBottomNav />
       </div>
@@ -134,7 +141,7 @@ function PickupEbolContent() {
     <div className="cargo-flow">
       <CargoFlowHeader title="Order eBOL" subtitle={supplementalDraft ? `Supplemental Pickup · Version ${supplementalDraft.version}` : `Pickup review · Order #${orderNumber}`} />
       <main className="pickup-ebol-body pickup-ebol-body--action">
-        {needsRefresh ? <div className="measurement-warning" role="alert"><p>The Pickup draft has changed. Update this review before signing.</p><button type="button" onClick={() => navigate(`/pickup?order=${orderNumber}${supplementalDraft ? '&supplemental=1' : ''}`)}>Return to Pickup draft</button></div> : null}
+        {needsRefresh ? <div className="measurement-warning" role="alert"><p>The Pickup draft has changed. Update this review before signing.</p><button type="button" onClick={() => navigate(`/pickup?order=${orderNumber}${supplementalDraft ? '&supplemental=1' : stopQuery}`)}>Return to Pickup draft</button></div> : null}
         {!canReviewOrderEvidence(reviewEvidence) ? <p className="measurement-warning">Complete the internal name, handling details and measurement reasons before signing. <button type="button" onClick={() => navigate(`/orders/${orderNumber}/details`)}>Open order details</button></p> : null}
         <div className="ebol-review-banner"><ShieldCheck size={24} /><span><strong>{supplementalDraft ? `Review ${supplementalDraft.addedPlaceIds.length} added places` : 'Review before signing'}</strong><small>{supplementalDraft ? 'Version 1 remains locked. These additions require fresh confirmations.' : 'Both parties should review the same Pickup evidence.'}</small></span></div>
 

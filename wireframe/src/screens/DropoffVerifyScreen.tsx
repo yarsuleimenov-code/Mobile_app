@@ -1,5 +1,5 @@
 import { AlertTriangle, Box, Search, Weight } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '../cargo-components'
 import { calculatePieces, calculateVolume, normalizeOrderNumber, type CargoRecord } from '../cargoDomain'
@@ -8,18 +8,20 @@ import { operationalName } from '../orderDetailsDomain'
 import { teamContactsPath } from '../teamContactsDomain'
 import { OrderStopNavigation, useOrderStopContext } from '../StopNavigation'
 import { OrderStopSummary } from '../OrderStopSummary'
+import { RouteStopGate } from '../RouteStopExecution'
 import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { useCargo } from '../cargoStore'
 import { findDraftSupplementalPickup, prepareDeliveryEbol } from '../orderEbolDomain'
 import { EvidenceEditor } from '../PhotoEvidence'
 import { evidencePhotos, type EvidencePhoto } from '../photoEvidenceDomain'
 import { findPickupDraft, readPickupDrafts } from '../pickupDraftStore'
-import { readDeliveryDraft, writeDeliveryDraft } from '../deliveryDraftStore'
+import { deliveryPhotoIssues, hasDamagePhoto, readDeliveryDraft, writeDeliveryDraft } from '../deliveryDraftStore'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 
 export function DropoffVerifyScreen() {
   const [params] = useSearchParams()
-  return <DropoffVerifyForm key={params.toString()} />
+  const order = normalizeOrderNumber(params.get('order') ?? '11155599')
+  return <RouteStopGate key={params.toString()} order={order} operation="dropoff"><DropoffVerifyForm /></RouteStopGate>
 }
 
 function DropoffVerifyForm() {
@@ -29,8 +31,6 @@ function DropoffVerifyForm() {
   const [query, setQuery] = useState(params.get('order') ?? '11155599')
   const [record, setRecord] = useState<CargoRecord | undefined>()
   const [searched, setSearched] = useState(false)
-  const [matches, setMatches] = useState(false)
-  const [noDamage, setNoDamage] = useState(false)
   const [damageReported, setDamageReported] = useState(false)
   const [complete, setComplete] = useState(false)
   const [deliveryPhotos, setDeliveryPhotos] = useState<EvidencePhoto[]>([])
@@ -39,6 +39,9 @@ function DropoffVerifyForm() {
   const [storageError, setStorageError] = useState(false)
   const deliveryPhotoCount = deliveryPhotos.length
   const [damageNote, setDamageNote] = useState('')
+  const draft = useMemo(() => ({ photos: deliveryPhotos, damageReported, damageNote }), [deliveryPhotos, damageReported, damageNote])
+  const issues = deliveryPhotoIssues(draft)
+  const damagePhotoAdded = hasDamagePhoto(deliveryPhotos)
   const [deliveryEbolReady, setDeliveryEbolReady] = useState(false)
   const [documentSaveError, setDocumentSaveError] = useState('')
   const requestedOrder = normalizeOrderNumber(params.get('order') ?? '')
@@ -64,8 +67,6 @@ function DropoffVerifyForm() {
         ...(ebol.pickupSupplements ?? []).filter((item) => item.status === 'locked' && item.evidence)
           .flatMap((item) => evidencePhotos(item.evidence!, found.orderNumber, 'pickup', `supplement-${item.version}`)) ]
       : evidencePhotos(found, found.orderNumber, 'pickup') : [])
-    setMatches(draft.matches)
-    setNoDamage(draft.noDamage)
     setDamageReported(draft.damageReported)
     setDeliveryPhotos(locked && ebol?.delivery.evidence
       ? evidencePhotos(ebol.delivery.evidence, found!.orderNumber, 'delivery') : draft.photos)
@@ -75,22 +76,18 @@ function DropoffVerifyForm() {
   useEffect(() => { if (params.get('order')) search() }, [])
   useEffect(() => {
     if (!record || deliveryLocked) return
-    const draft = { photos: deliveryPhotos, matches, noDamage, damageReported, damageNote }
     const saved = writeDeliveryDraft(record.orderNumber, draft)
     setStorageError(!saved)
     if (saved) trackEvidenceOperation({ id: `delivery:${record.orderNumber}:draft`, orderNumber: record.orderNumber,
-      handoff: 'delivery', photos: deliveryPhotos, detail: `${deliveryPhotos.length} photos · ${damageNote || 'No damage note'}`,
+      handoff: 'delivery', photos: draft.photos, detail: `${draft.photos.length} photos · ${draft.damageNote || 'No damage note'}`,
       fingerprint: JSON.stringify(draft) })
-  }, [record, deliveryLocked, deliveryPhotos, matches, noDamage, damageReported, damageNote, trackEvidenceOperation])
+  }, [record, deliveryLocked, draft, trackEvidenceOperation])
 
-  const canConfirm = matches
-    && !deliveryLocked && !storageError && !changingOrder && !pendingSupplement
-    && deliveryPhotoCount > 0
-    && (noDamage || (damageReported && Boolean(damageNote.trim())))
+  const canConfirm = !deliveryLocked && !storageError && !changingOrder && !pendingSupplement && !issues.length
 
   const saveBeforeNavigation = () => {
     if (!record || deliveryLocked) return true
-    const saved = writeDeliveryDraft(record.orderNumber, { photos: deliveryPhotos, matches, noDamage, damageReported, damageNote })
+    const saved = writeDeliveryDraft(record.orderNumber, draft)
     setStorageError(!saved)
     return saved
   }
@@ -171,7 +168,21 @@ function DropoffVerifyForm() {
               <div className="form-section-title"><h2>Delivery photos</h2><span>{deliveryPhotoCount} photos</span></div>
               <p>Capture the cargo condition at the Delivery handoff.</p>
               {deliveryLocked ? <><p>Delivery snapshot is locked. These photos cannot be edited.</p><EvidenceGallery count={deliveryPhotoCount} photos={deliveryPhotos} /></>
-                : <EvidenceEditor photos={deliveryPhotos} orderNumber={record.orderNumber} handoff="delivery" operationId={`delivery:${record.orderNumber}:draft`} onChange={setDeliveryPhotos} />}
+                : <EvidenceEditor photos={deliveryPhotos} orderNumber={record.orderNumber} handoff="delivery" operationId={`delivery:${record.orderNumber}:draft`}
+                    showDamagePhotos={damageReported} onChange={setDeliveryPhotos}>
+                    {damageReported ? (
+                      <div className="damage-notice">
+                        <div className="damage-notice-heading"><AlertTriangle size={20} aria-hidden="true" /><strong>Damage reported</strong>
+                          <button type="button" disabled={damagePhotoAdded} onClick={() => { setDamageReported(false); setDamageNote('') }}>Cancel damage report</button>
+                        </div>
+                        <div className="delivery-damage-note">
+                          <label htmlFor="delivery-damage-details">Damage details</label>
+                          <textarea id="delivery-damage-details" rows={3} value={damageNote} onChange={(event) => setDamageNote(event.target.value)} placeholder="Describe the visible damage" />
+                        </div>
+                        {damagePhotoAdded ? <small>To cancel the report, remove the damage photos first.</small> : null}
+                      </div>
+                    ) : <button type="button" className="report-damage" onClick={() => setDamageReported(true)}><AlertTriangle size={18} aria-hidden="true" /> Record damage</button>}
+                  </EvidenceEditor>}
               {storageError ? <p role="alert">Delivery draft could not be saved. Keep this page open and free local storage.</p> : null}
             </section>
 
@@ -181,15 +192,9 @@ function DropoffVerifyForm() {
             </section>
 
             <MeasurementNotice summary={summarizeMeasurements(record.dimensionGroups)} />
-            <section className="dropoff-checks" hidden={deliveryLocked}>
-              <label><input type="checkbox" checked={matches} onChange={(event) => setMatches(event.target.checked)} /><span><strong>Cargo matches pickup photos</strong><small>All pieces and packing look consistent.</small></span></label>
-              <label><input type="checkbox" checked={noDamage} onChange={(event) => { setNoDamage(event.target.checked); if (event.target.checked) { setDamageReported(false); setDamageNote('') } }} /><span><strong>No visible damage</strong><small>No new damage found during visual check.</small></span></label>
-              {damageReported ? <div className="damage-notice"><AlertTriangle size={20} /><span><strong>Damage marked</strong><small>Documented damage does not block Delivery.</small></span><button type="button" onClick={() => { setDamageReported(false); setDamageNote('') }}>Cancel</button></div> : <button type="button" className="report-damage" onClick={() => { setDamageReported(true); setNoDamage(false) }}><AlertTriangle size={18} /> Report damage instead</button>}
-              {damageReported ? <label className="delivery-damage-note">Damage details<textarea rows={3} value={damageNote} onChange={(event) => setDamageNote(event.target.value)} placeholder="Describe damage, packaging issue or other exception" /></label> : null}
-            </section>
 
             {documentSaveError ? <p role="alert" className="measurement-warning">{documentSaveError}</p> : null}
-            {!deliveryLocked && !canConfirm && !pendingSupplement && !changingOrder ? <p className="measurement-warning">{!deliveryPhotoCount ? 'Add a Delivery photo. ' : ''}Confirm cargo matches Pickup, then select No visible damage or describe the damage.</p> : null}
+            {!deliveryLocked && !pendingSupplement && !changingOrder && issues.length ? <p className="measurement-warning">{issues.join(' ')}</p> : null}
             <div className="flow-action">{deliveryLocked ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery${params.get('stop') ? `?stop=${encodeURIComponent(params.get('stop')!)}` : ''}`)}>Open locked Delivery review</button> : <button type="button" className="cargo-primary" disabled={!canConfirm} onClick={confirmDropoff}>Continue to Delivery review</button>}</div>
           </>
         ) : null}

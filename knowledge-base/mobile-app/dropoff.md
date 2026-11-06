@@ -5,7 +5,7 @@
 1. Open the Delivery stop or search the **Order number** on the Delivery screen.
 2. Compare the displayed place count, weight, volume and **Pickup photos** with the physical cargo.
 3. Add at least one **Delivery photo**.
-4. Select **Cargo matches pickup photos** only when it does. Choose **No visible damage**, or **Report damage instead** and enter details.
+4. If you find damage, select **Record damage**, add a damage photo and describe it.
 5. Select **Continue to Delivery review**. Open **Delivery review**; if Pickup is not locked, complete Pickup review/signing first.
 6. Review Delivery evidence and exceptions. Choose **Sign on device** or **SMS code** and provide the driver name. Each party enters an optional **Your comment** on their own signing screen. For SMS code, enter **Contact comment (reported)** before verification; the driver comments before their signature. In the prototype `111111` is always invalid.
 7. Complete the contact confirmation, obtain the Zaberman driver signature, select **Complete Order eBOL** and open **View POD**.

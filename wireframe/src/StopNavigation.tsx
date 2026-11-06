@@ -39,7 +39,7 @@ export function useOrderStopContext(order: string, operation: SpokeOperation, st
   const route = spokeRoute ?? mockTodaySpokeRoute
   const tasks = orderContextTasks(route.tasks, order, operation, stopId)
   const task = tasks.length === 1 ? tasks[0] : undefined
-  return { task, ambiguous: tasks.length > 1, plannedDate: stopId && task ? route.workDate : undefined }
+  return { route, task, ambiguous: tasks.length > 1, plannedDate: stopId && task ? route.workDate : undefined }
 }
 
 export function OrderStopNavigation({ order, operation, stop, beforeNavigate, blockedMessage }: {

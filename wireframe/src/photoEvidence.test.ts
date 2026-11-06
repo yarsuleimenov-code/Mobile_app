@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { initialCargoRecords } from './cargoDomain'
-import { readDeliveryDraft, writeDeliveryDraft } from './deliveryDraftStore'
+import { deliveryPhotoIssues, readDeliveryDraft, writeDeliveryDraft } from './deliveryDraftStore'
 import { addPickupDraftGroup, createPickupDraft, pickupDraftToRecord } from './pickupDraftDomain'
 import { readPickupDrafts, writePickupDrafts } from './pickupDraftStore'
 import { createOrderEbol, lockDeliveryEbol, lockPickupEbol, lockSupplementalPickup, prepareDeliveryEbol, prepareSupplementalPickup, syncPickupOrderEbolDraft } from './orderEbolDomain'
@@ -46,14 +46,29 @@ describe('Mock photo evidence', () => {
     expect(evidencePhotos(legacy, draft.orderNumber, 'pickup')).toHaveLength(draft.photoCount)
   })
 
-  it('restores Delivery photos and checks separately for each order', () => {
+  it('restores Delivery photos and damage reports separately for each order', () => {
     const storage = memoryStorage()
-    const draft = { ...readDeliveryDraft('1', storage), damageReported: true, damageNote: 'Demo scratch' }
-    draft.photos = [...draft.photos, { ...draft.photos[0], id: 'damage-photo', category: 'damage' }]
+    const photo = { ...demoPhotos('1', 'delivery', 1)[0], category: 'damage' as const }
+    const draft = { photos: [photo], damageReported: true, damageNote: 'Demo scratch' }
     expect(writeDeliveryDraft('1', draft, storage)).toBe(true)
     expect(readDeliveryDraft('1', storage)).toEqual(draft)
     expect(readDeliveryDraft('2', storage).damageReported).toBe(false)
-    expect(readDeliveryDraft('2', storage).photos).toHaveLength(2)
+    expect(readDeliveryDraft('2', storage).photos).toHaveLength(0)
+  })
+
+  it('requires a damage photo and description while preserving saved Delivery photos', () => {
+    const storage = memoryStorage()
+    const draft = readDeliveryDraft('1', storage)
+    const photos = demoPhotos('1', 'delivery', 4)
+    expect(deliveryPhotoIssues(draft)).toEqual(['Add a Delivery photo.'])
+    expect(deliveryPhotoIssues({ ...draft, photos: photos.slice(0, 1) })).toEqual([])
+    expect(deliveryPhotoIssues({ ...draft, photos: photos.slice(0, 3), damageReported: true, damageNote: 'Scratch' })).toEqual(['Add a damage photo.'])
+    storage.setItem('zaberman-delivery-draft:v1:1', JSON.stringify({ ...draft, photos, matches: true, noDamage: true }))
+    const restored = readDeliveryDraft('1', storage)
+    expect(restored.photos).toEqual(photos)
+    expect(restored.damageReported).toBe(true)
+    expect(deliveryPhotoIssues({ ...restored, damageNote: ' ' })).toEqual(['Describe the damage.'])
+    expect(deliveryPhotoIssues({ ...restored, damageNote: 'Scratch' })).toEqual([])
   })
 
   it('copies photo evidence into independent locked Pickup, supplemental and Delivery snapshots', () => {

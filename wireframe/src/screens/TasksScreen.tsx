@@ -10,6 +10,8 @@ import { useCargo } from '../cargoStore'
 import { filterSpokeTasks, mockTodaySpokeRoute, spokeTaskPath, spokeOperationLabels, type SpokeOperation } from '../spokeDomain'
 import { teamContactsPath } from '../teamContactsDomain'
 import { StopNavigation } from '../StopNavigation'
+import { progressForStop } from '../routeStopProgress'
+import { useRouteStopProgress } from '../useRouteStopProgress'
 
 type Filter = 'all' | SpokeOperation
 
@@ -19,6 +21,7 @@ export function TasksScreen() {
   const { spokeRoute, getOrderDetails, getOrderCargo } = useCargo()
   const { getThread } = useCommunications()
   const route = spokeRoute ?? mockTodaySpokeRoute
+  const stopProgress = useRouteStopProgress(route)
   const visible = filterSpokeTasks(route.tasks.map((task) => ({ ...task, title: operationalName(getOrderDetails(task.externalId), task.externalId) })), query).filter((task) => filter === 'all' || task.operation === filter)
 
   return (
@@ -36,9 +39,11 @@ export function TasksScreen() {
         <div className="task-list">
           {visible.map((task) => {
             const thread = getThread(task.externalId)
+            const progress = progressForStop(stopProgress, task)
             return <div className="task-with-details" key={task.stopId}><Link to={spokeTaskPath(task, route.workDate)} className="task-card">
               <span className="stop-card-heading"><span className="stop-card-title"><span className="stop-card-order">#{task.externalId}</span> · {task.title}</span><ChevronRight size={19} aria-hidden="true" /></span>
               <span className="stop-card-meta"><span><b className={`spoke-task-operation spoke-task-operation--${task.operation}`}>{spokeOperationLabels[task.operation]}</b> · Stop {task.sequence} · {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</span><time>{task.scheduledTime}</time></span>
+              {progress ? <small className="route-stop-list-status">{progress.completedAt ? 'Completed' : 'In progress'}</small> : null}
             </Link><StopNavigation task={task} compact /><div className="task-secondary-actions"><Link className="task-details-link" to={teamContactsPath(task.externalId, task.operation, task.stopId)}>Order details <ChevronRight size={15} aria-hidden="true" /></Link><Link className="task-message-link" to={communicationPath(task.externalId)} aria-label={`Message customer for order ${task.externalId}${thread?.unreadCount ? `, ${thread.unreadCount} unread` : ''}`} title="Message customer"><MessageCircleMore size={20} aria-hidden="true" />{thread?.unreadCount ? <b>{thread.unreadCount}</b> : null}</Link></div></div>
           })}
           {!visible.length ? <p className="spoke-task-empty">No tasks match the current filters.</p> : null}

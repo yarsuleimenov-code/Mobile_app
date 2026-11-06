@@ -17,6 +17,7 @@ import { DeliveryOtpVerification } from '../DeliveryOtpVerification'
 import { otpRecipient } from '../deliveryOtpDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { useCommunications } from '../communicationStore'
+import { CompleteRouteStop, RouteStopGate } from '../RouteStopExecution'
 
 function DeliveryEvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) {
   return (
@@ -30,8 +31,9 @@ function DeliveryEvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnap
 }
 
 export function DeliveryEbolScreen() {
-  const { orderNumber } = useParams()
-  return <DeliveryEbolContent key={orderNumber} />
+  const { orderNumber = '' } = useParams()
+  const [params] = useSearchParams()
+  return <RouteStopGate key={`${orderNumber}:${params}`} order={normalizeOrderNumber(orderNumber)} operation="dropoff" review><DeliveryEbolContent /></RouteStopGate>
 }
 
 function DeliveryEbolContent() {
@@ -39,6 +41,7 @@ function DeliveryEbolContent() {
   const [params] = useSearchParams()
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
+  const stopQuery = params.get('stop') ? `&stop=${encodeURIComponent(params.get('stop')!)}` : ''
   const { getOrderDetails } = useCargo()
   const { getThread } = useCommunications()
   const [orderEbol] = useState<OrderEbol | null>(() => withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? null, 'delivery', getOrderDetails(orderNumber)))
@@ -78,7 +81,7 @@ function DeliveryEbolContent() {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL" subtitle={`Delivery · Order #${orderNumber}`} />
-        <div className="ebol-not-found"><FileText size={42} /><h2>Delivery evidence required</h2><p>Verify the cargo and capture Delivery photos first.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/dropoff?order=${orderNumber}`)}>Open Delivery</button></div>
+        <div className="ebol-not-found"><FileText size={42} /><h2>Delivery evidence required</h2><p>Verify the cargo and capture Delivery photos first.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/dropoff?order=${orderNumber}${stopQuery}`)}>Open Delivery</button></div>
         <CargoBottomNav />
       </div>
     )
@@ -105,6 +108,7 @@ function DeliveryEbolContent() {
         <CargoFlowHeader title="Order eBOL" subtitle={`Completed · Order #${orderNumber}`} />
         <main className="delivery-ebol-body">
           <section className="ebol-locked-state"><span><LockKeyhole size={30} /></span><h2>Order eBOL completed</h2><p>Pickup and Delivery snapshots are locked.</p></section>
+          <CompleteRouteStop order={orderNumber} operation="dropoff" />
           <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Delivery evidence</h2></div><DeliveryEvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />{hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{exceptionNote || 'Add exception details below'}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
           <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Delivery confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.delivery.contact.status === 'otp' ? 'Delivery contact · OTP verified' : 'Delivery contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.delivery.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
           <div className="delivery-pickup-reference"><CheckCircle2 size={20} /><span><strong>Pickup snapshot locked</strong><small>Pickup evidence and confirmations remain unchanged.</small></span></div>
