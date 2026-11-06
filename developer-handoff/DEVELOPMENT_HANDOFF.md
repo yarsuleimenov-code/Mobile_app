@@ -4,7 +4,7 @@
 
 ## Что реализовать
 
-Актуальный срез браузерного прототипа — [Pickup и Delivery — шаги 1–7](requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md). [HOV-001](requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md) описывает проверку QR и адреса перед передачей. Для production требуется подтвердить связь QR → OrderID, координаты точек, радиус, правило продолжения с причиной и работу на реальных устройствах.
+Актуальный срез браузерного прототипа — [Pickup и Delivery — шаги 1–7](requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md). [HOV-001](requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md) описывает отдельную проверку этикетки и адреса. Для production требуется подтвердить связь QR → OrderID, координаты точек, радиус и работу на реальных устройствах.
 
 Синхронизация 2026-11-02: комплект включает COM-002 из прототипа `a524ea0` — первый шаблон We'll be there in 20 minutes с редактированием и отдельным Send. Уточнены FR-044 / UC-16 / COM-AC-12 / CALL-TC-12 и пользовательские RU/EN-инструкции. Базовые 70 FR/NFR, 140 AC и 18 UC не перенумеровывались.
 

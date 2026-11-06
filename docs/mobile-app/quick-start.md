@@ -8,17 +8,13 @@ Open **Cargo operations**. Before **Load today’s route** becomes available, co
 
 ## Complete the Pre-trip inspection
 
-1. On Home, select **Start** in the Pre-trip inspection card for **Van 08 · Extended Van**.
-2. Answer all four safety checks with **Pass** or **Issue**.
-3. Select **Continue to photos** and take all 13 required vehicle and equipment photos. Gallery upload is not available.
-4. Review the inspection and confirm **I confirm this vehicle is safe to operate**.
-5. Select **Complete inspection**. Home shows **Vehicle cleared**, and the route can be loaded.
-
-Any **Issue** keeps the route locked. Use **Review issues**, correct the answer only after the condition is resolved, or follow the operating team's escalation process. Camera unavailable also prevents completion.
+1. Select **Start** on the Home Pre-trip card.
+2. Capture the vehicle from four sides and the dashboard. Enter the odometer in miles and select **Continue to equipment**.
+3. Capture eight equipment photos, select **Review inspection**, then attest and select **Complete inspection**. Home allows route loading.
 
 ## Finish vehicle use
 
-Home → **Post-trip inspection** → four checks (describe every Issue) → 13 photos → Review and driver attestation → **Complete Post-trip**. Acknowledge any unfinished stops. Issues are recorded without blocking submission. Home → **Start next vehicle cycle** requires a fresh Pre-trip and keeps the previous pair in history. See [Post-trip instructions](user-guide.md#post-trip-inspection).
+Open **Post-trip inspection** from Home. Capture the same 13 photos, enter the ending odometer, review the trip distance if both readings are available, acknowledge any unfinished stops and select **Complete Post-trip**. **Start next vehicle cycle** archives the pair. [Post-trip instructions](user-guide.md#post-trip-inspection).
 
 ## Main navigation
 

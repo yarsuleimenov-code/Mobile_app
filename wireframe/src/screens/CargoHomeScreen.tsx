@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FilePenLine, FileText, LoaderCircle, MessageCircleMore, RefreshCw, Search, ShieldCheck } from 'lucide-react'
+import { ArrowDown, ArrowUp, Barcode, CheckCircle2, ChevronDown, ChevronRight, CloudDownload, FilePenLine, FileText, LoaderCircle, MessageCircleMore, RefreshCw, Search, ShieldCheck, Truck } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
@@ -12,7 +12,7 @@ import { getOrderDocumentNavigation } from '../orderEbolNavigation'
 import { readOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts } from '../pickupDraftStore'
 import { filterSpokeTasks, mockTodaySpokeRoute, spokeTaskPath, spokeOperationLabels } from '../spokeDomain'
-import { inspectionStatus, preTripPhotos } from '../preTripInspectionDomain'
+import { formatInspectionMiles, inspectionStatus, preTripPhotos } from '../preTripInspectionDomain'
 import { usePreTripInspection } from '../preTripInspectionStore'
 import { StopNavigation } from '../StopNavigation'
 import { progressForStop, stopProgressLabel } from '../routeStopProgress'
@@ -64,14 +64,20 @@ export function CargoHomeScreen() {
           <ChevronRight size={20} />
         </button>
 
+        <button type="button" className="home-messages-card" onClick={() => navigate('/route-loading')}>
+          <span className="home-messages-icon"><Truck size={26} aria-hidden="true" /></span>
+          <span><strong>Route Loading</strong><small>Prepare the next route at the warehouse</small></span>
+          <ChevronRight size={20} aria-hidden="true" />
+        </button>
+
         <section className={`pretrip-home-card pretrip-home-card--${preTripStatus}`} aria-labelledby="pretrip-home-title">
           <span className="pretrip-home-icon"><ShieldCheck size={25} /></span>
-          <div><p>{postTrip.completedAt ? 'PRE-TRIP RECORD' : routeUnlocked ? 'VEHICLE CLEARED' : preTripStatus === 'blocked' ? 'ROUTE LOCKED' : 'REQUIRED BEFORE ROUTE'}</p><h2 id="pretrip-home-title">Pre-trip inspection</h2><small>{preTripStatus === 'passed' ? `Van 08 · ${Object.keys(inspection.answers).length} checks · ${inspection.photos.length} photos complete` : preTripStatus === 'blocked' ? 'A reported issue must be cleared before departure' : `Van 08 · Safety checklist and ${preTripPhotos.length} required photos`}</small></div>
-          <button type="button" onClick={() => navigate('/pre-trip-inspection')}>{preTripStatus === 'passed' ? 'View' : preTripStatus === 'in_progress' || preTripStatus === 'blocked' ? 'Continue' : 'Start'} <ChevronRight size={17} /></button>
+          <div><p>{postTrip.completedAt ? 'PRE-TRIP RECORD' : routeUnlocked ? 'VEHICLE CLEARED' : 'REQUIRED BEFORE ROUTE'}</p><h2 id="pretrip-home-title">Pre-trip inspection</h2><small>{preTripStatus === 'passed' ? `Van 08 · ${inspection.photos.length} photos · ${formatInspectionMiles(inspection.odometer)}` : `Van 08 · Odometer and ${preTripPhotos.length} required photos`}</small></div>
+          <button type="button" onClick={() => navigate('/pre-trip-inspection')}>{preTripStatus === 'passed' ? 'View' : preTripStatus === 'in_progress' ? 'Continue' : 'Start'} <ChevronRight size={17} /></button>
         </section>
 
         {saveError ? <p className="ebol-storage-warning" role="alert">Inspection could not be saved. Check device storage and retry.</p> : null}
-        {inspection.completedAt ? <section className="pretrip-home-card" aria-labelledby="posttrip-home-title"><span className="pretrip-home-icon"><ShieldCheck size={25} /></span><div><p>{postTrip.completedAt ? 'VEHICLE CYCLE COMPLETED' : 'AFTER VEHICLE USE'}</p><h2 id="posttrip-home-title">Post-trip inspection</h2><small>{postTrip.completedAt ? Object.values(postTrip.answers).includes('issue') ? 'Completed — issues reported · Needs attention' : 'Completed · Vehicle condition recorded' : 'Van 08 · Checklist and 5 required photos'}</small></div><button type="button" onClick={() => navigate('/post-trip-inspection')}>{postTrip.completedAt ? 'View' : Object.keys(postTrip.answers).length ? 'Continue' : 'Start'} <ChevronRight size={17} /></button></section> : null}
+        {inspection.completedAt ? <section className="pretrip-home-card" aria-labelledby="posttrip-home-title"><span className="pretrip-home-icon"><ShieldCheck size={25} /></span><div><p>{postTrip.completedAt ? 'VEHICLE CYCLE COMPLETED' : 'AFTER VEHICLE USE'}</p><h2 id="posttrip-home-title">Post-trip inspection</h2><small>{postTrip.completedAt ? Object.values(postTrip.answers).includes('issue') ? 'Completed — issues reported · Needs attention' : 'Completed · Vehicle condition recorded' : `Van 08 · Odometer and ${preTripPhotos.length} required photos`}</small></div><button type="button" onClick={() => navigate('/post-trip-inspection')}>{postTrip.completedAt ? 'View' : postTrip.photos.length || postTrip.odometer !== undefined ? 'Continue' : 'Start'} <ChevronRight size={17} /></button></section> : null}
         {postTrip.completedAt ? <button type="button" className="ebol-secondary" onClick={() => { if (startNextCycle()) navigate('/pre-trip-inspection') }}>Start next vehicle cycle</button> : null}
         {history.length ? <details className="order-detail-card"><summary>Previous vehicle inspections ({history.length})</summary>{history.map((cycle, index) => <button className="ebol-secondary" type="button" key={cycle.postTrip.completedAt} onClick={() => navigate(`/post-trip-inspection?cycle=${index}`)}>{new Date(cycle.postTrip.completedAt!).toLocaleString()} · {Object.values(cycle.postTrip.answers).includes('issue') ? 'Issues reported' : 'Completed'}</button>)}</details> : null}
 

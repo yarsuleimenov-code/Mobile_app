@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, FilePlus2, FileText, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
+import { ContactFollowUpNotice, ContactFollowUpReason } from '../order-document-components'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
@@ -64,6 +65,7 @@ function PickupEbolContent() {
     confirmationSource?.contact.status === 'otp' ? 'otp' : 'signed'
   ))
   const [contactName, setContactName] = useState(confirmationSource?.contact.signerName ?? '')
+  const [followUpReason, setFollowUpReason] = useState('')
   const [otpVerified, setOtpVerified] = useState(confirmationSource?.contact.status === 'otp')
   const [otpRevision, setOtpRevision] = useState(0)
   const invalidateOtp = () => { if (otpVerified) { setOtpVerified(false); setOtpRevision((revision) => revision + 1) } }
@@ -92,6 +94,7 @@ function PickupEbolContent() {
   const isLocked = Boolean(orderEbol.pickup.lockedAt)
   const confirmationInput: PickupEbolConfirmationInput = {
     contactMethod, contactName: contactMethod === 'otp' ? recipient.name : contactName,
+    followUpReason,
     otpVerified, otpPhoneLast4: recipient.phone.replace(/\D/g, '').slice(-4), driverName, hasDamage, exceptionNote,
     contactComment: comments.contact, driverComment: comments.driver,
   }
@@ -115,7 +118,7 @@ function PickupEbolContent() {
           <CompleteRouteStop order={orderNumber} operation="pickup" />
           <PackingPhotos order={orderNumber} />
           <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Pickup evidence</h2></div><EvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />{evidence.hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
-          <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'otp' ? 'Pickup contact · OTP verified' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
+          <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div>{orderEbol.pickup.contact.status === 'follow_up' ? <ContactFollowUpNotice reason={orderEbol.pickup.contact.followUpReason} /> : <div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'otp' ? 'Pickup contact · OTP verified' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div>}<div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
           <PickupEmailDeliveryStatus documentNumber={`${orderNumber}-PU-1`} request={orderEbol.pickup.contact.emailCopyRequest} />
           <HandoffCommentsView comments={orderEbol.pickup.comments} />
           <OrderDocumentHistory order={orderEbol} />
@@ -158,8 +161,10 @@ function PickupEbolContent() {
 
         <section className="ebol-section">
           <div className="ebol-section-heading"><UserRound size={20} /><h2>Pickup contact</h2></div>
-          <div className="ebol-method" aria-label="Pickup contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => chooseContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'otp'} className={contactMethod === 'otp' ? 'is-active' : ''} onClick={() => chooseContactMethod('otp')}>SMS code</button></div>
-          {contactMethod === 'signed' ? <label className="ebol-field">Contact name<input value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Full name" /></label> : (
+          <div className="ebol-method" aria-label="Pickup contact confirmation method"><button type="button" aria-pressed={contactMethod === 'signed'} className={contactMethod === 'signed' ? 'is-active' : ''} onClick={() => chooseContactMethod('signed')}>Sign on device</button><button type="button" aria-pressed={contactMethod === 'otp'} className={contactMethod === 'otp' ? 'is-active' : ''} onClick={() => chooseContactMethod('otp')}>SMS code</button>{!supplementalDraft ? <button type="button" className={`contact-follow-up-option${contactMethod === 'follow_up' ? ' is-active' : ''}`} aria-pressed={contactMethod === 'follow_up'} onClick={() => chooseContactMethod('follow_up')}>Unable to get contact confirmation</button> : null}</div>
+          {contactMethod === 'signed' ? <label className="ebol-field">Contact name<input value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Full name" /></label> : contactMethod === 'follow_up' ? (
+            <ContactFollowUpReason value={followUpReason} onChange={setFollowUpReason} />
+          ) : (
             <>
               <HandoffCommentEditor party="contact" reported value={comments.contact} disabled={otpVerified} onChange={(value) => changeComments({ ...comments, contact: value })} />
               {otpVerified ? <button type="button" className="ebol-secondary" onClick={invalidateOtp}>Edit contact comment · verify again</button> : null}
@@ -175,7 +180,7 @@ function PickupEbolContent() {
 
         <HandoffCommentSaveError visible={saveError} />
         {supplementalDraft ? <OrderDocumentHistory order={orderEbol} /> : null}
-        <div className="flow-action"><button type="button" className="cargo-primary" disabled={!canConfirm} onClick={openSigning}><FileText size={19} /> {contactMethod === 'otp' ? 'Continue to driver signature' : 'Continue to signing'}</button></div>
+        <div className="flow-action"><button type="button" className="cargo-primary" disabled={!canConfirm} onClick={openSigning}><FileText size={19} /> {contactMethod === 'signed' ? 'Continue to signing' : 'Continue to driver signature'}</button></div>
       </main>
       <CargoBottomNav />
     </div>

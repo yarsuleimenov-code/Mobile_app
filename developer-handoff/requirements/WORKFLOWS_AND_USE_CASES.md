@@ -6,7 +6,7 @@
 
 ## Сквозной handoff
 
-Уточнение **HOV-001, 2026-11-03** для UC-05/06/08: [правила QR, местоположения, предупреждений и 15 HOV-AC](QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md). Геопозиция обновляется непосредственно перед подтверждением. Неизвестный код требует retry; чужой заказ и неподтверждённая геопозиция требуют возврата к проверке либо обязательной причины. Сканирование не переключает Order. История хранится в версии операции; это текущий прототип / визуальное ТЗ, не production-приёмка.
+Актуализация [HOV-001](QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md). Местоположение фиксируется при создании этикеток; Check label проверяет код и адрес отдельно от подписания UC-05/06/08.
 
 ```mermaid
 flowchart TD
@@ -130,11 +130,11 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference |
 | Начальное состояние | Pre-trip required/in_progress либо Pre passed и Post-trip ещё не завершён. |
-| Последовательность экранов/действий | Pre: 4 checks Pass → 13 обязательных фото с камеры → attestation → passed. Post: те же 4 checks и 13 фото, описание каждого Issue → attestation → acknowledgment unfinished stops → complete → next cycle. |
-| Валидации | Pre Issue блокирует; Post Issue требует reason, не блокирует report; все photo markers/attestation обязательны. |
+| Последовательность экранов/действий | Pre и Post: пять фото машины и одометр → восемь фото оборудования → подтверждение водителя. Post показывает разницу показаний и требует acknowledgment незавершённых остановок при наличии. |
+| Валидации | Все 13 фото, целое неотрицательное показание одометра и подтверждение обязательны. При известном начальном показании конечное должно быть не меньше. |
 | Системные операции / изменение состояния | Сохранить current cycle и историю пар; завершённые записи сохраняют исходный набор ответов и фото. Следующий цикл архивирует пару и применяет текущие требования. |
 | Конечное состояние | Pre passed открывает Home gate; Post completed не завершает Order/Trip, новый Pre required. |
-| Альтернативные ветки | Прервать/возобновить; смотреть previous cycle; Post с описанными Issue завершить. |
+| Альтернативные ветки | Прервать/возобновить; смотреть previous cycle; Post после исторического Pre без одометра сохраняет конечное показание. |
 | Ошибки / ограничения | Camera/storage недоступны — нет ложного completed; fleet assignment/override/repair и global gate — OQ-12. |
 | Требования / источники | [FR-009](TECHNICAL_SPECIFICATION.md#fr-009), [FR-010](TECHNICAL_SPECIFICATION.md#fr-010) |
 
@@ -146,7 +146,7 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference; freeze checkpoint Needs Decision |
 | Начальное состояние | Planned/manual Order; original Pickup не locked; editable draft. |
-| Последовательность экранов/действий | Home/Task → Pickup → groups/measurements/photos → saved → Continue → draft ready → Open Pickup review → contact signature либо UC-07 OTP → driver signature → QR и свежая геопроверка HOV-001 → lock либо предупреждение с обязательной причиной. |
+| Последовательность экранов/действий | Home/Task → Pickup → groups/measurements/photos → saved → Continue → draft ready → Open Pickup review → contact signature либо UC-07 OTP → driver signature → lock. |
 | Валидации | Достоверный Order/place context, актуальный review; недоступные фото/размеры/вес/иные сведения — комментарий менеджера что отсутствует и почему; contact и driver confirmation остаются обязательны. |
 | Системные операции / изменение состояния | Draft→CargoRecord/local eBOL review; до lock evidence обновляется; после final driver lock eBOL pickup_locked и original snapshot immutable. |
 | Конечное состояние | Pickup snapshot locked локально; authoritative operation close и sync отдельны. |
@@ -162,7 +162,7 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference |
 | Начальное состояние | Original locked; есть новые физические места того же Order. |
-| Последовательность экранов/действий | Recent Add places/draft → supplemental draft → новые IDs/фото → create version → review → contact confirmation → driver → собственная проверка HOV-001 → locked supplemental. |
+| Последовательность экранов/действий | Recent Add places/draft → supplemental draft → новые IDs/фото → create version → review → contact confirmation → driver → locked supplemental. |
 | Валидации | Новые места >0; свой evidence и причины unknown; существующий unsigned supplement продолжается. |
 | Системные операции / изменение состояния | Добавить новую version/addedPlaceIds и confirmations; сохранить original без изменений; effective Pickup включает только locked supplements. |
 | Конечное состояние | Original + locked supplement читаемы; только подтверждённые additions доступны для Delivery. |
@@ -194,9 +194,9 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference; authoritative checkpoint Needs Decision |
 | Начальное состояние | Order CargoRecord найден; Delivery ещё не locked. |
-| Последовательность экранов/действий | Home/Tasks → Delivery → сверка заказа и Pickup evidence → Delivery photo или Record damage → Continue to Delivery review. После Pickup lock: review → подпись контакта или OTP → подпись водителя → проверка QR и адреса Delivery по HOV-001 → завершённый eBOL. Для назначенной остановки затем доступно Complete stop. |
+| Последовательность экранов/действий | Home/Tasks → Delivery → сверка заказа и Pickup evidence → Delivery photo или Record damage → Continue to Delivery review. После Pickup lock: review → подпись контакта или OTP → подпись водителя → завершённый eBOL. Для назначенной остановки затем доступно Complete stop. |
 | Валидации | Прототип требует фото Delivery либо фото повреждения с описанием. Для Release 1 правило недоступных материалов с объяснением задано BD-09. Нужны правильный заказ, актуальная версия и подтверждения. |
-| Системные операции / изменение состояния | Сохранить Delivery draft; при Pickup locked подготовить Delivery review без завершения доставки. Финальный lock после проверки HOV-001 сохраняет audit, завершает eBOL и переводит локальный record в dropoff_complete. |
+| Системные операции / изменение состояния | Сохранить Delivery draft; при Pickup locked подготовить Delivery review без завершения доставки. Подпись водителя фиксирует eBOL, а для назначенной точки — привязку к визиту. Локальный record переходит в dropoff_complete. |
 | Конечное состояние | При обеих locked snapshots eBOL completed, POD доступен; локальный record завершён после финального подтверждения. Production authoritative close/sync остаются отдельными. |
 | Альтернативные ветки | Нет фото: сохранить причину и продолжить. Ошибка/отказ передачи: сообщить диспетчеру и открыть другую точку, не завершив проблемную (BD-05). Pickup не locked: сохранить draft и перейти к Pickup review. |
 | Ошибки / ограничения | Unknown Order, changed query, pending additions/storage/document failure не дают обычный success. Детали обработки отказа и частичной доставки открыты по BD-05. |
@@ -373,7 +373,7 @@ COM-002: в Messages первым доступен шаблон **We'll be there
 | Pickup draft | Editable → saved → ready/review; original при lock read-only | Saved не authoritative closed; нет complete server operation service |
 | eBOL | pickup_review → pickup_locked; delivery_review → completed после driver lock | Declared draft/in_transit/correction_requested не доказывают доступные полные flows |
 | Supplemental | draft → locked с новой version; original immutable | Unsigned additions не Delivery composition; correction не новое физическое место |
-| Delivery record vs document | Delivery review готовит evidence. Pickup lock требуется до подписания Delivery, финальная проверка завершает eBOL. | Complete stop фиксирует отдельное локальное состояние назначенной точки после передачи; серверный checkpoint остаётся открытым. |
+| Delivery record vs document | Delivery review готовит evidence. Pickup lock требуется до подписания Delivery. Подпись водителя завершает eBOL. | Complete stop фиксирует отдельное локальное состояние назначенной точки после передачи; серверный checkpoint остаётся открытым. |
 | Inspection cycle | required/in_progress/blocked → passed; Post report → cycle completed → new Pre required | Issue не снимается reconnect; cycle не shift accounting и не auto completion заказов |
 | Interstate | Selected subset → review → generated summary; receiving draft → local completion marker | Persistent outbound manifest, globally unique numbers, atomic server close и real discrepancy case не реализованы |
 | Sync | pending/retry/conflict/rejected → local result с revision guard | Не выбраны production merge, ordering и authoritative ack protocol |

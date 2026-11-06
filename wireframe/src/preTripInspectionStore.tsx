@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import {
   inspectionCanComplete,
-  type PreTripAnswer,
-  type PreTripCheckId,
+  inspectionDriver,
   type PreTripInspectionState,
   type PreTripPhotoId,
 } from './preTripInspectionDomain'
@@ -10,7 +9,7 @@ import { emptyVehicleInspection, finishPostTrip, restoreVehicleInspection, start
 
 interface PreTripInspectionContextValue {
   inspection: PreTripInspectionState
-  answerCheck: (id: PreTripCheckId, answer: PreTripAnswer) => void
+  setOdometer: (odometer: number | undefined) => void
   capturePhoto: (id: PreTripPhotoId) => void
   setAttested: (attested: boolean) => void
   completeInspection: () => boolean
@@ -51,12 +50,12 @@ export function PreTripInspectionProvider({ children }: { children: ReactNode })
   }
   const value: PreTripInspectionContextValue = {
     ...state, saveError,
-    answerCheck: (id, answer) => changePre({ answers: { ...state.inspection.answers, [id]: answer } }),
+    setOdometer: (odometer) => changePre({ odometer }),
     capturePhoto: (id) => changePre({ photos: [...new Set([...state.inspection.photos, id])] }),
     setAttested: (attested) => changePre({ attested }),
     completeInspection: () => {
       if (state.inspection.completedAt || !inspectionCanComplete(state.inspection)) return false
-      return save({ ...state, inspection: { ...state.inspection, completedAt: new Date().toISOString() } })
+      return save({ ...state, inspection: { ...state.inspection, inspectedBy: inspectionDriver, completedAt: new Date().toISOString() } })
     },
     updatePostTrip: (patch) => {
       if (!state.inspection.completedAt || state.postTrip.completedAt) return

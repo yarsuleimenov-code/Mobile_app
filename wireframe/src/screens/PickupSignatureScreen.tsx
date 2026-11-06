@@ -9,18 +9,17 @@ import {
 } from '../documentEmailStore'
 import {
   canReviewOrderEvidence, withCurrentOrderDetails, canLockPickupEbol, createOrderEbol, isValidContactEmail, lockPickupEbol, lockSupplementalPickup,
-  type OrderEbol, type PickupEbolConfirmationInput,
+  type OrderEbol, type PickupEbolConfirmationInput, type SignedStopVisit,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts, removePickupDraft, writePickupDrafts } from '../pickupDraftStore'
 import { pickupReviewNeedsRefresh } from '../pickupReviewState'
 import { SignaturePad } from '../signature-components'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
+import { ContactFollowUpNotice } from '../order-document-components'
 import { ContactCommentView, HandoffCommentEditor, HandoffCommentSaveError, useHandoffComments } from '../orderReviewComments'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
-import { HandoffVerificationButton } from '../HandoffVerification'
-import type { HandoffVerification } from '../handoffVerificationDomain'
-import { RouteStopGate } from '../RouteStopExecution'
+import { RouteStopGate, useSignAtStop } from '../RouteStopExecution'
 
 interface PickupSignatureLocationState {
   confirmationInput: PickupEbolConfirmationInput
@@ -55,11 +54,13 @@ function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
   const [contactSigned, setContactSigned] = useState(!startsWithContact)
   const [driverSigned, setDriverSigned] = useState(false)
   const [storageError, setStorageError] = useState(false)
+  const [stopError, setStopError] = useState('')
+  const signAtStop = useSignAtStop(orderNumber, 'pickup')
   const [sendEmailCopy, setSendEmailCopy] = useState(false)
   const [contactEmail, setContactEmail] = useState(orderEbol?.pickup.contact.emailCopyRequest?.recipientEmail ?? '')
   const { comments, changeComments, saveError } = useHandoffComments(orderEbol, supplementVersion ?? 'pickup')
 
-  if (pickupReviewNeedsRefresh(orderEbol, readPickupDrafts()) || !canReviewOrderEvidence(supplement?.evidence ?? orderEbol?.pickup.evidence) || !orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput) || (confirmationInput.contactMethod === 'otp' && comments.contact !== (confirmationInput.contactComment ?? '')) || (supplementVersion !== undefined && !supplement?.evidence)) {
+  if (pickupReviewNeedsRefresh(orderEbol, readPickupDrafts()) || !canReviewOrderEvidence(supplement?.evidence ?? orderEbol?.pickup.evidence) || !orderEbol?.pickup.evidence || !confirmationInput || !canLockPickupEbol(confirmationInput) || (confirmationInput.contactMethod === 'otp' && comments.contact !== (confirmationInput.contactComment ?? '')) || (supplementVersion !== undefined && (!supplement?.evidence || confirmationInput.contactMethod === 'follow_up'))) {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL signing" subtitle={`Pickup · Order #${orderNumber || 'unknown'}`} />
@@ -86,9 +87,9 @@ function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const finishPickupSigning = (verification: HandoffVerification) => {
+  const finishPickupSigning = (stopVisit?: SignedStopVisit) => {
     if (!driverSigned || (startsWithContact && !contactSigned) || !changeComments(comments)) return
-    const input = { ...confirmationInput, verification, contactComment: comments.contact, driverComment: comments.driver, sendEmailCopy: startsWithContact && sendEmailCopy, contactEmail: contactEmail.trim() }
+    const input = { ...confirmationInput, stopVisit, contactComment: comments.contact, driverComment: comments.driver, sendEmailCopy: startsWithContact && sendEmailCopy, contactEmail: contactEmail.trim() }
     const current = withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? orderEbol, supplementVersion ?? 'pickup', getOrderDetails(orderNumber))!
     if ((supplementVersion === undefined && current.pickup.lockedAt) || current.pickupSupplements.find((item) => item.version === supplementVersion)?.lockedAt) { navigate(reviewPath, { replace: true }); return }
     const locked = supplementVersion === undefined
@@ -150,6 +151,8 @@ function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
           <section className="signature-card">
             {confirmationInput.contactMethod === 'otp' ? (
               <div className="otp-signing-summary"><ShieldCheck size={22} /><span><strong>Pickup contact verified by OTP</strong><small>{confirmationInput.contactName} · ••• ••• {confirmationInput.otpPhoneLast4}</small></span></div>
+            ) : confirmationInput.contactMethod === 'follow_up' ? (
+              <ContactFollowUpNotice reason={confirmationInput.followUpReason} />
             ) : (
               <div className="signature-prior-confirmation"><CheckCircle2 size={20} /><span>{confirmationInput.contactName} signed</span></div>
             )}
@@ -157,11 +160,15 @@ function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
             <ContactCommentView value={comments.contact} />
             {startsWithContact ? <button type="button" className="ebol-secondary" onClick={() => { setContactSigned(false); setDriverSigned(false); setStep('contact') }}>Edit contact comment · sign again</button> : null}
             <div className="signature-role"><UserRound size={25} /><span><strong>Zaberman driver</strong><small>{confirmationInput.driverName}</small></span></div>
-            <p>{confirmationInput.contactMethod === 'otp' ? 'The Pickup contact is already verified. By signing, the driver confirms the Pickup evidence and documented exceptions.' : 'By signing, the driver confirms the same Pickup evidence and documented exceptions.'}</p>
+            <p>{confirmationInput.contactMethod === 'otp' ? 'The Pickup contact is already verified. ' : ''}By signing, the driver confirms the Pickup evidence and documented exceptions.</p>
             <HandoffCommentEditor party="driver" value={comments.driver} onChange={(value) => { setDriverSigned(false); changeComments({ ...comments, driver: value }) }} />
             <SignaturePad key={`driver:${comments.driver}`} label="Zaberman driver" onSignedChange={setDriverSigned} />
             {storageError ? <p className="ebol-storage-warning">Browser storage is unavailable. The Pickup snapshot was not locked.</p> : null}
-            <HandoffVerificationButton order={orderNumber} operation="pickup" driver={confirmationInput.driverName} disabled={!driverSigned} label={`Confirm & lock ${supplement ? `version ${supplement.version}` : 'Pickup snapshot'}`} onConfirm={finishPickupSigning} />
+            {stopError ? <p className="ebol-storage-warning" role="alert">{stopError}</p> : null}
+            <button type="button" className="cargo-primary" disabled={!driverSigned} onClick={() => {
+              setStopError('')
+              void signAtStop(finishPickupSigning, supplementVersion !== undefined).catch((error: Error) => setStopError(error.message))
+            }}>Confirm &amp; lock {supplement ? `version ${supplement.version}` : 'Pickup snapshot'}</button>
           </section>
         )}
       </main>

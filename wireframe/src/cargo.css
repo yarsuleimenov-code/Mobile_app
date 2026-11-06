@@ -481,6 +481,11 @@ textarea { font: inherit; }
 .ebol-method { margin-top: 14px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: #eef2f6; border-radius: 9px; }
 .ebol-method button { min-height: 42px; border: 0; border-radius: 7px; color: var(--cargo-muted); background: transparent; font-weight: 850; cursor: pointer; }
 .ebol-method button.is-active { color: var(--cargo-blue); background: #fff; box-shadow: 0 2px 7px rgba(7,29,61,.12); }
+.ebol-method .contact-follow-up-option { grid-column: 1 / -1; }
+.contact-follow-up-notice p { white-space: pre-wrap; }
+.task-contact-follow-ups { margin-bottom: 14px; }
+.task-contact-follow-ups article + article { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--cargo-line); }
+.task-contact-follow-ups article p { margin: 5px 0; font-size: 13px; overflow-wrap: anywhere; white-space: pre-wrap; }
 .ebol-field { margin-top: 14px; display: block; font-size: 13px; font-weight: 850; }
 .flow-action .cargo-primary,
 .pickup-ebol-body > .cargo-primary { display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -1190,6 +1195,33 @@ textarea { font: inherit; }
 .pretrip-review-list dt { color: var(--cargo-muted); font-size: 12px; }
 .pretrip-review-list dd { margin: 0; font-size: 12px; font-weight: 850; text-align: right; }
 .pretrip-review-list dd.is-issue { color: #a2352e; }
+.inspection-photo-record { margin: 14px 0; width: 100%; text-align: left; }
+.inspection-photo-record ul { display: grid; gap: 6px; padding: 0; margin: 10px 0 0; list-style: none; }
+.inspection-photo-record li { display: flex; align-items: center; gap: 7px; font-size: 13px; }
+.inspection-photo-record li svg { flex-shrink: 0; color: var(--cargo-green); }
+.warehouse-loading-body { display: grid; gap: 12px; }
+.warehouse-loading-body .loading-progress p { margin: 7px 0 0; font-size: 13px; }
+.warehouse-loading-body .loading-orders { margin: 0; }
+.warehouse-order-summary { cursor: default; }
+summary.warehouse-order-summary { cursor: pointer; list-style: none; }
+summary.warehouse-order-summary::-webkit-details-marker { display: none; }
+.warehouse-loading-orders .warehouse-order-summary > span { min-width: 0; display: grid; gap: 3px; }
+.warehouse-order-summary strong { overflow-wrap: anywhere; }
+.warehouse-preview-details, .warehouse-packing-photos { padding: 0 14px 12px; }
+.warehouse-preview-details .warehouse-packing-photos { padding: 0; }
+.warehouse-preview-details p { margin-block: 7px; font-size: 13px; }
+.warehouse-packing-photos summary { color: var(--cargo-blue); font-size: 13px; font-weight: 800; cursor: pointer; padding-block: 8px; }
+.warehouse-scan { display: grid; gap: 8px; }
+.warehouse-scan > button { display: flex; justify-content: center; align-items: center; gap: 7px; }
+.warehouse-scan .unloading-scan { margin: 0; grid-template-columns: minmax(0, 1fr) auto; }
+.warehouse-complete-load:disabled { background: #eef2f6; color: #687a8e; cursor: not-allowed; }
+.warehouse-place-list { margin: 0; padding: 0 14px; list-style: none; }
+.warehouse-place-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--cargo-line); }
+.warehouse-place-list li span { min-width: 0; display: grid; gap: 3px; }
+.warehouse-place-list code { overflow-wrap: anywhere; font-size: 12px; }
+.warehouse-place-list small { color: var(--cargo-muted); font-size: 12px; }
+.warehouse-place-list .warehouse-place-loaded { color: var(--cargo-green); font-weight: 800; }
+.warehouse-place-list .ebol-secondary { width: auto; min-height: 40px; padding-inline: 10px; font-size: 12px; }
 .pretrip-attestation { margin-top: 18px; padding: 14px; display: grid; grid-template-columns: 23px minmax(0, 1fr); gap: 10px; border: 1px solid #a9bdd4; border-radius: 10px; background: #f6f9fd; cursor: pointer; }
 .pretrip-attestation input { width: 21px; height: 21px; margin: 1px 0 0; accent-color: var(--cargo-green); }
 .pretrip-attestation span { display: grid; gap: 4px; }

@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { ORDER_EBOLS_STORAGE_KEY } from './orderEbolStore'
 import { mockTodaySpokeRoute } from './spokeDomain'
-import { isActiveStop, parseStopProgress, progressForStop, stopProgressKey, updateStopProgress } from './routeStopProgress'
+import { hasStopConfirmation, isActiveStop, parseStopProgress, progressForStop, stopProgressKey, updateStopProgress } from './routeStopProgress'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -45,6 +45,17 @@ it('releases the active stop only after its own new handoff and explicit complet
   setHandoff(pickup.stopId, '2026-11-06T11:00:00.000Z')
   await expect(updateStopProgress(route, pickup, 'complete')).rejects.toThrow('Confirm the handoff')
   setHandoff(pickup.stopId, confirmedAt)
+  expect(hasStopConfirmation(pickup, progress()[0]!)).toBe(true)
+  const setVisit = (stopId: string, visitStartedAt: string) => storage.set(ORDER_EBOLS_STORAGE_KEY, JSON.stringify([{
+    orderNumber: pickup.externalId, status: 'pickup_locked',
+    pickup: { lockedAt: confirmedAt, stopVisit: { stopId, startedAt: visitStartedAt } },
+    delivery: {},
+  }]))
+  setVisit('different-stop', startedAt)
+  await expect(updateStopProgress(route, pickup, 'complete')).rejects.toThrow('Confirm the handoff')
+  setVisit(pickup.stopId, '2026-11-06T11:00:00.000Z')
+  await expect(updateStopProgress(route, pickup, 'complete')).rejects.toThrow('Confirm the handoff')
+  setVisit(pickup.stopId, startedAt)
   await expect(updateStopProgress(route, delivery, 'start')).rejects.toThrow('Complete the active stop')
   await updateStopProgress(route, pickup, 'complete')
   await updateStopProgress(route, delivery, 'start')

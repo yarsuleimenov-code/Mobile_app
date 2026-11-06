@@ -5,15 +5,14 @@ import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
 import {
   canReviewOrderEvidence, withCurrentOrderDetails, canLockDeliveryEbol, lockDeliveryEbol,
-  type DeliveryEbolConfirmationInput, type OrderEbol,
+  type DeliveryEbolConfirmationInput, type OrderEbol, type SignedStopVisit,
 } from '../orderEbolDomain'
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 import { SignaturePad } from '../signature-components'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
+import { ContactFollowUpNotice } from '../order-document-components'
 import { useCargo } from '../cargoStore'
-import { HandoffVerificationButton } from '../HandoffVerification'
-import type { HandoffVerification } from '../handoffVerificationDomain'
-import { RouteStopGate } from '../RouteStopExecution'
+import { RouteStopGate, useSignAtStop } from '../RouteStopExecution'
 import { ContactCommentView, HandoffCommentEditor, HandoffCommentSaveError, useHandoffComments } from '../orderReviewComments'
 
 interface DeliverySignatureLocationState {
@@ -38,6 +37,8 @@ function DeliverySignatureContent({ orderNumber }: { orderNumber: string }) {
   const [contactSigned, setContactSigned] = useState(!startsWithContact)
   const [driverSigned, setDriverSigned] = useState(false)
   const [storageError, setStorageError] = useState(false)
+  const [stopError, setStopError] = useState('')
+  const signAtStop = useSignAtStop(orderNumber, 'dropoff')
   const { comments, changeComments, saveError } = useHandoffComments(orderEbol, 'delivery')
 
   if (!canReviewOrderEvidence(orderEbol?.delivery.evidence) || !orderEbol?.pickup.lockedAt || !orderEbol.delivery.evidence || !confirmationInput || !canLockDeliveryEbol(confirmationInput) || (confirmationInput.contactMethod === 'otp' && comments.contact !== (confirmationInput.contactComment ?? ''))) {
@@ -67,11 +68,11 @@ function DeliverySignatureContent({ orderNumber }: { orderNumber: string }) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const finishDeliverySigning = (verification: HandoffVerification) => {
+  const finishDeliverySigning = (stopVisit?: SignedStopVisit) => {
     if (!driverSigned || (startsWithContact && !contactSigned) || !changeComments(comments)) return
     const current = withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? orderEbol, 'delivery', getOrderDetails(orderNumber))!
     if (current.delivery.lockedAt) { navigate(reviewPath, { replace: true }); return }
-    const locked = lockDeliveryEbol(current, { ...confirmationInput, verification, contactComment: comments.contact, driverComment: comments.driver })
+    const locked = lockDeliveryEbol(current, { ...confirmationInput, stopVisit, contactComment: comments.contact, driverComment: comments.driver })
     const saved = writeOrderEbols(upsertOrderEbol(readOrderEbols(), locked))
     if (!saved) {
       setStorageError(true)
@@ -106,17 +107,23 @@ function DeliverySignatureContent({ orderNumber }: { orderNumber: string }) {
           <section className="signature-card">
             {confirmationInput.contactMethod === 'otp' ? (
               <div className="otp-signing-summary"><ShieldCheck size={22} /><span><strong>Recipient verified by OTP</strong><small>{confirmationInput.contactName} · ••• ••• {confirmationInput.otpPhoneLast4}</small></span></div>
+            ) : confirmationInput.contactMethod === 'follow_up' ? (
+              <ContactFollowUpNotice reason={confirmationInput.followUpReason} />
             ) : (
               <div className="signature-prior-confirmation"><CheckCircle2 size={20} /><span>{confirmationInput.contactName} signed</span></div>
             )}
             <ContactCommentView value={comments.contact} />
             {startsWithContact ? <button type="button" className="ebol-secondary" onClick={() => { setContactSigned(false); setDriverSigned(false); setStep('contact') }}>Edit contact comment · sign again</button> : null}
             <div className="signature-role"><UserRound size={25} /><span><strong>Zaberman driver</strong><small>{confirmationInput.driverName}</small></span></div>
-            <p>{confirmationInput.contactMethod === 'otp' ? 'The recipient is already verified. By signing, the driver confirms the Delivery evidence and documented exceptions.' : 'By signing, the driver confirms the same Delivery evidence and documented exceptions.'}</p>
+            <p>{confirmationInput.contactMethod === 'otp' ? 'The recipient is already verified. ' : ''}By signing, the driver confirms the Delivery evidence and documented exceptions.</p>
             <HandoffCommentEditor party="driver" value={comments.driver} onChange={(value) => { setDriverSigned(false); changeComments({ ...comments, driver: value }) }} />
             <SignaturePad key={`driver:${comments.driver}`} label="Zaberman driver" onSignedChange={setDriverSigned} />
             {storageError ? <p className="ebol-storage-warning">Browser storage is unavailable. The Delivery snapshot was not locked.</p> : null}
-            <HandoffVerificationButton order={orderNumber} operation="dropoff" driver={confirmationInput.driverName} disabled={!driverSigned} label="Complete Order eBOL" onConfirm={finishDeliverySigning} />
+            {stopError ? <p className="ebol-storage-warning" role="alert">{stopError}</p> : null}
+            <button type="button" className="cargo-primary" disabled={!driverSigned} onClick={() => {
+              setStopError('')
+              void signAtStop(finishDeliverySigning).catch((error: Error) => setStopError(error.message))
+            }}>Complete Order eBOL</button>
           </section>
         )}
       </main>

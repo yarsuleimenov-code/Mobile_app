@@ -1,6 +1,6 @@
 # User guide
 
-HOV-001 update, 2026-11-03: before final Pickup, Supplemental or Delivery confirmation, obtain the driver signature → **Scan label** → **Check QR & location**. Confirm normally when both checks pass. For a warning, the primary action is **Return to check**; **Continue & confirm** requires a reason. An unknown code requires another scan. **Document versions → QR & location history** shows results, driver, time, distance/accuracy and the reason. Scanning never switches the active order. Settings and managed scenarios are in More → Administration; the 100 m radius is provisional.
+In **Place labels**, opening the print preview generates the label batch and records its location. Choose **Check label / enter PlaceID** there or **Check label** in Delivery to compare the code and your location with the open stop. The last result is saved on this device. You can sign the eBOL even if you skip the check or it shows a warning. Earlier signed versions retain their QR and location history.
 
 This guide describes the **active** Mobile App interface. Buttons can change local prototype data; route loading, device actions, signatures, document sharing and sync are simulations. Use the on-screen order number and PlaceID when following an operation. Start with [Quick Start](quick-start.md) if you need the shortest route.
 
@@ -26,7 +26,7 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | Entry | Screen and route | Next useful action |
 | --- | --- | --- |
 | Home | Cargo operations — `#/` | Pickup, Delivery, load route, Order documents |
-| Home | Pre-trip inspection — `#/pre-trip-inspection` | Complete four checks, 13 photos and driver attestation |
+| Home | Pre-trip inspection — `#/pre-trip-inspection` | Odometer, 13 photos and driver attestation |
 | Home, after Pre-trip | Post-trip inspection — `#/post-trip-inspection` | Record vehicle condition after use; view completed/archived inspections |
 | Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Delivery stop; Order details |
 | Bottom nav | Scan — `#/scan` | Open place or order places |
@@ -52,26 +52,27 @@ The code contains older Home, Pickup, Delivery and Same Day components that are 
 
 ## Pre-trip inspection
 
-**Purpose:** confirm that the assigned vehicle is safe before loading Today's route.
-
-1. On Home, find the **Pre-trip inspection** card for **Van 08 · Extended Van**. Select **Start** or **Continue**.
-2. Inspect four groups: Lights & reflectors, Windows, mirrors & wipers, Leaks under vehicle, Emergency equipment. Select **Pass** or **Issue** for each.
-3. Select **Continue to photos**. Take one photo for each card: Front, Rear, Driver side, Passenger side, Dashboard, Tires & wheels, 2x Dollies, Hand truck, Scales, 2x Utility knifes/Measuring tape, Lamp, DeWalt case, Milwaukee open bag.
-4. Select **Review inspection**. If every check passes, select **I confirm this vehicle is safe to operate**, then **Complete inspection**.
-5. The result shows **Ready for route**. Return Home; the card shows **Vehicle cleared** and **Load today’s route** is enabled.
-
-Any **Issue** produces **Route locked** and disables completion. Select **Review issues** and change the result only after the physical condition has been resolved. If Camera unavailable appears, camera access must be restored before the inspection can finish. Completed inspections are read-only. The wireframe stores a local vehicle cycle and history; it does not create a maintenance task or supervisor override.
+1. From Home, select **Start** or **Continue** in **Pre-trip inspection**.
+2. On **Vehicle**, capture the four sides of the vehicle and the dashboard. Enter the odometer in whole miles and select **Continue to equipment**.
+3. Capture all eight **Equipment** photos and select **Review inspection**. Review the 13 captured items, odometer and responsible driver.
+4. Select **I confirm this vehicle is safe to operate**, then **Complete inspection**. Home now allows **Load today’s route**.
 
 ## Post-trip inspection
 
-1. After completing Pre-trip, return Home and select **Start** in **Post-trip inspection**. A loaded route is not required.
-2. Select **Pass** or **Issue** for the same four checks as Pre-trip. Describe each Issue before continuing.
-3. Select **Continue to photos**. Capture the same 13 required photos as Pre-trip.
-4. Select **Review inspection** and confirm **I confirm this inspection record is accurate**. If stops have no completed handoff, acknowledge that they remain unfinished and must be reported to dispatch.
-5. Select **Complete Post-trip**. An Issue does not prevent submission: the result shows **Completed — issues reported** and **Vehicle needs attention**. Report defects to dispatch; the inspection does not send a message or close orders.
-6. **Back to Home** → **Start next vehicle cycle** opens a fresh Pre-trip. The previous pair remains in **Previous vehicle inspections**. A warning reminds you of defects in the previous Post-trip; beginning a new cycle does not confirm repairs.
+1. Open **Post-trip inspection** from Home after completing Pre-trip.
+2. Capture the same 13 photos across **Vehicle** and **Equipment** and enter the ending odometer. If a start reading exists, the end cannot be lower. The review shows the difference as **Trip distance**.
+3. Confirm the record, acknowledge unfinished stops if shown, and select **Complete Post-trip**.
+4. **Start next vehicle cycle** archives the pair under **Previous vehicle inspections**. Completed records are read-only. Older records may have no odometer or driver name.
 
-Drafts and read-only results survive refresh. If saving fails, check device storage and retry; do not leave until the action succeeds. Photos are local capture markers, not real images. Inspection timestamps do not calculate working hours.
+Drafts and captured-photo markers are saved in the browser. If **Camera unavailable** appears, restore camera access before taking missing photos.
+
+## Route Loading
+
+Open **Route Loading** on Home to preview the next warehouse route, including Pickup and Delivery stops. Select **Start loading** to see only the Delivery orders assigned to the warehouse load. Open **Packing photos** to identify the packaged cargo.
+
+Scan each place as it goes onto the vehicle or enter its **PlaceID** and select **Add**. The app checks the code against the planned load. If a place is taken off the vehicle before closing the load, select **Remove** next to that place. Progress is saved on the device, so you can resume after leaving or refreshing the screen.
+
+Select **Complete loading** when every planned place is loaded. The completed load shows the confirmed places and completion time.
 
 ## Tasks and Order details
 
@@ -152,6 +153,10 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 
 **Result:** Step 5 saves Delivery evidence. The Order eBOL is completed at step 8. Its POD is a view of that completed document, not a third document. [Delivery source](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx).
 
+## Handoff without contact confirmation
+
+If the cargo was handed over but the contact could not sign or verify by SMS, select **Unable to get contact confirmation** in Pickup or Delivery review. Enter the reason and continue to the driver signature. For a route stop, select **Complete stop** after signing. The eBOL and POD show **Contact confirmation pending** and the reason. Dispatch can find the order, document and contacts in **Tasks → Contact follow-up**. If the cargo was not handed over, use **Fail stop**.
+
 ## Comments during signing
 
 These rules apply to Pickup, Supplemental Pickup and Delivery:
@@ -222,8 +227,7 @@ The active prototype has a local Trip and receiving simulation. It does not demo
 | Order not found at Delivery | Check the number and that Pickup was recorded in this browser state. |
 | Pending Supplemental Pickup | Resume and sign its new version before Delivery. |
 | Review required | Return to the relevant review screen; direct signing links do not bypass review. |
-| Pre-trip inspection required | Open the Home card and complete all four checks, 13 photos and the attestation before loading the route. |
-| Route locked / Issue reported | Do not depart. Review the issue and follow the operating team's escalation process; the wireframe has no supervisor override. |
+| Pre-trip inspection required | Open the Home card and record the odometer, 13 photos and driver attestation before loading the route. |
 | Camera unavailable during Pre-trip | Restore camera availability; gallery upload cannot replace a required inspection photo. |
 | Code not recognized | Recheck the six digits and retry. In the prototype `111111` is always invalid; after three failures contact dispatch. |
 | Code expired / SMS could not be delivered | Send a new code or retry SMS. Check connectivity; the registered contact number cannot be edited on Pickup or Delivery review. |

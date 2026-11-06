@@ -4,37 +4,43 @@ import { emptyVehicleInspection, finishPostTrip, postTripCanComplete, postTripCh
 
 function ready(): VehicleInspectionState {
   return { ...emptyVehicleInspection,
-    inspection: { answers: Object.fromEntries(preTripChecks.map((item) => [item.id, 'pass'])), photos: preTripPhotos.map((item) => item.id), attested: true, completedAt: '2026-10-05T08:00:00Z' },
-    postTrip: { ...emptyVehicleInspection.postTrip, answers: Object.fromEntries(postTripChecks.map((item) => [item.id, 'pass'])), photos: postTripPhotos.map((item) => item.id), attested: true },
+    inspection: { answers: {}, odometer: 12450, inspectedBy: 'Chris Adams', photos: preTripPhotos.map((item) => item.id), attested: true, completedAt: '2026-10-05T08:00:00Z' },
+    postTrip: { ...emptyVehicleInspection.postTrip, answers: {}, odometer: 12610, photos: postTripPhotos.map((item) => item.id), attested: true },
   }
 }
 function legacyReady(): VehicleInspectionState {
   const state = ready()
   const answers = Object.fromEntries(legacyPreTripChecks.map(({ id }) => [id, 'pass']))
   const photos = legacyPreTripPhotos.map(({ id }) => id)
-  return { ...state, inspection: { ...state.inspection, answers: { ...answers }, photos: [...photos] },
-    postTrip: { ...state.postTrip, answers, photos } }
+  return { ...state, inspection: { ...state.inspection, answers: { ...answers }, photos: [...photos], odometer: undefined, inspectedBy: undefined },
+    postTrip: { ...state.postTrip, answers, photos, odometer: undefined } }
 }
 describe('post-trip vehicle cycle', () => {
   it('requires a completed pre-trip', () => {
     const state = { ...ready(), inspection: emptyVehicleInspection.inspection }
     expect(finishPostTrip(state, 0, false, 'now')).toBe(state)
   })
-  it('requires all thirteen photos, all four checks and attestation', () => {
+  it('requires all thirteen photos, a final odometer reading and attestation', () => {
     const post = ready().postTrip
     expect(postTripCanComplete(post)).toBe(true)
     expect(postTripCanComplete({ ...post, photos: post.photos.filter((id) => id !== 'tires') })).toBe(false)
-    expect(postTripCanComplete({ ...post, answers: { ...post.answers, emergency: undefined } })).toBe(false)
+    expect(postTripCanComplete({ ...post, odometer: undefined })).toBe(false)
     expect(postTripCanComplete({ ...post, attested: false })).toBe(false)
   })
-  it('requires an issue description, but allows submission with defects', () => {
+  it('rejects an ending odometer below the start and saves the responsible driver', () => {
     const state = ready()
-    state.postTrip.answers.lights = 'issue'
-    expect(postTripCanComplete(state.postTrip)).toBe(false)
-    state.postTrip.issues.lights = '  '
-    expect(postTripCanComplete(state.postTrip)).toBe(false)
-    state.postTrip.issues.lights = 'Left light damaged'
-    expect(finishPostTrip(state, 0, false, '2026-10-05T18:00:00Z').postTrip.completedAt).toBeTruthy()
+    state.postTrip.odometer = 12449
+    expect(finishPostTrip(state, 0, false, 'now')).toBe(state)
+    state.postTrip.odometer = 12450
+    expect(finishPostTrip(state, 0, false, 'now').postTrip).toMatchObject({
+      odometer: 12450, inspectedBy: 'Chris Adams', completedAt: 'now',
+    })
+  })
+
+  it('accepts a valid ending reading after an older Pre-trip without mileage', () => {
+    const state = ready()
+    state.inspection.odometer = undefined
+    expect(finishPostTrip(state, 0, false, 'now').postTrip.completedAt).toBe('now')
   })
   it('requires explicit acknowledgement of unfinished stops', () => {
     const state = ready()
@@ -64,6 +70,12 @@ describe('post-trip vehicle cycle', () => {
   it('migrates a valid legacy pre-trip without discarding it', () => {
     const { inspection } = legacyReady()
     expect(restoreVehicleInspection(null, JSON.stringify(inspection)).inspection).toEqual(inspection)
+  })
+  it('preserves a completed thirteen-photo cycle from before odometer capture', () => {
+    const state = ready()
+    state.inspection = { ...state.inspection, answers: Object.fromEntries(preTripChecks.map(({ id }) => [id, 'pass'])), odometer: undefined, inspectedBy: undefined }
+    state.postTrip = { ...state.postTrip, answers: Object.fromEntries(postTripChecks.map(({ id }) => [id, 'pass'])), odometer: undefined, completedAt: '2026-10-05T18:00:00Z' }
+    expect(restoreVehicleInspection(JSON.stringify(state), null)).toEqual(state)
   })
   it('rejects malformed stored data and invalid completion flags', () => {
     expect(restoreVehicleInspection('{broken', null)).toEqual(emptyVehicleInspection)

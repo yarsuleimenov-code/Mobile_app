@@ -5,7 +5,8 @@ import { useCargo } from './cargoStore'
 import { communicationPath } from './communicationDomain'
 import { operationalName } from './orderDetailsDomain'
 import { OrderStopSummary } from './OrderStopSummary'
-import { hasStopConfirmation, isActiveStop, progressForStop, stopHandoff, updateStopProgress, type StopProgressAction } from './routeStopProgress'
+import { hasStopConfirmation, isActiveStop, parseStopProgress, progressForStop, readStopProgressSnapshot, stopHandoff, stopProgressKey, updateStopProgress, withRouteStopLock, type StopProgressAction } from './routeStopProgress'
+import type { SignedStopVisit } from './orderEbolDomain'
 import { spokeOperationLabels, spokeTaskPath, type SpokeOperation } from './spokeDomain'
 import { OrderStopNavigation, useOrderStopContext } from './StopNavigation'
 import { teamContactsPath } from './teamContactsDomain'
@@ -19,6 +20,21 @@ function useExecution(order: string, operation: SpokeOperation) {
   const task = stopId ? stop.task : undefined
   const progress = task ? progressForStop(entries, task) : undefined
   return { stopId, stop, task, progress, active: entries.find(isActiveStop) }
+}
+
+export function useSignAtStop(order: string, operation: SpokeOperation) {
+  const { stopId, stop: { route }, task, progress } = useExecution(order, operation)
+  const [visitStartedAt] = useState(progress?.startedAt)
+  return async (sign: (visit?: SignedStopVisit) => void, supplemental = false) => {
+    if (!stopId || supplemental) { sign(); return }
+    await withRouteStopLock(route, () => {
+      const latest = task && progressForStop(parseStopProgress(readStopProgressSnapshot(stopProgressKey(route))), task)
+      if (!task || !latest?.startedAt || !isActiveStop(latest) || latest.startedAt !== visitStartedAt) {
+        throw new Error('Return to the stop and start it before confirming the handoff.')
+      }
+      sign({ stopId: task.stopId, startedAt: latest.startedAt })
+    })
+  }
 }
 
 function RouteStopActions({ execution, review = false, missingCargo = false, beforeFail }: {

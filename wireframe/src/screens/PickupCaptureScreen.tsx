@@ -151,6 +151,9 @@ function PickupCaptureForm() {
 
   if (saved) {
     const orderNumber = normalizeOrderNumber(draft.orderNumber)
+    const labelParams = new URLSearchParams()
+    if (supplemental) labelParams.set('version', String(savedVersion))
+    if (stopId) labelParams.set('stop', stopId)
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title={supplemental ? 'Supplemental Pickup' : 'Pickup'} />
@@ -159,7 +162,7 @@ function PickupCaptureForm() {
           message={supplemental
             ? `${draft.places.length} added ${draft.places.length === 1 ? 'place requires' : 'places require'} new confirmations. Version 1 remains unchanged.`
             : `Order #${orderNumber} and ${draft.places.length} places are ready for review.`}
-          action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${orderNumber}/ebol/pickup${params.get('stop') ? `?stop=${encodeURIComponent(params.get('stop')!)}` : ''}`)}>Open {supplemental ? `version ${savedVersion}` : 'Pickup'} review</button><button type="button" className="ebol-secondary" onClick={() => navigate(`/orders/${orderNumber}/labels${supplemental ? `?version=${savedVersion}` : ''}`)}>Open place labels</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>}
+          action={<div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${orderNumber}/ebol/pickup${stopId ? `?stop=${encodeURIComponent(stopId)}` : ''}`)}>Open {supplemental ? `version ${savedVersion}` : 'Pickup'} review</button><button type="button" className="ebol-secondary" onClick={() => navigate(`/orders/${orderNumber}/labels${labelParams.size ? `?${labelParams}` : ''}`)}>Open place labels</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>}
         />
         <CargoBottomNav />
       </div>

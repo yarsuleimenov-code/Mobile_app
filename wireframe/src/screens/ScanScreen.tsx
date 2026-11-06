@@ -1,7 +1,9 @@
 import { Keyboard, ScanLine } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { CargoShell } from '../cargo-components'
+import { CargoBottomNav, CargoFlowHeader, CargoShell } from '../cargo-components'
+import { normalizeOrderNumber } from '../cargoDomain'
+import { LabelVerification } from '../HandoffVerification'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { useTrackedCargoPlaces } from '../useTrackedCargoPlaces'
 import { cargoPlaceStatusLabels } from '../cargoPlaceTracking'
@@ -9,6 +11,15 @@ import { resolvePlaceScan, type PlaceScanResult } from '../placeScanDomain'
 
 export function ScanScreen() {
   const [params] = useSearchParams()
+  const order = normalizeOrderNumber(params.get('order') ?? '')
+  const operation = params.get('operation')
+  if (order && (operation === 'pickup' || operation === 'dropoff')) return <div className="cargo-flow">
+    <CargoFlowHeader title="Check label" />
+    <main className="order-details-body pickup-form">
+      <LabelVerification key={params.toString()} context={{ order, operation, stopId: params.get('stop') ?? undefined }} initialCode={params.get('code') ?? ''} />
+    </main>
+    <CargoBottomNav />
+  </div>
   return <ScanContent key={params.toString()} initialCode={params.get('code') ?? ''} />
 }
 

@@ -1,6 +1,6 @@
 import { AlertTriangle, Box, Search, Weight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery, SuccessState } from '../cargo-components'
 import { calculatePieces, calculateVolume, normalizeOrderNumber, type CargoRecord } from '../cargoDomain'
 import { dimensionText, summarizeMeasurements, weightText, volumeText } from '../measurementDomain'
@@ -9,6 +9,7 @@ import { teamContactsPath } from '../teamContactsDomain'
 import { OrderStopNavigation, useOrderStopContext } from '../StopNavigation'
 import { OrderStopSummary } from '../OrderStopSummary'
 import { ActiveRouteStopActions, RouteStopGate } from '../RouteStopExecution'
+import { labelCheckPath } from '../HandoffVerification'
 import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { useCargo } from '../cargoStore'
 import { findDraftSupplementalPickup, prepareDeliveryEbol } from '../orderEbolDomain'
@@ -140,7 +141,10 @@ function DropoffVerifyForm() {
         {changingOrder ? <p className="measurement-warning">The evidence below belongs to #{order}. Press Search to open the selected order.</p> : null}
         {details ? <>
           <OrderStopSummary order={order} name={operationalName(details, order, stop.task?.title)} operation="dropoff" task={stop.task} plannedDate={stop.plannedDate}
-            actions={<button type="button" className="order-details-action" onClick={() => navigate(teamContactsPath(order, 'dropoff', stopId))}>Order details</button>}>
+            actions={<>
+              <button type="button" className="order-details-action" onClick={() => navigate(teamContactsPath(order, 'dropoff', stopId))}>Order details</button>
+              <Link to={labelCheckPath({ order, operation: 'dropoff', stopId })}>Check label</Link>
+            </>}>
             <div><h3>Order comment</h3><p>{record?.orderComment?.trim() || 'No order comment'}</p></div>
           </OrderStopSummary>
           <OrderStopNavigation order={order} operation="dropoff" stop={stop} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Press Search to open the selected order before navigating' : undefined} />

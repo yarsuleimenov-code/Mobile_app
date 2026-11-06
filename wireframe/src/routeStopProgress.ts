@@ -63,7 +63,10 @@ export function stopHandoff(task: SpokeTask) {
 
 export function hasStopConfirmation(task: SpokeTask, progress: StopProgress) {
   const handoff = stopHandoff(task)
-  return Boolean(progress.startedAt && !progress.failure && handoff?.lockedAt && handoff.verification?.stopId === task.stopId
+  if (!progress.startedAt || progress.failure || !handoff?.lockedAt) return false
+  if (handoff.stopVisit) return handoff.stopVisit.stopId === task.stopId && handoff.stopVisit.startedAt === progress.startedAt
+    && Date.parse(handoff.lockedAt) >= Date.parse(progress.startedAt)
+  return Boolean(handoff.verification?.stopId === task.stopId
     && handoff.verification.orderNumber === task.externalId && handoff.verification.operation === task.operation
     && Date.parse(handoff.verification.checkedAt) >= Date.parse(progress.startedAt))
 }

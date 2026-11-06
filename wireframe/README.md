@@ -1,6 +1,6 @@
 # Zaberman mobile wireframe
 
-Инкремент 2026-11-03: [HOV-001 — QR / заказ / геопозиция](../docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md). Перед финальным Pickup/Supplemental/Delivery lock: Scan label → Check QR & location → обычное подтверждение либо Return to check / обязательная причина для Continue & confirm. Document versions → QR & location history показывает результат. В More → Administration задаются QR/геосценарии, радиус (предварительно 100 м) и точность. Device location использует browser GPS, остальные геосценарии синтетические; камера/QR decoder и реальные координаты адресов не подключены. Кнопка Continue to Delivery review лишь готовит evidence; Delivery завершается после финальной проверки и подписи. Текстовое ТЗ и developer-handoff синхронизированы.
+Этикетки PlaceID используют Code 128. При создании набора в Label preview фиксируется геопозиция. В Check label проверяются связь кода с открытым заказом и местоположение относительно нужной точки. Результаты хранятся локально. Для GPS используется один успешный сценарий с тестовыми координатами. Подписание eBOL и Complete stop работают независимо от этих проверок. [Изменение HOV-001](../docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md).
 
 Текущее состояние на 2026-11-06 — [Pickup и Delivery — шаги 1–7](../docs/requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md).
 

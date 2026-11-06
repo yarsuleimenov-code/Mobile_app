@@ -2,18 +2,18 @@ import { describe, expect, it } from 'vitest'
 import {
   emptyPreTripInspection,
   inspectionCanComplete,
-  inspectionChecklistComplete,
-  inspectionHasIssue,
+  inspectionDistance,
   inspectionPhotosComplete,
   inspectionStatus,
-  preTripChecks,
+  isOdometerReading,
   preTripPhotos,
   type PreTripInspectionState,
 } from './preTripInspectionDomain'
 
 function completeInspection(overrides: Partial<PreTripInspectionState> = {}): PreTripInspectionState {
   return {
-    answers: Object.fromEntries(preTripChecks.map((item) => [item.id, 'pass'])),
+    answers: {},
+    odometer: 12450,
     photos: preTripPhotos.map((item) => item.id),
     attested: true,
     completedAt: null,
@@ -27,18 +27,11 @@ describe('pre-trip inspection', () => {
     expect(inspectionCanComplete(emptyPreTripInspection)).toBe(false)
   })
 
-  it('requires every checklist item and photo', () => {
+  it('requires all photos and driver attestation', () => {
     const inspection = completeInspection({ photos: preTripPhotos.slice(0, 3).map((item) => item.id) })
-    expect(inspectionChecklistComplete(inspection)).toBe(true)
     expect(inspectionPhotosComplete(inspection)).toBe(false)
     expect(inspectionCanComplete(inspection)).toBe(false)
-  })
-
-  it('blocks completion when an issue is reported', () => {
-    const inspection = completeInspection({ answers: { ...completeInspection().answers, lights: 'issue' } })
-    expect(inspectionHasIssue(inspection)).toBe(true)
-    expect(inspectionStatus(inspection)).toBe('blocked')
-    expect(inspectionCanComplete(inspection)).toBe(false)
+    expect(inspectionCanComplete(completeInspection({ attested: false }))).toBe(false)
   })
 
   it('requires the Milwaukee bag photo even when the other twelve are captured', () => {
@@ -48,17 +41,22 @@ describe('pre-trip inspection', () => {
     expect(inspectionCanComplete({ ...inspection, photos: [...inspection.photos, 'milwaukee_bag'] })).toBe(true)
   })
 
-  it('requires emergency equipment to be checked separately from equipment photos', () => {
-    const inspection = completeInspection({ answers: { ...completeInspection().answers, emergency: undefined } })
-    expect(inspectionChecklistComplete(inspection)).toBe(false)
-    expect(inspectionCanComplete(inspection)).toBe(false)
-    expect(inspectionCanComplete({ ...inspection, answers: { ...inspection.answers, emergency: 'pass' } })).toBe(true)
-    const issue = { ...inspection, answers: { ...inspection.answers, emergency: 'issue' as const } }
-    expect(inspectionCanComplete(issue)).toBe(false)
-    expect(inspectionStatus(issue)).toBe('blocked')
+  it('requires a nonnegative whole-mile odometer reading', () => {
+    for (const odometer of [undefined, -1, 3.5, Number.MAX_SAFE_INTEGER + 1]) {
+      expect(isOdometerReading(odometer)).toBe(false)
+      expect(inspectionCanComplete(completeInspection({ odometer }))).toBe(false)
+    }
+    expect(inspectionCanComplete(completeInspection({ odometer: 0 }))).toBe(true)
   })
 
-  it('allows a fully passed and attested inspection', () => {
+  it('calculates the difference only when both readings are known and in sequence', () => {
+    expect(inspectionDistance(12450, 12610)).toBe(160)
+    expect(inspectionDistance(12450, 12450)).toBe(0)
+    expect(inspectionDistance(undefined, 12610)).toBeUndefined()
+    expect(inspectionDistance(12610, 12450)).toBeUndefined()
+  })
+
+  it('allows a fully photographed and attested inspection', () => {
     const inspection = completeInspection()
     expect(inspectionCanComplete(inspection)).toBe(true)
     expect(inspectionStatus({ ...inspection, completedAt: '2026-09-28T08:06:00Z' })).toBe('passed')

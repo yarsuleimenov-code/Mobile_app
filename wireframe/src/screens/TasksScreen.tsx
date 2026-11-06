@@ -12,12 +12,15 @@ import { teamContactsPath } from '../teamContactsDomain'
 import { StopNavigation } from '../StopNavigation'
 import { progressForStop, stopProgressLabel } from '../routeStopProgress'
 import { useRouteStopProgress } from '../useRouteStopProgress'
+import { orderContactFollowUps } from '../orderEbolDomain'
+import { readOrderEbols } from '../orderEbolStore'
 
 type Filter = 'all' | SpokeOperation
 
 export function TasksScreen() {
   const [filter, setFilter] = useState<Filter>('all')
   const [query, setQuery] = useState('')
+  const [followUps] = useState(() => readOrderEbols().flatMap(orderContactFollowUps))
   const { spokeRoute, getOrderDetails, getOrderCargo } = useCargo()
   const { getThread } = useCommunications()
   const route = spokeRoute ?? mockTodaySpokeRoute
@@ -28,6 +31,17 @@ export function TasksScreen() {
     <CargoShell>
       <div className="screen-pad cargo-nav-screen">
         <div className="screen-title"><h1>Tasks</h1><p>Today · {route.name}</p></div>
+        {followUps.length ? <section className="order-detail-card task-contact-follow-ups" aria-labelledby="task-contact-follow-ups">
+          <h2 id="task-contact-follow-ups">Contact follow-up ({followUps.length})</h2>
+          {followUps.map(({ orderNumber, handoff, stopId, reason }) => <article key={`${orderNumber}:${handoff}`}>
+            <strong>#{orderNumber} · {handoff === 'pickup' ? 'Pickup' : 'Delivery'}</strong>
+            <p>{reason}</p>
+            <div className="task-secondary-actions">
+              <Link className="task-details-link" to={`/orders/${orderNumber}/ebol/${handoff}${stopId ? `?stop=${encodeURIComponent(stopId)}` : ''}`}>Order eBOL</Link>
+              <Link className="task-details-link" to={teamContactsPath(orderNumber, handoff === 'pickup' ? 'pickup' : 'dropoff', stopId, true)}>Order contacts</Link>
+            </div>
+          </article>)}
+        </section> : null}
         <label className="search-field"><Search size={19} /><input aria-label="Search tasks" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Order ID or title" /></label>
         <div className="filter-row" aria-label="Task filters">
           {(['all', 'pickup', 'dropoff'] as Filter[]).map((item) => (

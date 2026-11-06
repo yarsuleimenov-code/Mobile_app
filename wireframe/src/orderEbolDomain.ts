@@ -2,7 +2,7 @@ import { calculatePieces, calculateVolume, expandCargoPlaces, type CargoChangeEn
 import { orderDetailsIssues, initialOrderDetails, type OrderDetails } from './orderDetailsDomain'
 import { summarizeMeasurements, type MeasurementSummary } from './measurementDomain'
 import { evidencePhotos, type EvidencePhoto } from './photoEvidenceDomain'
-import { assertHandoffVerification, type HandoffVerification } from './handoffVerificationDomain'
+import type { HandoffVerification } from './handoffVerificationDomain'
 
 export type OrderEbolStatus =
   | 'draft'
@@ -13,7 +13,7 @@ export type OrderEbolStatus =
   | 'completed'
   | 'correction_requested'
 
-export type OrderEbolContactConfirmationStatus = 'pending' | 'signed' | 'otp'
+export type OrderEbolContactConfirmationStatus = 'pending' | 'signed' | 'otp' | 'follow_up'
 export type OrderEbolDriverConfirmationStatus = 'pending' | 'signed'
 
 interface OrderEbolConfirmationDetails {
@@ -24,6 +24,7 @@ interface OrderEbolConfirmationDetails {
 export interface OrderEbolContactConfirmation extends OrderEbolConfirmationDetails {
   status: OrderEbolContactConfirmationStatus
   otpPhoneLast4?: string
+  followUpReason?: string
   emailCopyRequest?: { recipientEmail: string; requestedAt: string }
 }
 
@@ -47,7 +48,13 @@ export interface OrderEbolEvidenceSnapshot {
   changeHistory?: CargoChangeEntry[]
 }
 
+export interface SignedStopVisit {
+  stopId: string
+  startedAt: string
+}
+
 export interface OrderEbolHandoffSnapshot {
+  stopVisit?: SignedStopVisit
   verification?: HandoffVerification
   evidence: OrderEbolEvidenceSnapshot | null
   comments?: HandoffComments
@@ -137,11 +144,12 @@ export function syncPickupOrderEbolDraft(
   } : draft
 }
 export interface PickupEbolConfirmationInput {
-  verification?: HandoffVerification
+  stopVisit?: SignedStopVisit
   contactComment?: string
   driverComment?: string
-  contactMethod: 'signed' | 'otp'
+  contactMethod: 'signed' | 'otp' | 'follow_up'
   contactName: string
+  followUpReason?: string
   otpVerified?: boolean
   otpPhoneLast4?: string
   driverName: string
@@ -157,12 +165,21 @@ export function isValidContactEmail(value: string) {
 }
 
 export function canLockPickupEbol(input: PickupEbolConfirmationInput) {
-  const contactIsComplete = input.contactMethod === 'otp'
-    ? Boolean(input.contactName.trim()) && Boolean(input.otpVerified) && /^\d{4}$/.test(input.otpPhoneLast4 ?? '')
-    : Boolean(input.contactName.trim())
+  const followUpReason = input.followUpReason?.trim() ?? ''
+  const contactIsComplete = input.contactMethod === 'follow_up'
+    ? Boolean(followUpReason) && followUpReason.length <= 1000
+    : Boolean(input.contactName.trim()) && (input.contactMethod === 'signed'
+      || (input.contactMethod === 'otp' && Boolean(input.otpVerified) && /^\d{4}$/.test(input.otpPhoneLast4 ?? '')))
   const exceptionIsComplete = !input.hasDamage || Boolean(input.exceptionNote.trim())
   const emailIsComplete = !input.sendEmailCopy || (input.contactMethod === 'signed' && isValidContactEmail(input.contactEmail ?? ''))
   return contactIsComplete && Boolean(input.driverName.trim()) && exceptionIsComplete && emailIsComplete
+}
+
+function lockContact(input: PickupEbolConfirmationInput, lockedAt: string): OrderEbolContactConfirmation {
+  if (input.contactMethod === 'follow_up') return { status: 'follow_up', followUpReason: input.followUpReason?.trim() }
+  if (input.contactMethod === 'otp') return { status: 'otp', signerName: input.contactName.trim(), otpPhoneLast4: input.otpPhoneLast4, confirmedAt: lockedAt }
+  return { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt,
+    ...(input.sendEmailCopy ? { emailCopyRequest: { recipientEmail: input.contactEmail!.trim(), requestedAt: lockedAt } } : {}) }
 }
 
 export function lockPickupEbol(
@@ -171,7 +188,6 @@ export function lockPickupEbol(
   lockedAt = new Date().toISOString(),
 ): OrderEbol {
   if (orderEbol.pickup.lockedAt) throw new Error('Pickup eBOL is already locked')
-  assertHandoffVerification(input.verification, orderEbol.orderNumber, 'pickup', input.driverName, lockedAt)
   if (!canLockPickupEbol(input) || !canReviewOrderEvidence(orderEbol.pickup.evidence)) throw new Error('Pickup eBOL confirmation is incomplete')
 
   return {
@@ -180,16 +196,13 @@ export function lockPickupEbol(
     pickup: {
       ...orderEbol.pickup,
       comments: confirmedComments(input, orderEbol.pickup.comments),
-      verification: input.verification,
+      stopVisit: input.stopVisit,
       evidence: orderEbol.pickup.evidence ? {
         ...orderEbol.pickup.evidence,
         hasDamage: input.hasDamage,
         exceptionNote: input.hasDamage ? input.exceptionNote.trim() : '',
       } : null,
-      contact: input.contactMethod === 'otp'
-        ? { status: 'otp', signerName: input.contactName.trim(), otpPhoneLast4: input.otpPhoneLast4, confirmedAt: lockedAt }
-        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt,
-          ...(input.sendEmailCopy ? { emailCopyRequest: { recipientEmail: input.contactEmail!.trim(), requestedAt: lockedAt } } : {}) },
+      contact: lockContact(input, lockedAt),
       driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
       lockedAt,
     },
@@ -261,8 +274,7 @@ export function lockSupplementalPickup(
   input: PickupEbolConfirmationInput,
   lockedAt = new Date().toISOString(),
 ): OrderEbol {
-  if (!canLockPickupEbol(input)) throw new Error('Supplemental Pickup confirmation is incomplete')
-  assertHandoffVerification(input.verification, orderEbol.orderNumber, 'pickup', input.driverName, lockedAt)
+  if (input.contactMethod === 'follow_up' || !canLockPickupEbol(input)) throw new Error('Supplemental Pickup confirmation is incomplete')
   const supplements = orderEbol.pickupSupplements ?? []
   const target = supplements.find((item) => item.version === version)
   if (!target || target.status !== 'draft' || !target.evidence || !canReviewOrderEvidence(target.evidence)) throw new Error('Supplemental Pickup draft is missing')
@@ -272,16 +284,12 @@ export function lockSupplementalPickup(
       ...item,
       status: 'locked',
       comments: confirmedComments(input, item.comments),
-      verification: input.verification,
       evidence: {
         ...item.evidence!,
         hasDamage: input.hasDamage,
         exceptionNote: input.hasDamage ? input.exceptionNote.trim() : '',
       },
-      contact: input.contactMethod === 'otp'
-        ? { status: 'otp', signerName: input.contactName.trim(), otpPhoneLast4: input.otpPhoneLast4, confirmedAt: lockedAt }
-        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt,
-          ...(input.sendEmailCopy ? { emailCopyRequest: { recipientEmail: input.contactEmail!.trim(), requestedAt: lockedAt } } : {}) },
+      contact: lockContact(input, lockedAt),
       driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
       lockedAt,
     }),
@@ -364,7 +372,6 @@ export function lockDeliveryEbol(
   lockedAt = new Date().toISOString(),
 ): OrderEbol {
   if (orderEbol.delivery.lockedAt) throw new Error('Delivery eBOL is already locked')
-  assertHandoffVerification(input.verification, orderEbol.orderNumber, 'dropoff', input.driverName, lockedAt)
   if (!orderEbol.pickup.lockedAt) throw new Error('Pickup eBOL must be locked before Delivery')
   if (!orderEbol.delivery.evidence) throw new Error('Delivery evidence is missing')
   if (!canLockDeliveryEbol(input) || !canReviewOrderEvidence(orderEbol.delivery.evidence)) throw new Error('Delivery eBOL confirmation is incomplete')
@@ -375,15 +382,13 @@ export function lockDeliveryEbol(
     delivery: {
       ...orderEbol.delivery,
       comments: confirmedComments(input, orderEbol.delivery.comments),
-      verification: input.verification,
+      stopVisit: input.stopVisit,
       evidence: {
         ...orderEbol.delivery.evidence,
         hasDamage: input.hasDamage,
         exceptionNote: input.hasDamage ? input.exceptionNote.trim() : '',
       },
-      contact: input.contactMethod === 'otp'
-        ? { status: 'otp', signerName: input.contactName.trim(), otpPhoneLast4: input.otpPhoneLast4, confirmedAt: lockedAt }
-        : { status: 'signed', signerName: input.contactName.trim(), confirmedAt: lockedAt },
+      contact: lockContact({ ...input, sendEmailCopy: false }, lockedAt),
       driver: { status: 'signed', signerName: input.driverName.trim(), confirmedAt: lockedAt },
       lockedAt,
     },
@@ -416,14 +421,26 @@ export function withCurrentOrderDetails(order: OrderEbol | null, target: Handoff
 export interface HandoffComments { contact: string; driver: string }
 export type HandoffTarget = 'pickup' | 'delivery' | number
 
-function confirmedComments(input: Pick<PickupEbolConfirmationInput, 'contactComment' | 'driverComment'>, previous?: HandoffComments): HandoffComments {
-  return { contact: (input.contactComment ?? previous?.contact ?? '').trim(), driver: (input.driverComment ?? previous?.driver ?? '').trim() }
+function confirmedComments(input: PickupEbolConfirmationInput, previous?: HandoffComments): HandoffComments {
+  return {
+    contact: input.contactMethod === 'follow_up' ? '' : (input.contactComment ?? previous?.contact ?? '').trim(),
+    driver: (input.driverComment ?? previous?.driver ?? '').trim(),
+  }
 }
 
 export function handoffSnapshot(orderEbol: OrderEbol, target: HandoffTarget) {
   return typeof target === 'number'
     ? orderEbol.pickupSupplements?.find((item) => item.version === target)
     : orderEbol[target]
+}
+
+export function orderContactFollowUps(order: OrderEbol) {
+  return (['pickup', 'delivery'] as const).flatMap((handoff) => {
+    const snapshot = order[handoff]
+    if (!snapshot?.lockedAt || snapshot.contact?.status !== 'follow_up') return []
+    return [{ orderNumber: order.orderNumber, handoff, stopId: snapshot.stopVisit?.stopId,
+      reason: snapshot.contact.followUpReason }]
+  })
 }
 
 export function updateHandoffComments(orderEbol: OrderEbol, target: HandoffTarget, comments: HandoffComments, updatedAt = new Date().toISOString()): OrderEbol {

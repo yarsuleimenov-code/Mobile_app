@@ -5,23 +5,29 @@ export interface LocationFix extends Coordinates { accuracy: number; capturedAt:
 export type LocationStatus = 'passed' | 'outside' | 'inaccurate' | 'stale' | 'denied' | 'unavailable' | 'missing_coordinates'
 export interface VerificationPolicy { radius: number; maxAccuracy: number; maxAgeMs: number }
 export const defaultVerificationPolicy: VerificationPolicy = { radius: 100, maxAccuracy: 50, maxAgeMs: 30_000 }
-export interface HandoffVerification {
+export interface LabelLocationCheck {
   checkedAt: string
-  driver: string
-  orderNumber: string
-  operation: SpokeOperation
   stopId?: string
   address: string
   target?: Coordinates
-  code: string
-  scannedOrder?: string
-  qr: 'matched' | 'wrong_order' | 'unknown'
   location: LocationStatus
   fix?: LocationFix
   distance?: number
   policy: VerificationPolicy
-  overridden: boolean
-  reason: string
+}
+export interface HandoffVerification extends LabelLocationCheck {
+  driver?: string
+  orderNumber: string
+  operation: SpokeOperation
+  code: string
+  scannedOrder?: string
+  qr: 'matched' | 'wrong_order' | 'unknown'
+  overridden?: boolean
+  reason?: string
+}
+
+export function hasRecordedLabelLocation(check: LabelLocationCheck) {
+  return check.location === 'passed' || (check.location === 'missing_coordinates' && Boolean(check.fix))
 }
 
 export function validCoordinates(value?: Coordinates): value is Coordinates {
@@ -37,16 +43,11 @@ export function distanceMeters(a: Coordinates, b: Coordinates) {
   return 6_371_000 * 2 * Math.asin(Math.sqrt(Math.min(1, h)))
 }
 
-export function verifyHandoff(input: {
-  driver: string; orderNumber: string; operation: SpokeOperation; task?: SpokeTask
-  code: string; labels: Array<{ placeId: string; orderNumber: string }>
+export function checkLabelLocation(input: {
+  task?: SpokeTask
   target?: Coordinates; fix?: LocationFix; error?: 'denied' | 'unavailable'; policy: VerificationPolicy
-}, now = Date.now()): HandoffVerification {
-  const code = input.code.trim().toUpperCase()
-  // Resolve through the known label registry, never by extracting an OrderID from an arbitrary code.
-  const scannedOrder = input.labels.find((place) => place.placeId.toUpperCase() === code)?.orderNumber
-  const qr = !scannedOrder ? 'unknown' : scannedOrder === input.orderNumber ? 'matched' : 'wrong_order'
-  const task = input.task?.externalId === input.orderNumber && input.task.operation === input.operation ? input.task : undefined
+}, now = Date.now()): LabelLocationCheck {
+  const { task } = input
   const target = task?.address.trim() && validCoordinates(input.target) ? input.target : undefined
   const fix = input.fix
   const distance = target && fix && validCoordinates(fix) ? distanceMeters(fix, target) : undefined
@@ -59,27 +60,21 @@ export function verifyHandoff(input: {
   else if (distance! > input.policy.radius) location = 'outside'
   else if (distance! + fix.accuracy > input.policy.radius) location = 'inaccurate'
   else location = 'passed'
-  return { checkedAt: new Date(now).toISOString(), driver: input.driver, orderNumber: input.orderNumber,
-    operation: input.operation, stopId: task?.stopId, address: task?.address ?? '', target,
-    code, scannedOrder, qr, location, fix, distance,
-    policy: { radius: input.policy.radius, maxAccuracy: input.policy.maxAccuracy, maxAgeMs: input.policy.maxAgeMs }, overridden: false, reason: '' }
+  return { checkedAt: new Date(now).toISOString(), stopId: task?.stopId, address: task?.address ?? '', target,
+    location, fix, distance,
+    policy: { radius: input.policy.radius, maxAccuracy: input.policy.maxAccuracy, maxAgeMs: input.policy.maxAgeMs } }
 }
 
-export function approveHandoff(check: HandoffVerification, reason = ''): HandoffVerification {
-  if (check.qr === 'unknown') throw new Error('Code not recognized. Scan the label again.')
-  const overridden = check.qr !== 'matched' || check.location !== 'passed'
-  if (overridden && !reason.trim()) throw new Error('Enter a reason to continue after a warning.')
-  return { ...check, overridden, reason: overridden ? reason.trim() : '' }
-}
-
-export function assertHandoffVerification(check: HandoffVerification | undefined, order: string, operation: SpokeOperation, driver: string, at: string) {
-  // Previously signed fixtures/versions remain readable; new UI confirmations always supply a check.
-  if (!check) return
-  const age = Date.parse(at) - Date.parse(check.checkedAt)
-  if (check.orderNumber !== order || check.operation !== operation || check.driver !== driver
-    || !Number.isFinite(age) || age < 0 || age > check.policy.maxAgeMs) throw new Error('Repeat the QR and location check before confirming.')
-  const approved = approveHandoff(check, check.reason)
-  if (approved.overridden !== check.overridden) throw new Error('The warning must be acknowledged before confirming.')
+export function verifyHandoff(input: Parameters<typeof checkLabelLocation>[0] & {
+  orderNumber: string; operation: SpokeOperation; code: string
+  labels: Array<{ placeId: string; orderNumber: string }>
+}, now = Date.now()): HandoffVerification {
+  const code = input.code.trim().toUpperCase()
+  // Resolve through the label registry instead of inferring an order from the code.
+  const scannedOrder = input.labels.find((place) => place.placeId.toUpperCase() === code)?.orderNumber
+  const qr = !scannedOrder ? 'unknown' : scannedOrder === input.orderNumber ? 'matched' : 'wrong_order'
+  const task = input.task?.externalId === input.orderNumber && input.task.operation === input.operation ? input.task : undefined
+  return { ...checkLabelLocation({ ...input, task }, now), orderNumber: input.orderNumber, operation: input.operation, code, scannedOrder, qr }
 }
 
 export const locationMessages: Record<LocationStatus, string> = {

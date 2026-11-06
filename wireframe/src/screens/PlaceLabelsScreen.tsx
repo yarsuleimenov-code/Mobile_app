@@ -10,6 +10,10 @@ import { createPlaceLabels, labelVersionName, recordLabelPrint, selectPlaceLabel
 import { readLabelPrintState, writeLabelPrintState } from '../labelPrintStore'
 import { findOrderEbol, readOrderEbols } from '../orderEbolStore'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
+import { labelCheckPath, LabelLocationSummary } from '../HandoffVerification'
+import { checkLabelLocation, hasRecordedLabelLocation } from '../handoffVerificationDomain'
+import { capturePrototypeLabelLocation, readLabelActivity, saveLabelActivity } from '../handoffVerificationStore'
+import { useOrderStopContext } from '../StopNavigation'
 
 function PlaceBarcode({ value }: { value: string }) {
   const barcodeRef = useRef<SVGSVGElement>(null)
@@ -35,16 +39,19 @@ export function PlaceLabelsScreen() {
   const orderNumber = normalizeOrderNumber(orderParam)
   const [params] = useSearchParams()
   const requestedVersion = params.get('version')
-  return <PlaceLabelsContent key={orderNumber} orderNumber={orderNumber} requestedVersion={requestedVersion} />
+  const stopId = params.get('stop') ?? undefined
+  return <PlaceLabelsContent key={`${orderNumber}:${stopId ?? ''}`} orderNumber={orderNumber} requestedVersion={requestedVersion} stopId={stopId} />
 }
 
-function PlaceLabelsContent({ orderNumber, requestedVersion }: { orderNumber: string; requestedVersion: string | null }) {
+function PlaceLabelsContent({ orderNumber, requestedVersion, stopId }: { orderNumber: string; requestedVersion: string | null; stopId?: string }) {
   const navigate = useNavigate()
   const [, setSearchParams] = useSearchParams()
   const { getOrderCargo, getOrderDetails } = useCargo()
   const { devices, printOutcome } = usePrototypeScenario()
   const record = getOrderCargo(orderNumber)
   const details = getOrderDetails(orderNumber)
+  const { task } = useOrderStopContext(orderNumber, 'pickup', stopId)
+  const labelContext = { order: orderNumber, operation: 'pickup' as const, stopId: task?.stopId ?? stopId }
   const [orderEbol] = useState(() => findOrderEbol(readOrderEbols(), orderNumber))
   const labels = useMemo(() => record ? createPlaceLabels(record, orderEbol, details) : [], [record, orderEbol, details])
   const versions = [...new Set(labels.map((label) => label.pickupVersion))].sort((a, b) => a - b)
@@ -58,6 +65,8 @@ function PlaceLabelsContent({ orderNumber, requestedVersion }: { orderNumber: st
   const [previewIds, setPreviewIds] = useState<string[] | null>(null)
   const [lastAttempt, setLastAttempt] = useState<LabelPrintAttempt | null>(null)
   const [storageError, setStorageError] = useState(false)
+  const [generation, setGeneration] = useState(() => readLabelActivity('generation', labelContext))
+  const [locationSaveError, setLocationSaveError] = useState(false)
   const scope = versions.some((version) => String(version) === state.scope) ? state.scope : 'all'
   const visibleLabels = scope === 'all' ? labels : labels.filter((label) => String(label.pickupVersion) === scope)
   const selected = selectPlaceLabels(visibleLabels, state.selectedIds)
@@ -67,14 +76,26 @@ function PlaceLabelsContent({ orderNumber, requestedVersion }: { orderNumber: st
     if (record) setStorageError(!writeLabelPrintState(orderNumber, state))
   }, [Boolean(record), orderNumber, state])
 
+  const setVersion = (version?: string) => setSearchParams((current) => {
+    const next = new URLSearchParams(current)
+    if (version) next.set('version', version)
+    else next.delete('version')
+    return next
+  }, { replace: true })
+
   const openPreview = (ids: string[], fromHistory = false) => {
     const validIds = selectPlaceLabels(labels, ids).map((label) => label.placeId)
     if (!validIds.length) return
     setState((current) => ({ ...current, scope: fromHistory ? 'all' : scope, selectedIds: validIds }))
-    if (fromHistory) setSearchParams({}, { replace: true })
+    if (fromHistory) setVersion()
     setPreviewIds(validIds)
     setLastAttempt(null)
     window.scrollTo(0, 0)
+    const generatedAt = new Date().toISOString()
+    const location = checkLabelLocation({ task, ...capturePrototypeLabelLocation(task) })
+    const next = { ...location, generatedAt, labelIds: validIds }
+    setGeneration(next)
+    setLocationSaveError(!saveLabelActivity('generation', labelContext, next))
   }
   const simulatePrint = () => {
     const outcome = devices.printer ? printOutcome : 'unavailable'
@@ -105,6 +126,12 @@ function PlaceLabelsContent({ orderNumber, requestedVersion }: { orderNumber: st
         </section>
         {storageError ? <p className="label-storage-error" role="alert">Selection and history could not be saved. Keep this page open; reload may lose your changes.</p> : null}
         {!devices.printer ? <div className="label-printer-warning" role="status"><strong>Printer unavailable</strong><p>{storageError ? 'Selection is kept in this view only. Restore local storage before reloading.' : 'Your selection stays saved on this device. Preview or continue now; print later.'}</p></div> : null}
+        {generation ? <section className={hasRecordedLabelLocation(generation) ? 'handoff-success' : 'measurement-warning'} aria-label="Label generation location">
+          <strong>Last label batch · {generation.labelIds.length} labels</strong>
+          <p>Generated <time dateTime={generation.generatedAt}>{new Date(generation.generatedAt).toLocaleString()}</time></p>
+          <LabelLocationSummary check={generation} />
+        </section> : null}
+        {locationSaveError ? <p className="label-storage-error" role="alert">The generation location could not be saved on this device.</p> : null}
 
         {previewIds ? <>
           <div className="place-label-actions label-print-actions">
@@ -121,7 +148,7 @@ function PlaceLabelsContent({ orderNumber, requestedVersion }: { orderNumber: st
             <label>Pickup version<select value={scope} onChange={(event) => {
               const nextScope = event.target.value
               setState((current) => ({ ...current, scope: nextScope, selectedIds: [] }))
-              setSearchParams(nextScope === 'all' ? {} : { version: nextScope }, { replace: true })
+              setVersion(nextScope === 'all' ? undefined : nextScope)
             }}>
               <option value="all">All places ({labels.length})</option>
               {versions.map((version) => <option key={version} value={version}>{labelVersionName(version)} ({labels.filter((label) => label.pickupVersion === version).length})</option>)}
@@ -159,8 +186,8 @@ function PlaceLabelsContent({ orderNumber, requestedVersion }: { orderNumber: st
         </section> : null}
 
         <nav className="label-next-actions" aria-label="Continue without printing">
-          <Link to={`/scan?code=${encodeURIComponent(scanCode)}`}>Check label / enter PlaceID</Link>
-          <Link to={`/orders/${orderNumber}/ebol/pickup`}>Continue to Pickup review</Link>
+          <Link to={labelCheckPath(labelContext, scanCode)}>Check label / enter PlaceID</Link>
+          <Link to={`/orders/${orderNumber}/ebol/pickup${stopId ? `?stop=${encodeURIComponent(stopId)}` : ''}`}>Continue to Pickup review</Link>
         </nav>
         <details className="label-print-history"><summary>Print history ({state.history.length})</summary>
           <p>Last 20 print attempts.</p>

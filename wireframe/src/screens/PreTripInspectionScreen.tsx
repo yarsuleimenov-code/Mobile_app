@@ -1,135 +1,47 @@
-import {
-  AlertTriangle,
-  Camera,
-  Check,
-  CheckCircle2,
-  ChevronRight,
-  CircleAlert,
-  ShieldCheck,
-  Truck,
-} from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { AlertTriangle, Check, CheckCircle2, ChevronRight, Truck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CargoFlowHeader } from '../cargo-components'
-import {
-  inspectionChecklistComplete,
-  inspectionHasIssue,
-  inspectionPhotosComplete,
-  preTripChecks,
-  preTripPhotos,
-} from '../preTripInspectionDomain'
+import { InspectionCaptureForm, InspectionPhotoRecord } from '../InspectionCaptureForm'
+import { formatInspectionMiles, inspectionCanComplete, inspectionDriver, preTripPhotos } from '../preTripInspectionDomain'
 import { usePreTripInspection } from '../preTripInspectionStore'
-import { usePrototypeScenario } from '../prototypeScenarioStore'
-
-type InspectionStep = 'checklist' | 'photos' | 'review'
-
-const steps: Array<{ id: InspectionStep; label: string }> = [
-  { id: 'checklist', label: 'Check' },
-  { id: 'photos', label: 'Photos' },
-  { id: 'review', label: 'Review' },
-]
 
 export function PreTripInspectionScreen() {
   const navigate = useNavigate()
-  const { devices } = usePrototypeScenario()
-  const { inspection, history, postTrip, saveError, answerCheck, capturePhoto, setAttested, completeInspection } = usePreTripInspection()
-  const [step, setStep] = useState<InspectionStep>(() => {
-    if (inspectionPhotosComplete(inspection)) return 'review'
-    if (inspectionChecklistComplete(inspection)) return 'photos'
-    return 'checklist'
-  })
-  const [completed, setCompleted] = useState(false)
-  const currentIndex = steps.findIndex((item) => item.id === step)
-  const issueCount = useMemo(() => Object.values(inspection.answers).filter((answer) => answer === 'issue').length, [inspection.answers])
+  const { inspection, history, postTrip, vehicle, saveError, capturePhoto, setOdometer, setAttested, completeInspection } = usePreTripInspection()
+  const header = <CargoFlowHeader title="Pre-trip inspection" subtitle={vehicle} />
 
-  const finish = () => {
-    if (!completeInspection()) return
-    setCompleted(true)
-  }
-
-  if (completed || inspection.completedAt) {
-    return (
-      <div className="cargo-flow pretrip-flow">
-        <CargoFlowHeader title="Pre-trip inspection" subtitle="Van 08 · Extended Van" />
-        <main className="pretrip-complete">
-          <span><Check size={38} /></span>
-          <p className="pretrip-eyebrow">{postTrip.completedAt ? 'PRE-TRIP RECORD' : 'READY FOR ROUTE'}</p>
-          <h1>{postTrip.completedAt ? 'Pre-trip completed' : 'Vehicle cleared'}</h1>
-          <p>{postTrip.completedAt ? 'This vehicle cycle is completed. Start the next cycle from Home to record a new Pre-trip.' : 'Safety checks and required photos are complete. Today’s route is now available.'}</p>
-          <p>Completed {new Date(inspection.completedAt!).toLocaleString()} · Read-only</p>
-          <div className="pretrip-vehicle-summary"><Truck size={25} /><span><strong>Van 08 · Extended Van</strong><small>NJ1 · Today’s route</small></span><CheckCircle2 size={22} /></div>
-          <button type="button" className="cargo-primary" onClick={() => navigate('/')}>Back to Home <ChevronRight size={19} /></button>
-        </main>
-      </div>
-    )
-  }
-
-  return (
-    <div className="cargo-flow pretrip-flow">
-      <CargoFlowHeader title="Pre-trip inspection" subtitle="Van 08 · Extended Van" />
-      {saveError ? <p className="ebol-storage-warning" role="alert">Inspection could not be saved. Check device storage and retry.</p> : null}
-      {Object.values(history.at(-1)?.postTrip.answers ?? {}).includes('issue') ? <div className="pretrip-warning"><AlertTriangle size={20} /><span><strong>Previous Post-trip reported issues</strong><small>Report to dispatch and verify the vehicle has been reviewed before departure. Starting a new inspection does not clear previous defects.</small></span></div> : null}
-      <div className="pretrip-progress" aria-label={`Step ${currentIndex + 1} of ${steps.length}`}>
-        {steps.map((item, index) => <div key={item.id} className={index < currentIndex ? 'is-done' : index === currentIndex ? 'is-active' : ''}><span>{index < currentIndex ? <Check size={15} /> : index + 1}</span><small>{item.label}</small></div>)}
-      </div>
-
-      {step === 'checklist' ? (
-        <main className="pretrip-body">
-          <div className="pretrip-intro"><span><ShieldCheck size={24} /></span><div><h1>Confirm the vehicle is safe</h1><p>Inspect each item before you start the route. Report anything that needs attention.</p></div></div>
-          <div className="pretrip-checklist">
-            {preTripChecks.map((item) => {
-              const answer = inspection.answers[item.id]
-              return <section key={item.id} className={answer === 'issue' ? 'has-issue' : answer === 'pass' ? 'has-passed' : ''}>
-                <div><strong>{item.label}</strong><small>{item.detail}</small></div>
-                <div className="pretrip-answer">
-                  <button type="button" className={answer === 'pass' ? 'is-selected' : ''} aria-pressed={answer === 'pass'} onClick={() => answerCheck(item.id, 'pass')}><Check size={16} /> Pass</button>
-                  <button type="button" className={answer === 'issue' ? 'is-selected' : ''} aria-pressed={answer === 'issue'} onClick={() => answerCheck(item.id, 'issue')}><AlertTriangle size={16} /> Issue</button>
-                </div>
-              </section>
-            })}
-          </div>
-          {issueCount ? <div className="pretrip-warning"><CircleAlert size={20} /><span><strong>{issueCount} issue{issueCount === 1 ? '' : 's'} reported</strong><small>The route will remain locked until all safety items pass.</small></span></div> : null}
-          <div className="pretrip-sticky"><button type="button" className="cargo-primary" disabled={!inspectionChecklistComplete(inspection)} onClick={() => setStep('photos')}>Continue to photos <ChevronRight size={19} /></button></div>
-        </main>
-      ) : null}
-
-      {step === 'photos' ? (
-        <main className="pretrip-body">
-          <div className="pretrip-intro"><span><Camera size={24} /></span><div><h1>Take the required photos</h1></div></div>
-          {!devices.camera ? <div className="pretrip-warning"><CircleAlert size={20} /><span><strong>Camera unavailable</strong><small>Camera access is required to complete the inspection.</small></span></div> : null}
-          <div className="pretrip-photo-grid">
-            {preTripPhotos.map((photo) => {
-              const captured = inspection.photos.includes(photo.id)
-              return <button type="button" key={photo.id} className={captured ? 'is-captured' : ''} disabled={!devices.camera} onClick={() => capturePhoto(photo.id)}>
-                <span className="pretrip-photo-visual">{captured ? <><Truck size={34} /><b><Check size={15} /></b></> : <Camera size={27} />}</span>
-                <strong>{photo.label}</strong>
-                {captured ? <small>Captured just now · Tap to retake</small> : 'detail' in photo ? <small>{photo.detail}</small> : null}
-              </button>
-            })}
-          </div>
-          <p className="pretrip-camera-note"><Camera size={15} /> Photos must be taken now. Gallery upload is not available.</p>
-          <div className="pretrip-sticky pretrip-sticky--split"><button type="button" className="pretrip-back" onClick={() => setStep('checklist')}>Back</button><button type="button" className="cargo-primary" disabled={!inspectionPhotosComplete(inspection)} onClick={() => setStep('review')}>Review inspection <ChevronRight size={19} /></button></div>
-        </main>
-      ) : null}
-
-      {step === 'review' ? (
-        <main className="pretrip-body">
-          <div className={`pretrip-review-state ${inspectionHasIssue(inspection) ? 'is-blocked' : ''}`}>
-            <span>{inspectionHasIssue(inspection) ? <AlertTriangle size={28} /> : <CheckCircle2 size={28} />}</span>
-            <p className="pretrip-eyebrow">{inspectionHasIssue(inspection) ? 'ROUTE LOCKED' : 'READY TO SUBMIT'}</p>
-            <h1>{inspectionHasIssue(inspection) ? 'Vehicle needs attention' : 'Inspection complete'}</h1>
-            <p>{inspectionHasIssue(inspection) ? 'Return to the checklist and clear reported issues after the vehicle has been reviewed.' : 'Review the record and confirm the vehicle is safe to operate.'}</p>
-          </div>
-          <dl className="pretrip-review-list">
-            <div><dt>Vehicle</dt><dd>Van 08 · Extended Van</dd></div>
-            <div><dt>Safety checklist</dt><dd className={issueCount ? 'is-issue' : ''}>{issueCount ? `${issueCount} issue${issueCount === 1 ? '' : 's'}` : `${preTripChecks.length}/${preTripChecks.length} passed`}</dd></div>
-            <div><dt>Required photos</dt><dd>{inspection.photos.length}/{preTripPhotos.length} captured</dd></div>
-            <div><dt>Branch</dt><dd>NJ1</dd></div>
-          </dl>
-          {!inspectionHasIssue(inspection) ? <label className="pretrip-attestation"><input type="checkbox" checked={inspection.attested} onChange={(event) => setAttested(event.target.checked)} /><span><strong>I confirm this vehicle is safe to operate</strong><small>This inspection will be recorded under the signed-in driver.</small></span></label> : null}
-          <div className="pretrip-sticky pretrip-sticky--split"><button type="button" className="pretrip-back" onClick={() => setStep(inspectionHasIssue(inspection) ? 'checklist' : 'photos')}>{inspectionHasIssue(inspection) ? 'Review issues' : 'Back'}</button><button type="button" className="cargo-primary" disabled={inspectionHasIssue(inspection) || !inspection.attested} onClick={finish}>Complete inspection <Check size={19} /></button></div>
-        </main>
-      ) : null}
+  if (inspection.completedAt) {
+    return <div className="cargo-flow pretrip-flow">
+      {header}
+      <main className="pretrip-complete">
+        <span><Check size={38} /></span>
+        <p className="pretrip-eyebrow">{postTrip.completedAt ? 'PRE-TRIP RECORD' : 'READY FOR ROUTE'}</p>
+        <h1>{postTrip.completedAt ? 'Pre-trip completed' : 'Vehicle cleared'}</h1>
+        <p>{postTrip.completedAt ? 'Start the next cycle from Home to record a new Pre-trip.' : 'Today’s route is now available.'}</p>
+        <p>Completed {new Date(inspection.completedAt).toLocaleString()} · Read-only</p>
+        <div className="pretrip-vehicle-summary"><Truck size={25} /><span><strong>{vehicle}</strong><small>{inspection.inspectedBy ?? 'Driver not recorded'} · {formatInspectionMiles(inspection.odometer)}</small></span><CheckCircle2 size={22} /></div>
+        <InspectionPhotoRecord photos={inspection.photos} />
+        <button type="button" className="cargo-primary" onClick={() => navigate('/')}>Back to Home <ChevronRight size={19} /></button>
+      </main>
     </div>
-  )
+  }
+
+  return <div className="cargo-flow pretrip-flow">
+    {header}
+    {saveError ? <p className="ebol-storage-warning" role="alert">Inspection could not be saved. Check device storage and retry.</p> : null}
+    {Object.values(history.at(-1)?.postTrip.answers ?? {}).includes('issue') ? <div className="pretrip-warning"><AlertTriangle size={20} /><span><strong>Previous Post-trip reported issues</strong><small>Report to dispatch and verify the vehicle has been reviewed before departure.</small></span></div> : null}
+    <InspectionCaptureForm photos={inspection.photos} odometer={inspection.odometer} capturePhoto={capturePhoto} setOdometer={setOdometer}
+      canComplete={inspectionCanComplete(inspection)} completeLabel="Complete inspection" onComplete={() => { if (completeInspection()) window.scrollTo(0, 0) }}>
+      <div className="pretrip-review-state"><span><CheckCircle2 size={28} /></span><h1>Review Pre-trip</h1><p>Review the vehicle and equipment record before departure.</p></div>
+      <dl className="pretrip-review-list">
+        <div><dt>Vehicle</dt><dd>{vehicle}</dd></div>
+        <div><dt>Inspected by</dt><dd>{inspectionDriver}</dd></div>
+        <div><dt>Odometer</dt><dd>{formatInspectionMiles(inspection.odometer)}</dd></div>
+        <div><dt>Required photos</dt><dd>{inspection.photos.length}/{preTripPhotos.length} captured</dd></div>
+      </dl>
+      <InspectionPhotoRecord photos={inspection.photos} />
+      <label className="pretrip-attestation"><input type="checkbox" checked={inspection.attested} onChange={(event) => setAttested(event.target.checked)} />
+        <span><strong>I confirm this vehicle is safe to operate</strong><small>This inspection will be recorded under {inspectionDriver}.</small></span></label>
+    </InspectionCaptureForm>
+  </div>
 }

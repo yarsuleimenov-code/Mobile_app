@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { approveHandoff, assertHandoffVerification, defaultVerificationPolicy, distanceMeters, verifyHandoff } from './handoffVerificationDomain'
-import { captureHandoffLocation, type HandoffSettings } from './handoffVerificationStore'
+import { checkLabelLocation, defaultVerificationPolicy, distanceMeters, verifyHandoff } from './handoffVerificationDomain'
+import { capturePrototypeLabelLocation, readLabelActivity, readLabelScanScenario, saveLabelActivity } from './handoffVerificationStore'
 import { initialCargoRecords } from './cargoDomain'
 import { createOrderEbol, lockDeliveryEbol, lockPickupEbol, lockSupplementalPickup, prepareDeliveryEbol, prepareSupplementalPickup } from './orderEbolDomain'
 import type { SpokeTask } from './spokeDomain'
@@ -9,28 +9,24 @@ const now = Date.parse('2026-11-03T10:00:00Z')
 const target = { latitude: 42, longitude: -71 }
 const task: SpokeTask = { stopId: 'pickup-stop', sequence: 1, externalId: '11155599', operation: 'pickup',
   address: 'Pickup address', title: 'Cargo', scheduledTime: '10:00 AM', coordinates: target }
-const base = { orderNumber: '11155599', operation: 'pickup' as const, driver: 'John Doe', task, target,
+const base = { orderNumber: '11155599', operation: 'pickup' as const, task, target,
   code: 'ZB-11155599-01', labels: [{ placeId: 'ZB-11155599-01', orderNumber: '11155599' }, { placeId: 'FOREIGN-LABEL', orderNumber: '222' }],
   fix: { ...target, accuracy: 5, capturedAt: now }, policy: defaultVerificationPolicy }
 const signed = { contactMethod: 'signed' as const, contactName: 'Contact', driverName: 'John Doe', hasDamage: false, exceptionNote: '' }
-const settings: HandoffSettings = { ...defaultVerificationPolicy, scenario: 'device', qrScenario: 'matched' }
 afterEach(() => vi.unstubAllGlobals())
 
 describe('QR and location verification', () => {
   it('checks a known label without case/whitespace sensitivity', () => {
     const check = verifyHandoff({ ...base, code: ' zb-11155599-01 ' }, now)
-    expect(approveHandoff(check)).toMatchObject({ qr: 'matched', location: 'passed', overridden: false, reason: '' })
+    expect(check).toMatchObject({ qr: 'matched', location: 'passed' })
   })
   it('warns for another order without changing active order or operation', () => {
     const check = verifyHandoff({ ...base, code: 'FOREIGN-LABEL' }, now)
     expect(check).toMatchObject({ orderNumber: '11155599', scannedOrder: '222', operation: 'pickup', qr: 'wrong_order' })
-    expect(() => approveHandoff(check, '   ')).toThrow('reason')
-    expect(approveHandoff(check, ' Dispatcher approved ')).toMatchObject({ overridden: true, reason: 'Dispatcher approved' })
   })
   it.each(['ZB-11155599-99', '11155599', 'https://unknown.example/11155599', ''])('does not infer an order from unknown payload %s', (code) => {
     const check = verifyHandoff({ ...base, code }, now)
     expect(check.qr).toBe('unknown')
-    expect(() => approveHandoff(check, 'Any reason')).toThrow('not recognized')
   })
   it('checks distances in meters and respects a changed radius', () => {
     expect(distanceMeters(target, target)).toBe(0)
@@ -39,7 +35,6 @@ describe('QR and location verification', () => {
     const check = verifyHandoff({ ...base, fix }, now)
     expect(check.distance).toBeGreaterThan(220)
     expect(check.location).toBe('outside')
-    expect(() => approveHandoff(check)).toThrow('reason')
     expect(verifyHandoff({ ...base, fix, policy: { ...defaultVerificationPolicy, radius: 300 } }, now).location).toBe('passed')
   })
   it('does not confirm an uncertain boundary even when reported coordinates are inside', () => {
@@ -70,66 +65,63 @@ describe('QR and location verification', () => {
       expect(verifyHandoff({ ...base, task }, now)).toMatchObject({ location: 'missing_coordinates', address: '', stopId: undefined })
     }
   })
-  it('requires a reason for missing coordinates instead of reporting success', () => {
+  it('reports missing coordinates separately', () => {
     const check = verifyHandoff({ ...base, target: undefined }, now)
     expect(check.location).toBe('missing_coordinates')
     expect(check.distance).toBeUndefined()
-    expect(() => approveHandoff(check)).toThrow('reason')
-  })
-  it('rejects old checks and checks belonging to another operation, driver or order', () => {
-    const check = approveHandoff(verifyHandoff(base, now))
-    for (const args of [
-      ['11155599', 'pickup', 'John Doe', now + 30001], ['222', 'pickup', 'John Doe', now],
-      ['11155599', 'dropoff', 'John Doe', now], ['11155599', 'pickup', 'Other driver', now],
-    ] as const) expect(() => assertHandoffVerification(check, args[0], args[1], args[2], new Date(args[3]).toISOString())).toThrow('Repeat')
   })
 })
 
-describe('fresh location acquisition', () => {
-  it('requests uncached high-accuracy coordinates each time', async () => {
-    const getCurrentPosition = vi.fn((success: PositionCallback, _failure?: PositionErrorCallback, _options?: PositionOptions) => success({ coords: { ...target, accuracy: 8 }, timestamp: now } as GeolocationPosition))
+describe('prototype location capture', () => {
+  it('uses the same successful route check with or without fixture coordinates', () => {
+    const getCurrentPosition = vi.fn()
     vi.stubGlobal('navigator', { geolocation: { getCurrentPosition } })
-    await captureHandoffLocation(task, settings)
-    await captureHandoffLocation(task, settings)
-    expect(getCurrentPosition).toHaveBeenCalledTimes(2)
-    expect(getCurrentPosition.mock.calls[0][2]).toEqual({ enableHighAccuracy: true, maximumAge: 0, timeout: 10000 })
+    for (const routeTask of [task, { ...task, coordinates: undefined }]) {
+      const location = capturePrototypeLabelLocation(routeTask)
+      expect(checkLabelLocation({ task: routeTask, ...location })).toMatchObject({
+        location: 'passed', distance: 0, address: task.address,
+      })
+    }
+    expect(getCurrentPosition).not.toHaveBeenCalled()
   })
-  it('handles permission denial and missing API', async () => {
-    vi.stubGlobal('navigator', { geolocation: { getCurrentPosition: (_: unknown, error: (value: { code: number }) => void) => error({ code: 1 }) } })
-    expect(await captureHandoffLocation(task, settings)).toMatchObject({ error: 'denied' })
-    vi.stubGlobal('navigator', {})
-    expect(await captureHandoffLocation(task, settings)).toMatchObject({ error: 'unavailable' })
+
+  it('records a fix for a manual order without inventing a stop address', () => {
+    const location = checkLabelLocation(capturePrototypeLabelLocation())
+    expect(location).toMatchObject({ address: '', location: 'missing_coordinates', fix: { accuracy: 5 } })
+    expect(location.target).toBeUndefined()
   })
-  it('never supplies synthetic target coordinates in Device mode', async () => {
-    vi.stubGlobal('navigator', {})
-    expect((await captureHandoffLocation({ ...task, coordinates: undefined }, settings)).target).toBeUndefined()
-    expect((await captureHandoffLocation(task, { ...settings, scenario: 'near' })).target).toEqual(target)
+
+  it('ignores previously saved GPS presets while retaining the label scan case', () => {
+    vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ scenario: 'denied', radius: 1, qrScenario: 'wrong_order' }) })
+    expect(readLabelScanScenario()).toBe('wrong_order')
+    expect(checkLabelLocation({ task, ...capturePrototypeLabelLocation(task) }).location).toBe('passed')
   })
 })
 
-describe('verification audit in signed versions', () => {
-  it('stores success for Pickup and an override only for its own Delivery snapshot', () => {
-    const verification = approveHandoff(verifyHandoff(base, now))
-    const pickup = lockPickupEbol(createOrderEbol(initialCargoRecords[0]), { ...signed, verification }, new Date(now).toISOString())
-    const deliveryCheck = approveHandoff(verifyHandoff({ ...base, operation: 'dropoff', code: 'FOREIGN-LABEL' }, now + 1000), 'Customer confirmed with dispatcher')
-    const ready = prepareDeliveryEbol(pickup, initialCargoRecords[0], { photoCount: 1, hasDamage: false, exceptionNote: '' })
-    const delivery = lockDeliveryEbol(ready, { ...signed, verification: deliveryCheck }, new Date(now + 1000).toISOString())
-    expect(delivery.pickup.verification).toEqual(verification)
-    expect(delivery.delivery.verification).toEqual(deliveryCheck)
-    expect(delivery.delivery.verification?.reason).toBe('Customer confirmed with dispatcher')
-    expect(delivery.delivery.verification?.fix).toEqual(base.fix)
+it('keeps label checks separate from Pickup, Supplemental and Delivery signatures', () => {
+  const storage = new Map<string, string>()
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => storage.get(key) ?? null,
+    setItem: (key: string, value: string) => storage.set(key, value),
   })
-  it('keeps Supplemental verification separate from the original snapshot', () => {
-    const verification = approveHandoff(verifyHandoff(base, now))
-    const original = lockPickupEbol(createOrderEbol(initialCargoRecords[0]), { ...signed, verification }, new Date(now).toISOString())
-    const draft = prepareSupplementalPickup(original, { addedPlaceIds: ['ZB-11155599-99'], totalWeight: 18, totalVolume: 3, photoCount: 1, changeHistory: [] })
-    const check = approveHandoff(verifyHandoff({ ...base, target: undefined }, now), 'No coordinates for this address')
-    const locked = lockSupplementalPickup(draft, 2, { ...signed, verification: check }, new Date(now).toISOString())
-    expect(locked.pickup.verification).toEqual(verification)
-    expect(locked.pickupSupplements[0].verification).toEqual(check)
-  })
-  it('rejects a warning without a reason at the lock boundary', () => {
-    const verification = { ...verifyHandoff({ ...base, code: 'FOREIGN-LABEL' }, now), overridden: true }
-    expect(() => lockPickupEbol(createOrderEbol(initialCargoRecords[0]), { ...signed, verification }, new Date(now).toISOString())).toThrow('reason')
-  })
+  const context = { order: base.orderNumber, operation: base.operation, stopId: task.stopId }
+  const check = verifyHandoff({ ...base, code: 'FOREIGN-LABEL', error: 'denied' }, now)
+  expect(saveLabelActivity('scan', context, check)).toBe(true)
+  expect(readLabelActivity('scan', context)).toEqual(check)
+  expect(readLabelActivity('scan', { ...context, operation: 'dropoff' })).toBeNull()
+
+  const stopVisit = { stopId: task.stopId, startedAt: new Date(now - 1000).toISOString() }
+  const at = new Date(now).toISOString()
+  const pickup = lockPickupEbol(createOrderEbol(initialCargoRecords[0]), { ...signed, stopVisit }, at)
+  expect(pickup.pickup).toMatchObject({ lockedAt: at, stopVisit })
+  expect(pickup.pickup.verification).toBeUndefined()
+  const draft = prepareSupplementalPickup(pickup, { addedPlaceIds: ['ZB-11155599-99'], totalWeight: 18, totalVolume: 3, photoCount: 1, changeHistory: [] })
+  const supplemental = lockSupplementalPickup(draft, 2, signed, at)
+  expect(supplemental.pickupSupplements[0]).toMatchObject({ lockedAt: at })
+  const ready = prepareDeliveryEbol(pickup, initialCargoRecords[0], { photoCount: 1, hasDamage: false, exceptionNote: '' })
+  const deliveryVisit = { ...stopVisit, stopId: 'delivery-stop' }
+  const delivery = lockDeliveryEbol(ready, { ...signed, stopVisit: deliveryVisit }, at)
+  expect(delivery.delivery).toMatchObject({ lockedAt: at, stopVisit: deliveryVisit })
+  expect(delivery.delivery.verification).toBeUndefined()
+  expect(readLabelActivity('scan', context)).toEqual(check)
 })

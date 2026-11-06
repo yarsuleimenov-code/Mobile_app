@@ -16,7 +16,12 @@
     "COM-002: first ETA quick message is editable and requires explicit Send; FR-044, UC-16, COM-AC-12 and CALL-TC-12 clarified.",
     "HOV-001: prototype handoff verification, 15 HOV-AC; final QR/location verification and version audit. Radius/override provisional; production QR mapping, stop coordinates and native iOS/Android acceptance unresolved. referencePrototypeCommit remains the historical COM-002 reference, not a commit for this working increment.",
     "2026-11-05: updated Pre-trip and Post-trip to four checks and thirteen required photos, preserving completed inspection records.",
-    "2026-11-06: documented Pickup and Delivery prototype steps 1–7, including route-stop status, reference photos, delivery evidence and separate Packing photos. Release 1 decisions and the historical referencePrototypeCommit are preserved."
+    "2026-11-06: documented Pickup and Delivery prototype steps 1–7, including route-stop status, reference photos, delivery evidence and separate Packing photos. Release 1 decisions and the historical referencePrototypeCommit are preserved.",
+    "2026-11-06: label generation and label/location checks run separately from eBOL signing; stop completion uses the signed visit.",
+    "2026-11-06: label generation and scan use one successful location scenario with test coordinates.",
+    "2026-11-06: documented pending contact confirmation and local dispatcher follow-up for Pickup and Delivery.",
+    "2026-11-06: Pre-trip and Post-trip prototype use separate vehicle and equipment photos, odometer readings, driver confirmation and preserved history.",
+    "2026-11-06: added a separate next-day warehouse Route Loading flow with a frozen place manifest and complete-load validation."
   ],
   "files": [
     {
@@ -64,14 +69,14 @@
     {
       "path": "requirements/TECHNICAL_SPECIFICATION.md",
       "source": "docs/requirements/TECHNICAL_SPECIFICATION.md",
-      "sourceSha256": "e927f194de9d093f509251a2e3d7645cf8ccfa5e5121048f52b695bdd5a1f713",
-      "sha256": "51ce9585ad73f368c7dc214e5e7bb9c72fc635132f6e762844b66f1f4e243b40"
+      "sourceSha256": "e03851f2dcf096e12ac910a3fd30df919d422802d156cd01b86f34a5fead1896",
+      "sha256": "e4673369835bf6af39655b7a23fb768ed3eadcc74a27588cfdd95b8fc60be682"
     },
     {
       "path": "requirements/WORKFLOWS_AND_USE_CASES.md",
       "source": "docs/requirements/WORKFLOWS_AND_USE_CASES.md",
-      "sourceSha256": "a66258d7241d83c35c2838aedd1f77ae81d539ab13c77b433d6dc5b8f03fabb4",
-      "sha256": "a66258d7241d83c35c2838aedd1f77ae81d539ab13c77b433d6dc5b8f03fabb4"
+      "sourceSha256": "8b3e435427623395d6cf1be3b160543f3052ef67f6160784ce18eefa00d1dcad",
+      "sha256": "8b3e435427623395d6cf1be3b160543f3052ef67f6160784ce18eefa00d1dcad"
     },
     {
       "path": "architecture/SYSTEM_ARCHITECTURE_AND_INTEGRATIONS.md",
@@ -100,14 +105,14 @@
     {
       "path": "DEVELOPMENT_HANDOFF.md",
       "source": "docs/DEVELOPMENT_HANDOFF.md",
-      "sourceSha256": "6d70775b7f8b33252d8bc830965d8856bd3e91ff1e8ac3f25c22eccdb32ad381",
-      "sha256": "e7742fdee6ff6430a49e932b9f94b5ccf8fe73d15cb88e099664ea93574e0489"
+      "sourceSha256": "6fc04bc4ded61c3e6f0ae458f0d860253a597543cb4c8d2187efadc428454301",
+      "sha256": "72b328d11754bb6761da52b8e6030dc64d2e7261ebc471cf5cbbe65a8facd437"
     },
     {
       "path": "PROJECT_BASELINE.md",
       "source": "docs/PROJECT_BASELINE.md",
-      "sourceSha256": "7a0c80955812aed25c4a6d6d7c90325b3155fe304fd6aec917917410d2bea723",
-      "sha256": "2683da61c933621d1838afe5e0acf196069d759c4dd81cb2b2bf154037214fb6"
+      "sourceSha256": "d17ac6b964361894b3b03f0ade11dad28c7c30c31ce2a3b9d508e8166011582d",
+      "sha256": "9d02a26248c71d00a3f06130adf3e39e7f9d6d7e74e465e59d5cb46df6073be5"
     },
     {
       "path": "decisions/DECISION_LOG.md",
@@ -178,14 +183,14 @@
     {
       "path": "requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md",
       "source": "docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md",
-      "sourceSha256": "78b103dd34d5c6d684ca303e1dd9dddc21e98678836cfd5a39b3d66c2929bdb0",
-      "sha256": "78b103dd34d5c6d684ca303e1dd9dddc21e98678836cfd5a39b3d66c2929bdb0"
+      "sourceSha256": "ad887c2a5db5d62a68083fb5c96f93b9281c8135036cf7323e40f06ed2bcdb9f",
+      "sha256": "ad887c2a5db5d62a68083fb5c96f93b9281c8135036cf7323e40f06ed2bcdb9f"
     },
     {
       "path": "requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md",
       "source": "docs/requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md",
-      "sourceSha256": "bef58cc22f5070aad6da527af699f3e7419ff7ffd6f2bac8f59e0693916feac8",
-      "sha256": "bef58cc22f5070aad6da527af699f3e7419ff7ffd6f2bac8f59e0693916feac8"
+      "sourceSha256": "6772fb4c117799cf230a03a24f0a266c266156ce8efa1bf612419434942aba59",
+      "sha256": "6772fb4c117799cf230a03a24f0a266c266156ce8efa1bf612419434942aba59"
     }
   ]
 }

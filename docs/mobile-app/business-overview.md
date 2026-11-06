@@ -14,8 +14,8 @@ The workflow is designed for the crew that records Pickup and Delivery evidence,
 | --- | --- |
 | Order | Shipment identified in the UI by an order number. A loaded Spoke stop's External ID becomes that number in the local route simulation. |
 | Task / Stop | A scheduled Pickup or Delivery row on Today's Spoke route, with sequence, time, address and Order. Tasks are displayed in Home and Tasks. The active router has no separate task detail screen. |
-| Pre-trip inspection | Four vehicle safety checks, 13 required photos and driver attestation. A passed inspection unlocks loading Today's route; any Issue keeps it locked. |
-| Post-trip inspection | Four checks, 13 required photos, required defect notes and driver attestation. Defects do not block reporting. Read-only results and paired history; next cycle requires fresh Pre-trip. No timekeeping or automatic order/Interstate close. |
+| Pre-trip inspection | Odometer, 13 required photos and driver attestation. Completing the inspection unlocks loading Today’s route. |
+| Post-trip inspection | Ending odometer, trip distance when both readings exist, 13 required photos and driver attestation. Completed records are read-only and paired in history. |
 | Pickup | An operation that records dimension groups, individual cargo places, photos and order context; it prepares Pickup evidence for Order eBOL review. |
 | Delivery | Verification of a previously recorded order against Pickup evidence, with Delivery photo or damage report/exception; it prepares Delivery review. |
 | Same Day | A movement type whose Pickup and Delivery are intended to be connected through a RouteRun in the approved product model. An older Same Day screen exists in source but is not routed in the active app. |
@@ -39,14 +39,13 @@ The active bottom navigation is **Home | Tasks | Scan | More**. Home offers Pick
 
 ```mermaid
 flowchart LR
-  A["Home: route locked"] --> B["8 safety/equipment checks"]
-  B --> C["5 camera-only photos"]
+  A["Home: route locked"] --> B["Vehicle photos and odometer"]
+  B --> C["Equipment photos"]
   C --> D["Driver attestation"]
   D --> E["Vehicle cleared; load route"]
-  B -->|Any Issue| F["Route locked; review issue"]
 ```
 
-The sample vehicle is **Van 08 · Extended Van** at NJ1. Each of the four checks requires Pass or Issue. All 13 vehicle and equipment photos must be taken in the flow. Gallery upload is not offered. Any Issue or unavailable camera prevents completion. The active wireframe persists the inspection locally and has no assignment service, maintenance task, supervisor override or server audit. [Pre-trip source](../../wireframe/src/screens/PreTripInspectionScreen.tsx), [documented scope](../system-report/PRE_TRIP_INSPECTION_WIREFRAME.md).
+The sample vehicle is **Van 08 · Extended Van** at NJ1. The 13 required capture markers cover five vehicle photos and eight equipment photos. Completed inspections store the responsible driver and mileage locally. [User guide](user-guide.md#pre-trip-inspection).
 
 ### Pickup and Order eBOL
 

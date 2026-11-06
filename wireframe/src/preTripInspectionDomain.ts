@@ -14,6 +14,8 @@ export type PreTripAnswer = 'pass' | 'issue'
 export interface PreTripInspectionState {
   answers: Partial<Record<PreTripCheckId, PreTripAnswer>>
   photos: PreTripPhotoId[]
+  odometer?: number
+  inspectedBy?: string
   attested: boolean
   completedAt: string | null
 }
@@ -41,8 +43,7 @@ export const legacyPreTripPhotos = [
   { id: 'dashboard', label: 'Dashboard', detail: 'Instrument panel and any warning indicators' },
 ] as const
 
-export const preTripPhotos = [
-  ...legacyPreTripPhotos,
+export const equipmentInspectionPhotos = [
   { id: 'tires', label: 'Tires & wheels' },
   { id: 'dollies', label: '2x Dollies' },
   { id: 'hand_truck', label: 'Hand truck' },
@@ -53,6 +54,9 @@ export const preTripPhotos = [
   { id: 'milwaukee_bag', label: 'Milwaukee open bag' },
 ] as const satisfies ReadonlyArray<{ id: string; label: string; detail?: string }>
 
+export const preTripPhotos = [...legacyPreTripPhotos, ...equipmentInspectionPhotos] as const
+export const inspectionDriver = 'Chris Adams'
+
 export const emptyPreTripInspection: PreTripInspectionState = {
   answers: {},
   photos: [],
@@ -60,12 +64,16 @@ export const emptyPreTripInspection: PreTripInspectionState = {
   completedAt: null,
 }
 
-export function inspectionHasIssue(state: PreTripInspectionState) {
-  return Object.values(state.answers).includes('issue')
+export function isOdometerReading(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
 }
 
-export function inspectionChecklistComplete(state: PreTripInspectionState) {
-  return preTripChecks.every((item) => Boolean(state.answers[item.id]))
+export function formatInspectionMiles(value: number | undefined) {
+  return value === undefined ? 'Not recorded' : `${value.toLocaleString('en-US')} mi`
+}
+
+export function inspectionDistance(start: number | undefined, end: number | undefined) {
+  return start !== undefined && end !== undefined && end >= start ? end - start : undefined
 }
 
 export function inspectionPhotosComplete(state: PreTripInspectionState) {
@@ -73,15 +81,11 @@ export function inspectionPhotosComplete(state: PreTripInspectionState) {
 }
 
 export function inspectionCanComplete(state: PreTripInspectionState) {
-  return inspectionChecklistComplete(state)
-    && inspectionPhotosComplete(state)
-    && state.attested
-    && !inspectionHasIssue(state)
+  return isOdometerReading(state.odometer) && inspectionPhotosComplete(state) && state.attested
 }
 
 export function inspectionStatus(state: PreTripInspectionState) {
   if (state.completedAt) return 'passed' as const
-  if (inspectionHasIssue(state)) return 'blocked' as const
-  if (Object.keys(state.answers).length || state.photos.length) return 'in_progress' as const
+  if (state.odometer !== undefined || state.photos.length) return 'in_progress' as const
   return 'required' as const
 }
