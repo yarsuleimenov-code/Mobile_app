@@ -26,7 +26,7 @@ The workflow is designed for the crew that records Pickup and Delivery evidence,
 | Trip / Manifest | A selected direction, truck and confirmed set of PlaceIDs. The Trip is created after loading review; unloading reconciles against its confirmed manifest. |
 | Cargo Piece / Place | The individually identified physical unit. A dimension group holds quantity and shared measurements, while each place preserves its PlaceID. |
 | Warehouse / Branch / Direction | Interstate origin and destination are warehouse values; direction is the ordered origin → destination pair. The current branch and role can be changed in Administration for scenarios. |
-| Scan / Barcode / QR | Scan is a PlaceID or Order ID lookup in the main Scan tab; loading/unloading also accept PlaceID. Place labels show Code 128. A separate QR workflow is not evidenced by the active UI. |
+| Scan / Barcode / QR | Scan is a PlaceID or Order ID lookup in the main Scan tab; loading/unloading also accept PlaceID. New labels encode the PlaceID as a QR code. |
 | Order eBOL / POD | One order document that progresses through Pickup and Delivery snapshots. POD is the final view after both snapshots are locked. |
 | Interstate BOL | A different document belonging to an Interstate Trip and its manifest. |
 

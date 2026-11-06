@@ -1,4 +1,4 @@
-import { Barcode, Clock3, MapPin, PackageSearch, Ruler, Scale } from 'lucide-react'
+import { Clock3, MapPin, PackageSearch, QrCode, Ruler, Scale } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { cargoPlaceStatusLabels, cargoPlaceWeightSourceLabels } from '../cargoPlaceTracking'
@@ -35,7 +35,7 @@ export function CargoPlaceScreen() {
           <div><PackageSearch size={20} /><span><small>Order / place</small><strong>#{place.orderNumber} · {place.placeNumber}/{place.totalPlaces}</strong></span></div>
           <div><Ruler size={20} /><span><small>Dimensions</small><strong>{place.dimensions}</strong></span></div>
           <div><Scale size={20} /><span><small>Weight</small><strong>{place.estimatedWeight === null ? 'Not measured' : `${place.estimatedWeight} lb`}</strong><em>{cargoPlaceWeightSourceLabels[place.weightSource]}</em></span></div>
-          <div><Barcode size={20} /><span><small>Label</small><strong>{place.label}</strong></span></div>
+          <div><QrCode size={20} /><span><small>Label</small><strong>{place.label}</strong></span></div>
         </section>
 
         {place.unknownReason ? <p className="measurement-warning">Measurement note: {place.unknownReason}</p> : null}

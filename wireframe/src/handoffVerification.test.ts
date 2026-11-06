@@ -20,6 +20,10 @@ describe('QR and location verification', () => {
     const check = verifyHandoff({ ...base, code: ' zb-11155599-01 ' }, now)
     expect(check).toMatchObject({ qr: 'matched', location: 'passed' })
   })
+  it('uses the registered PlaceID for a cargo QR URL', () => {
+    const check = verifyHandoff({ ...base, code: `https://script.google.com/a/macros/zaberman.com/s/test/exec?cargo=${base.code}` }, now)
+    expect(check).toMatchObject({ code: base.code, qr: 'matched', scannedOrder: base.orderNumber })
+  })
   it('warns for another order without changing active order or operation', () => {
     const check = verifyHandoff({ ...base, code: 'FOREIGN-LABEL' }, now)
     expect(check).toMatchObject({ orderNumber: '11155599', scannedOrder: '222', operation: 'pickup', qr: 'wrong_order' })

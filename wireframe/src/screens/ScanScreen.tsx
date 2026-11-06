@@ -45,7 +45,7 @@ function ScanContent({ initialCode }: { initialCode: string }) {
         <div className="scan-header"><h1>Scan</h1><p>Find a place or continue its active task</p></div>
         <div className={`camera-stage ${devices.camera ? '' : 'is-unavailable'}`}>
           <div className="scan-frame"><span /><span /><span /><span /><ScanLine size={42} /></div>
-          <p>{devices.camera ? 'Position the barcode inside the frame' : 'Camera unavailable · manual entry remains available'}</p>
+          <p>{devices.camera ? 'Position the QR code inside the frame' : 'Camera unavailable · manual entry remains available'}</p>
         </div>
         {result && (result.kind === 'found' || result.kind === 'duplicate') ? (
           <div className={`scan-found ${result.kind === 'duplicate' ? 'scan-result--duplicate' : ''}`} role="status">

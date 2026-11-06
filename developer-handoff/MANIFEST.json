@@ -113,8 +113,8 @@
     {
       "path": "PROJECT_BASELINE.md",
       "source": "docs/PROJECT_BASELINE.md",
-      "sourceSha256": "2445ef0eb4e1b335b45b121c9f95e1bd2ce2b84b3f5a39ce399676a08616479a",
-      "sha256": "fa392957f6ad6bbe94799ed558ef30e488d437b78e82591ab672a91e860f735f"
+      "sourceSha256": "d2d2690d1e9791b7901c4afb70836adc24891e379691649d2317dd63ac1ed95d",
+      "sha256": "de43e69fc32494a5d6d5b0e74c83c5e4f52ac58ba5b06a03658c9a97357df1ff"
     },
     {
       "path": "decisions/DECISION_LOG.md",
@@ -185,8 +185,8 @@
     {
       "path": "requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md",
       "source": "docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md",
-      "sourceSha256": "ad887c2a5db5d62a68083fb5c96f93b9281c8135036cf7323e40f06ed2bcdb9f",
-      "sha256": "ad887c2a5db5d62a68083fb5c96f93b9281c8135036cf7323e40f06ed2bcdb9f"
+      "sourceSha256": "2e622eed1513127e90283f95106b4173b0cffaa29980b671058d69ef64fa220a",
+      "sha256": "2e622eed1513127e90283f95106b4173b0cffaa29980b671058d69ef64fa220a"
     },
     {
       "path": "requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md",

@@ -5,6 +5,7 @@ import { weightText } from '../measurementDomain'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { directionLabel, interstateIncomingTrips, summarizeLoadedPlaces } from '../interstateDomain'
 import { useInterstate } from '../interstateStore'
+import { findPlaceByCode } from '../placeScanDomain'
 
 type ScanFeedback = { type: 'success' | 'error'; message: string }
 
@@ -51,8 +52,7 @@ export function InterstateUnloadingScreen() {
 
   const submitScan = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const normalizedKey = scanValue.trim().toLowerCase()
-    const place = trip.manifest.find((item) => item.placeId.toLowerCase() === normalizedKey)
+    const place = findPlaceByCode(trip.manifest, scanValue)
     if (!place) {
       setScanFeedback({ type: 'error', message: 'Place ID is not in this Trip manifest.' })
       return

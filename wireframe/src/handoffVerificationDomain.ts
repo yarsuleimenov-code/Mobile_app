@@ -1,4 +1,5 @@
 import type { SpokeOperation, SpokeTask } from './spokeDomain'
+import { normalizePlaceCode } from './placeScanDomain'
 
 export interface Coordinates { latitude: number; longitude: number }
 export interface LocationFix extends Coordinates { accuracy: number; capturedAt: number }
@@ -69,7 +70,7 @@ export function verifyHandoff(input: Parameters<typeof checkLabelLocation>[0] & 
   orderNumber: string; operation: SpokeOperation; code: string
   labels: Array<{ placeId: string; orderNumber: string }>
 }, now = Date.now()): HandoffVerification {
-  const code = input.code.trim().toUpperCase()
+  const code = normalizePlaceCode(input.code)
   // Resolve through the label registry instead of inferring an order from the code.
   const scannedOrder = input.labels.find((place) => place.placeId.toUpperCase() === code)?.orderNumber
   const qr = !scannedOrder ? 'unknown' : scannedOrder === input.orderNumber ? 'matched' : 'wrong_order'

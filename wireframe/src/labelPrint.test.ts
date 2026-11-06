@@ -98,6 +98,15 @@ describe('Demo label scan', () => {
   it('resolves the supplied label instead of a hard-coded place', () => {
     expect(resolvePlaceScan(places, ' zb-11155599-05 ', [])).toMatchObject({ kind: 'found', place: { placeId: 'ZB-11155599-05', placeNumber: 5 } })
   })
+  it('recognizes a cargo QR URL as the same place as its plain PlaceID', () => {
+    const placeId = places[0].placeId
+    const url = `https://script.google.com/a/macros/zaberman.com/s/test/exec?cargo=${placeId}`
+    expect(resolvePlaceScan(places, url, [])).toMatchObject({ kind: 'found', place: { placeId } })
+    expect(resolvePlaceScan(places, url, [placeId]).kind).toBe('duplicate')
+    for (const other of [url.replace('cargo=', 'piece='), url.replace('script.google.com', 'example.com'), `${url}&cargo=${placeId}`, url.replace(placeId, 'ZB-11155599-999')]) {
+      expect(resolvePlaceScan(places, other, []).kind).toBe('unknown')
+    }
+  })
   it('identifies a repeat without changing the cargo collection', () => {
     const before = structuredClone(places)
     expect(resolvePlaceScan(places, places[0].placeId, [places[0].placeId]).kind).toBe('duplicate')

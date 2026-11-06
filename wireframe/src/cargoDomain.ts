@@ -120,7 +120,7 @@ export function expandCargoPlaces(record: CargoRecord): OrderCargoPlace[] {
       weightSource: placeWeight === null ? 'unknown' : group.weight === undefined ? 'allocated_from_order_total' : 'dimension_group',
       volume: calculateVolume([{ ...group, quantity: 1 }]),
       volumeKnown: dimensionState(group) === 'complete',
-      label: `Place ${placeNumber}/${totalPlaces} · Code 128`,
+      label: `Place ${placeNumber}/${totalPlaces} · QR`,
       currentLocation: record.status === 'dropoff_complete'
         ? `${record.destinationBranch} · Delivered`
         : `${record.originBranch} · Pickup staging`,

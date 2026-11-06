@@ -1,6 +1,6 @@
 # Zaberman mobile wireframe
 
-Этикетки PlaceID используют Code 128. При создании набора в Label preview фиксируется геопозиция. В Check label проверяются связь кода с открытым заказом и местоположение относительно нужной точки. Результаты хранятся локально. Для GPS используется один успешный сценарий с тестовыми координатами. Подписание eBOL и Complete stop работают независимо от этих проверок. [Изменение HOV-001](../docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md).
+Этикетки прототипа используют QR с исходным PlaceID. При создании набора в Label preview фиксируется геопозиция. В Check label проверяются связь кода с открытым заказом и местоположение относительно нужной точки. Результаты хранятся локально. Для GPS используется один успешный сценарий с тестовыми координатами. Подписание eBOL и Complete stop работают независимо от этих проверок. [Изменение HOV-001](../docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md).
 
 Текущее состояние на 2026-11-06 — [Pickup и Delivery — шаги 1–7](../docs/requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md).
 
@@ -98,7 +98,7 @@ Tasks → Order details показывает external/internal names, источ
 
 ## Place labels
 
-После Pickup маршрут `/orders/:orderNumber/labels` формирует отдельную Code 128 этикетку для каждого места. Place ID имеет формат `ZB-{ORDER_NUMBER}-{NN}`; повторная печать сохраняет те же идентификаторы. Interstate Loading и Unloading используют эти же IDs для фиксации полного, повторного или отсутствующего места.
+После Pickup маршрут `/orders/:orderNumber/labels` формирует отдельную QR-этикетку для каждого места. Place ID имеет формат `ZB-{ORDER_NUMBER}-{NN}`; повторная печать сохраняет те же идентификаторы. Interstate Loading и Unloading используют эти же IDs для фиксации полного, повторного или отсутствующего места.
 
 Выберите labels → Print selected / Print all / Print this label → preview только выбранного набора → Print. Print all действует в рамках фильтра версии. Выбор и последние 20 mock-попыток сохраняются по заказу. В Prototype controls (`#/more/demo`) доступны Print success / Print error и Printer unavailable. При недоступном принтере можно продолжить review или проверить PlaceID вручную.
 

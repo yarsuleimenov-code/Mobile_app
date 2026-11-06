@@ -38,7 +38,8 @@ it('persists the frozen load by route and date and completes only after all five
   vi.stubGlobal('navigator', {})
   vi.stubGlobal('window', { dispatchEvent: vi.fn() })
   await saveRouteLoadingAction(plan, { type: 'start' })
-  await saveRouteLoadingAction(plan, { type: 'scan', code: ` ${places[0].placeId.toLowerCase()} ` })
+  const cargoUrl = `https://script.google.com/a/macros/zaberman.com/s/test/exec?cargo=${places[0].placeId.toLowerCase()}`
+  await saveRouteLoadingAction(plan, { type: 'scan', code: cargoUrl })
   await expect(saveRouteLoadingAction(plan, { type: 'scan', code: places[0].placeId })).rejects.toThrow('already loaded')
   await expect(saveRouteLoadingAction(plan, { type: 'scan', code: 'ZB-11155599-01', knownPlace: true })).rejects.toThrow('another load')
   await expect(saveRouteLoadingAction(plan, { type: 'scan', code: '76000004' })).rejects.toThrow('Label not found')

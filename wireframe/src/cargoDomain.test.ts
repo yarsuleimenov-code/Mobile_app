@@ -23,7 +23,7 @@ describe('cargo record calculations', () => {
       totalPlaces: 11,
       dimensions: '11 × 22 × 33 in',
       weightSource: 'allocated_from_order_total',
-      label: 'Place 1/11 · Code 128',
+      label: 'Place 1/11 · QR',
       currentLocation: 'NJ1 · Pickup staging',
       status: 'ready_for_loading',
     })

@@ -45,7 +45,7 @@ function createManifestPlaces(orderNumber: string, orderTitle: string, quantity:
     estimatedWeight,
     weightSource: 'allocated_from_order_total',
     volume,
-    label: `Place ${index + 1}/${quantity} · Code 128`,
+    label: `Place ${index + 1}/${quantity} · QR`,
     currentLocation: 'In transit · Incoming manifest',
     status: 'in_transit',
     events: [

@@ -1,6 +1,6 @@
-import JsBarcode from 'jsbarcode'
-import { Barcode, Printer } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
+import { Printer, QrCode } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { ZabermanLogo } from '../brand-logo'
@@ -14,25 +14,6 @@ import { labelCheckPath, LabelLocationSummary } from '../HandoffVerification'
 import { checkLabelLocation, hasRecordedLabelLocation } from '../handoffVerificationDomain'
 import { capturePrototypeLabelLocation, readLabelActivity, saveLabelActivity } from '../handoffVerificationStore'
 import { useOrderStopContext } from '../StopNavigation'
-
-function PlaceBarcode({ value }: { value: string }) {
-  const barcodeRef = useRef<SVGSVGElement>(null)
-
-  useEffect(() => {
-    if (!barcodeRef.current) return
-    JsBarcode(barcodeRef.current, value, {
-      format: 'CODE128',
-      width: 1.45,
-      height: 54,
-      margin: 0,
-      marginLeft: 15,
-      marginRight: 15,
-      displayValue: false,
-    })
-  }, [value])
-
-  return <svg ref={barcodeRef} role="img" aria-label={`Code 128 barcode for ${value}`} />
-}
 
 export function PlaceLabelsScreen() {
   const { orderNumber: orderParam = '' } = useParams()
@@ -109,7 +90,7 @@ function PlaceLabelsContent({ orderNumber, requestedVersion, stopId }: { orderNu
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Place labels" subtitle={`Order #${orderNumber || 'unknown'}`} />
-        <div className="place-labels-empty"><Barcode size={44} /><h2>Pickup record not found</h2><p>Save the Pickup before generating its place labels.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/pickup?order=${orderNumber}`)}>Open Pickup</button></div>
+        <div className="place-labels-empty"><QrCode size={44} /><h2>Pickup record not found</h2><p>Save the Pickup before generating its place labels.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/pickup?order=${orderNumber}`)}>Open Pickup</button></div>
         <CargoBottomNav />
       </div>
     )
@@ -121,7 +102,7 @@ function PlaceLabelsContent({ orderNumber, requestedVersion, stopId }: { orderNu
         onBack={previewIds ? () => { setPreviewIds(null); setLastAttempt(null); window.scrollTo(0, 0) } : undefined} />
       <main className="place-labels-body">
         <section className="place-labels-summary">
-          <Barcode size={26} />
+          <QrCode size={26} />
           <span><strong>{previewIds ? `${previewLabels.length} labels in this batch` : `${selected.length} selected · ${visibleLabels.length} available`}</strong><small>{previewIds ? 'Only this batch is shown below. Place IDs and original n/N are unchanged.' : 'Select labels, then review the batch. Reprinting keeps the same Place IDs.'}</small></span>
         </section>
         {storageError ? <p className="label-storage-error" role="alert">Selection and history could not be saved. Keep this page open; reload may lose your changes.</p> : null}
@@ -178,7 +159,7 @@ function PlaceLabelsContent({ orderNumber, requestedVersion, stopId }: { orderNu
               {label.orderTitle ? <p className="place-label-title" title={label.orderTitle}>{label.orderTitle}</p> : null}
               <dl><div className="place-label-route"><dt>Destination</dt><dd>TO {label.destinationBranch}</dd><small>FROM {label.originBranch}</small></div><div><dt>Dimensions</dt><dd>{label.dimensions}</dd></div></dl>
               <p className="place-label-group">Group {label.dimensionGroupNumber} · {labelVersionName(label.pickupVersion)}</p>
-              <PlaceBarcode value={label.placeId} />
+              <QRCodeSVG className="place-label-qr" value={label.placeId} size={108} level="M" marginSize={4} role="img" aria-label={`QR code for ${label.placeId}`} />
               <div className="place-label-id"><span>Place ID</span><code>{label.placeId}</code></div>
               <Link className="place-label-record-link" to={`/places/${label.placeId}`}>Open place record</Link>
             </article>

@@ -6,6 +6,7 @@ import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { useCargo } from '../cargoStore'
 import { directionLabel, expandRecordPlaces, getEligibleRecords, summarizeLoadedPlaces } from '../interstateDomain'
 import { useInterstate } from '../interstateStore'
+import { findPlaceByCode } from '../placeScanDomain'
 type ScanFeedback = { type: 'success' | 'error'; message: string }
 
 export function InterstateLoadingScreen() {
@@ -27,8 +28,7 @@ export function InterstateLoadingScreen() {
 
   const submitScan = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const normalizedId = scanValue.trim().toLowerCase()
-    const place = allPlaces.find((item) => item.placeId.toLowerCase() === normalizedId)
+    const place = findPlaceByCode(allPlaces, scanValue)
     if (!place) {
       setScanFeedback({ type: 'error', message: 'Place ID is not available for this Interstate load.' })
       return

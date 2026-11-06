@@ -8,7 +8,7 @@ import { ReferencePhotoGallery } from '../ReferencePhotoGallery'
 import { readPackingPhotos } from '../packingPhotoStore'
 import { PhotoGallery } from '../PhotoEvidence'
 import type { EvidencePhoto } from '../photoEvidenceDomain'
-import { findPlaceByCode } from '../placeScanDomain'
+import { findPlaceByCode, normalizePlaceCode } from '../placeScanDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { canCompleteRouteLoading, expectedLoadPlaces, routeLoadingIssue, warehouseLoadOrders, type RouteLoadingAction, type RouteLoadingPlan, type RouteLoadingStop } from '../routeLoadingDomain'
 import { nextRouteLoadingPlan, warehouseWorkDate } from '../routeLoadingFixture'
@@ -139,10 +139,11 @@ export function RouteLoadingScreen() {
 
   const scan = (value: string) => {
     if (saving.current || !value.trim()) return
-    const knownPlace = Boolean(findPlaceByCode(places, value))
-      || plan.stops.some((stop) => stop.placeIds?.some((id) => id.toUpperCase() === value.trim().toUpperCase()))
+    const scannedCode = normalizePlaceCode(value)
+    const knownPlace = Boolean(findPlaceByCode(places, scannedCode))
+      || plan.stops.some((stop) => stop.placeIds?.some((id) => id.toUpperCase() === scannedCode))
     setCode('')
-    void change({ type: 'scan', code: value, knownPlace })
+    void change({ type: 'scan', code: scannedCode, knownPlace })
   }
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
