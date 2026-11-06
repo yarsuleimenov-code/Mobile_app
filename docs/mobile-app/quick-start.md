@@ -4,7 +4,7 @@ Use this as a short guide to the current Mobile App interface. The deployed buil
 
 ## Before you start
 
-Open **Cargo operations**. Before **Load today’s route** becomes available, complete the required **Pre-trip inspection**. Pickup and Dropoff can still be opened directly in the wireframe. A loaded Spoke route is a local fixture, not a live dispatch assignment.
+Open **Cargo operations**. Before **Load today’s route** becomes available, complete the required **Pre-trip inspection**. Pickup and Delivery can still be opened directly in the wireframe. A loaded Spoke route is a local fixture, not a live dispatch assignment.
 
 ## Complete the Pre-trip inspection
 
@@ -22,8 +22,8 @@ Home → **Post-trip inspection** → four checks (describe every Issue) → 13 
 
 ## Main navigation
 
-- **Home:** compact **Manual operations → Pickup / Dropoff**, Today's stops, drafts and Order documents. For additional places on a signed Pickup, use **Recent operations → Add places** or resume **Supplemental Pickup** from **Pickup drafts**.
-- **Tasks:** search by Order ID/title; filter Pickup or Dropoff; open the correct stop.
+- **Home:** compact **Manual operations → Pickup / Delivery**, Today's stops, drafts and Order documents. For additional places on a signed Pickup, use **Recent operations → Add places** or resume **Supplemental Pickup** from **Pickup drafts**.
+- **Tasks:** search by Order ID/title; filter Pickup or Delivery; open the correct stop.
 - **Scan:** look up a cargo PlaceID or Order ID.
 - **More:** Help & Instructions, Cargo places, Interstate operations and local sync status.
 
@@ -35,11 +35,11 @@ In **Tasks**, choose a stop. Check its Order number, scheduled time and address.
 
 ## Navigate
 
-Check the stop's full address on Home, Tasks, Pickup/Dropoff or Order details and select **Navigate** to open Google Maps. **Copy address** copies only the address; a manual-copy field appears if Clipboard is blocked. Select the stop first if several are available. Opening Maps does not complete the stop. If draft saving fails, retry before leaving the form. Driving directions do not guarantee truck-safe routing.
+Check the stop's full address on Home, Tasks, Pickup/Delivery or Order details and select **Navigate** to open Google Maps. **Copy address** copies only the address; a manual-copy field appears if Clipboard is blocked. Select the stop first if several are available. Opening Maps does not complete the stop. If draft saving fails, retry before leaving the form. Driving directions do not guarantee truck-safe routing.
 
 ## Team contacts
 
-Open **Order details** in Pickup/Dropoff or Tasks and find **Team contacts** below the stop summary. Check the order/stop, select **Copy summary**, then paste into a message. Open the required Dispatcher/Broker/Manager **@nickname** in Telegram; nothing is sent automatically. If Clipboard is blocked, copy the displayed text manually. Sample Telegram recipients must be agreed before external demonstrations.
+Open **Order details** in Pickup/Delivery or Tasks and find **Team contacts** below the stop summary. Check the order/stop, select **Copy summary**, then paste into a message. Open the required Dispatcher/Broker/Manager **@nickname** in Telegram; nothing is sent automatically. If Clipboard is blocked, copy the displayed text manually. Sample Telegram recipients must be agreed before external demonstrations.
 
 ## Message or call a customer
 
@@ -58,12 +58,12 @@ For a call, select **Call** in the conversation or **Inbox → Calls → Call ba
 
 The first confirmation screen means the draft is ready; the Pickup handoff is locked only after signing.
 
-## Complete Dropoff
+## Complete Delivery
 
-1. Open the Dropoff stop or search its Order number.
+1. Open the Delivery stop or search its Order number.
 2. Compare places and Pickup photos with delivered cargo.
 3. Add at least one Delivery photo. Mark **Cargo matches pickup photos** and either **No visible damage** or **Report damage instead** with details.
-4. Select **Confirm Dropoff**, then **Open Delivery review**. If prompted, lock Pickup first.
+4. Select **Continue to Delivery review**, then **Open Delivery review**. If prompted, lock Pickup first.
 5. Review evidence and choose **Sign on device** or **SMS code** for the contact. For SMS code, send the code to the displayed masked number and enter the recipient's code. In the prototype, every six-digit code succeeds except `111111`, which demonstrates an invalid code.
 6. Obtain the driver signature, select **Complete Order eBOL** and open POD.
 

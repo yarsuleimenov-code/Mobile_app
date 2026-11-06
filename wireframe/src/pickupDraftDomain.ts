@@ -39,7 +39,7 @@ export interface PickupDraft {
   updatedAt: string
 }
 
-function toDateInput(value: string | undefined, fallback: string) {
+export function toDateInput(value: string | undefined, fallback: string) {
   if (!value) return fallback.slice(0, 10)
   const [month, day, year] = value.split('/')
   return month && day && year ? `${year}-${month}-${day}` : fallback.slice(0, 10)

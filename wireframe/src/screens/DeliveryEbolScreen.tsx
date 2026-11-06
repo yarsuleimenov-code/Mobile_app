@@ -78,7 +78,7 @@ function DeliveryEbolContent() {
     return (
       <div className="cargo-flow">
         <CargoFlowHeader title="Order eBOL" subtitle={`Delivery · Order #${orderNumber}`} />
-        <div className="ebol-not-found"><FileText size={42} /><h2>Delivery evidence required</h2><p>Complete Dropoff verification and capture Delivery photos first.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/dropoff?order=${orderNumber}`)}>Open Dropoff</button></div>
+        <div className="ebol-not-found"><FileText size={42} /><h2>Delivery evidence required</h2><p>Verify the cargo and capture Delivery photos first.</p><button type="button" className="cargo-primary" onClick={() => navigate(`/dropoff?order=${orderNumber}`)}>Open Delivery</button></div>
         <CargoBottomNav />
       </div>
     )

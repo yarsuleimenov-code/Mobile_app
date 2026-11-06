@@ -5,7 +5,7 @@ const demoCargo: Record<string, { groups: DimensionGroup[]; packaging: string; r
   '23343775': {
     groups: [{ id: 'chairs', quantity: 3, length: 24, width: 24, height: 36, weight: 18 }],
     packaging: 'Zaberman', responsible: 'John Doe',
-    comment: '3 dining chairs. Blanket-wrap each chair; protect the legs. Ground-floor pickup in Belmont.',
+    comment: 'Blanket-wrap each chair and protect the legs.',
   },
   '23343778': {
     groups: [

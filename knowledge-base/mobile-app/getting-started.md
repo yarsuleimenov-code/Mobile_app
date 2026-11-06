@@ -2,14 +2,14 @@
 
 **Use this article when:** you are opening the app for the first time.
 
-1. Open **Home**. You will see **Cargo operations**, Pickup and Dropoff actions, and the required **Pre-trip inspection** card.
+1. Open **Home**. You will see **Cargo operations**, Pickup and Delivery actions, and the required **Pre-trip inspection** card.
 2. Before loading the route, complete all eight Pre-trip checks, take the five required camera photos including Dashboard and confirm the vehicle is safe. Any Issue keeps the route locked.
 3. Select **Load today’s route** after the card shows **Vehicle cleared**. The list shows Order number, sequence, time, type and address.
-4. Open **Tasks** to search an Order ID or title and filter All, Pickup or Dropoff.
+4. Open **Tasks** to search an Order ID or title and filter All, Pickup or Delivery.
 5. Select the task card to open its operation. Use **Order details · Spoke preview** to inspect the order before recording cargo.
 6. Use **Scan** to look up a PlaceID or Order ID; use **More** for Help & Instructions, Cargo places, Interstate and local sync.
 
-**Expected result:** you are on the correct Pickup or Dropoff screen for the Order.
+**Expected result:** you are on the correct Pickup or Delivery screen for the Order.
 
 **Important:** the active build uses local sample tasks. Opening a task does not mark it complete. Administration in More controls test role, branch, connection and devices; it is not a regular field step.
 

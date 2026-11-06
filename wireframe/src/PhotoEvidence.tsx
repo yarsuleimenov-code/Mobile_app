@@ -79,7 +79,7 @@ export function EvidenceQueuePanel({ operationId }: { operationId?: string }) {
     {needsRetry ? <p>Transfer failed. Photos remain saved on this device. Check your connection and retry.</p> : null}
     <details><summary>Queue details · {pendingCount} pending / {items.length + otherPending} items</summary>
       <ul>{(showAll ? items : items.slice(0, 8)).map((item) => <li key={item.id}><span>{item.label}</span><small className={`photo-status photo-status--${item.status}`}>{syncLabels[item.status]}</small></li>)}</ul>
-      {otherPending ? <p>Other local changes: {otherPending} pending (saved Pickup / Dropoff records).</p> : null}
+      {otherPending ? <p>Other local changes: {otherPending} pending (saved Pickup / Delivery records).</p> : null}
       {items.length > 8 ? <button type="button" onClick={() => setShowAll((current) => !current)}>{showAll ? 'Show less' : `Show all ${items.length} items`}</button> : null}
     </details>
   </section>

@@ -13,7 +13,7 @@ import { useCommunications } from '../communicationStore'
 import { useCargo } from '../cargoStore'
 import {
   addPickupDraftGroup, createPickupDraft, pickupDraftGroups, pickupDraftToRecord, pickupDraftVolume, pickupDraftWeight,
-  recordPickupDraftGroupEdit, removePickupDraftGroup, updatePickupDraftGroup, updatePickupMeasurementNote,
+  recordPickupDraftGroupEdit, removePickupDraftGroup, toDateInput, updatePickupDraftGroup, updatePickupMeasurementNote,
   type PickupDraft,
 } from '../pickupDraftDomain'
 import { findPickupDemoRecord } from '../pickupDemoData'
@@ -24,7 +24,8 @@ import {
 import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { teamContactsPath } from '../teamContactsDomain'
-import { OrderStopNavigation } from '../StopNavigation'
+import { OrderStopNavigation, useOrderStopContext } from '../StopNavigation'
+import { OrderStopSummary } from '../OrderStopSummary'
 
 const groupFields: Array<{ field: 'quantity' | 'length' | 'width' | 'height' | 'weight'; label: string; suffix: string }> = [
   { field: 'quantity', label: 'Qty', suffix: 'pcs' },
@@ -50,6 +51,9 @@ function PickupCaptureForm() {
   const { getThread } = useCommunications()
   const { branch } = usePrototypeScenario()
   const requestedOrder = normalizeOrderNumber(params.get('order') ?? '11155599')
+  const stopId = params.get('stop') ?? undefined
+  const stop = useOrderStopContext(requestedOrder, 'pickup', stopId)
+  const plannedDate = stop.plannedDate
   const currentRecord = findRecord(requestedOrder)
   const [mode] = useState<'standard' | 'supplemental'>(() => {
     const persistedEbol = findOrderEbol(readOrderEbols(), requestedOrder)
@@ -58,8 +62,13 @@ function PickupCaptureForm() {
   const [restoredDraft] = useState(() => findPickupDraft(readPickupDrafts(), requestedOrder, mode))
   const [wasRestored] = useState(Boolean(restoredDraft))
   const demoRecord = findPickupDemoRecord(requestedOrder)
-  const [draft, setDraft] = useState<PickupDraft>(() => restoredDraft ?? {
-    ...createPickupDraft(currentRecord ?? demoRecord, branch, mode), orderNumber: requestedOrder,
+  const [draft, setDraft] = useState<PickupDraft>(() => {
+    const initial = restoredDraft ?? {
+      ...createPickupDraft(currentRecord ?? demoRecord, branch, mode), orderNumber: requestedOrder,
+    }
+    if (!plannedDate || mode === 'supplemental') return initial
+    const pickupDate = toDateInput(plannedDate, initial.pickupDate)
+    return pickupDate === initial.pickupDate ? initial : { ...initial, pickupDate, updatedAt: new Date().toISOString() }
   })
   const [orderLookup, setOrderLookup] = useState(requestedOrder)
   const changingOrder = normalizeOrderNumber(orderLookup) !== draft.orderNumber
@@ -158,8 +167,18 @@ function PickupCaptureForm() {
 
   return (
     <div className="cargo-flow">
-      <CargoFlowHeader title={title} subtitle={`Order #${draft.orderNumber || 'new'}`} />
+      <CargoFlowHeader title={title} />
       <form className="pickup-form pickup-draft-form" onSubmit={(event) => { event.preventDefault(); submit() }}>
+        <OrderStopSummary order={draft.orderNumber} name={operationalName(details, draft.orderNumber, stop.task?.title)}
+          operation="pickup" task={stop.task} plannedDate={plannedDate} actions={<>
+            <button type="button" className="order-details-action" onClick={() => navigate(teamContactsPath(draft.orderNumber, 'pickup', !changingOrder ? stopId : undefined))}>Order details</button>
+            <button type="button" className="order-message-button" aria-label={'Message ' + (communicationThread?.customerName ?? 'customer') + ' by SMS'} onClick={() => navigate(communicationPath(draft.orderNumber))}>
+              <MessageCircleMore size={17} /> SMS{communicationThread?.unreadCount ? <b>{communicationThread.unreadCount}</b> : null}
+            </button>
+          </>}>
+          {details.special_cargo_type ? <p>Special Cargo · see handling details</p> : null}
+          <label>Order comment<textarea rows={2} value={draft.orderComment} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'orderComment', event.target.value))} /></label>
+        </OrderStopSummary>
         <div className={`draft-save-state draft-save-state--${saveState}`} role="status">
           {saveState === 'saving' ? <Clock3 size={17} /> : <Save size={17} />}
           <span><strong>{saveState === 'saving' ? 'Saving draft…' : saveState === 'saved' ? 'Draft autosaved' : 'Draft could not be saved'}</strong><small>{wasRestored ? 'Restored after reopening this operation' : 'Changes are saved on this device'}</small></span>
@@ -172,16 +191,12 @@ function PickupCaptureForm() {
           </section>
         ) : null}
 
-        <div className="two-column-fields">
+        {!plannedDate ? <div className="two-column-fields">
           <label>Order #<input inputMode="numeric" value={orderLookup} disabled={draft.mode === 'supplemental'} onChange={(event) => setOrderLookup(event.target.value)} /></label>
           <label>Pickup date<input type="date" value={draft.pickupDate} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'pickupDate', event.target.value))} /></label>
-        </div>
+        </div> : null}
         {changingOrder ? <div className="measurement-warning"><p>You are viewing order #{draft.orderNumber}. Open the selected order to load its own cargo and draft.</p><button type="button" disabled={!normalizeOrderNumber(orderLookup) || saveState !== 'saved'} onClick={() => navigate(`/pickup?order=${normalizeOrderNumber(orderLookup)}`)}>Open selected order</button></div> : null}
-        <OrderStopNavigation order={normalizeOrderNumber(draft.orderNumber)} operation="pickup" stopId={params.get('stop') ?? undefined} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Open the selected order before navigating' : undefined} />
-        <section className="order-name-summary"><span><strong>{operationalName(details, draft.orderNumber)}</strong><small>{details.special_cargo_type ? 'Special Cargo · see handling details' : 'Operational name'}</small></span><div className="order-summary-actions"><button type="button" className="order-message-button" aria-label={'Message ' + (communicationThread?.customerName ?? 'customer') + ' by SMS'} onClick={() => navigate(communicationPath(normalizeOrderNumber(draft.orderNumber)))}><MessageCircleMore size={17} /> SMS{communicationThread?.unreadCount ? <b>{communicationThread.unreadCount}</b> : null}</button><button type="button" onClick={() => navigate(teamContactsPath(normalizeOrderNumber(draft.orderNumber), 'pickup', !changingOrder ? params.get('stop') ?? undefined : undefined))}>Order details</button></div></section>
-        <label>Responsible manager<select value={draft.responsible} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'responsible', event.target.value))}><option>John Doe</option><option>Maria Lopez</option><option>Daniel Kim</option></select></label>
-        <label>Packaging<select value={draft.packaging} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'packaging', event.target.value))}><option>Customer</option><option>Zaberman</option><option>Mixed</option></select></label>
-        <label>Order comment<textarea rows={2} value={draft.orderComment} onChange={(event) => setDraft((current) => updateDraftMeta(current, 'orderComment', event.target.value))} /></label>
+        <OrderStopNavigation order={draft.orderNumber} operation="pickup" stop={stop} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Open the selected order before navigating' : undefined} />
 
         <section className="cargo-totals">
           <label><span>{draft.mode === 'supplemental' ? 'Added places' : 'Places'}</span><span><input aria-label="Places" value={draft.places.length} readOnly /> pcs</span></label>

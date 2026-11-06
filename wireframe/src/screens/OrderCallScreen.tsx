@@ -6,7 +6,7 @@ import { communicationPath, CORPORATE_SMS_NUMBER_LABEL, formatCallDuration } fro
 import { useCommunications } from '../communicationStore'
 import { useCargo } from '../cargoStore'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
-import { mockTodaySpokeRoute } from '../spokeDomain'
+import { mockTodaySpokeRoute, spokeOperationLabels } from '../spokeDomain'
 import type { CustomerCall } from '../callDomain'
 
 type CallStatus = 'ready' | 'calling' | 'connected' | 'ended'
@@ -85,7 +85,7 @@ export function OrderCallScreen() {
 
       <section className="call-identity">
         <span><small>Calling from</small><strong>{CORPORATE_SMS_NUMBER_LABEL}</strong></span>
-        <span><small>Related order</small><strong>#{orderNumber} · {thread.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</strong></span>
+        <span><small>Related order</small><strong>#{orderNumber} · {spokeOperationLabels[thread.operation]}</strong></span>
         <span><small>Route date</small><strong>{route.tasks.some((task) => task.externalId === orderNumber) ? route.workDate : 'Unavailable'}</strong></span>
       </section>
 

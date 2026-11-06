@@ -10,7 +10,7 @@ import { mockTodaySpokeRoute, type SpokeRoute } from './spokeDomain'
 import { getOrderDocumentNavigation } from './orderEbolNavigation'
 
 export const rehearsalPresets = [
-  { id: 'normal', order: '99003001', source: '23343775', title: 'Normal Pickup', detail: '1 · Small order → Pickup → Dropoff → POD', start: 'pickup' },
+  { id: 'normal', order: '99003001', source: '23343775', title: 'Normal Pickup', detail: '1 · Small order → Pickup → Delivery → POD', start: 'pickup' },
   { id: 'multiple', order: '99007002', source: '23343778', title: 'Multiple dimension groups', detail: '2 · Edit Qty, add and remove groups; verify labels', start: 'pickup' },
   { id: 'offline', order: '99003002', source: '23343775', title: 'Offline + photo error', detail: '3 · Save → reopen → Online → Retry → Success', start: 'pickup' },
   { id: 'printer', order: '99007004', source: '23343775', title: 'Printer unavailable', detail: '4 · Preview retained selection; enable printer for print/reprint', start: 'labels' },

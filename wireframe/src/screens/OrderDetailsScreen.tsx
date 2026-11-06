@@ -1,4 +1,4 @@
-import { MessageCircleMore } from 'lucide-react'
+import { MessageCircleMore, RefreshCw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
@@ -8,10 +8,12 @@ import { useCommunications } from '../communicationStore'
 import { useCargo } from '../cargoStore'
 import { canEditInternalName, operationalName, orderDetailsIssues, specialCargoLabels, type OrderDetailsEdit } from '../orderDetailsDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
-import { mockTodaySpokeRoute, spokeTaskPath } from '../spokeDomain'
+import { mockTodaySpokeRoute, productLines, spokeTaskPath, spokeOperationLabels } from '../spokeDomain'
 import { TeamContactsCard } from '../TeamContactsCard'
 import { orderContextTasks } from '../teamContactsDomain'
 import { getOrderRequirements } from '../orderRequirements'
+import { getOrderReferenceData } from '../orderReferenceData'
+import { ReferencePhotoGallery } from '../ReferencePhotoGallery'
 
 export function OrderDetailsScreen() {
   const { orderNumber = '' } = useParams()
@@ -21,7 +23,7 @@ export function OrderDetailsScreen() {
 function OrderDetailsForm({ order }: { order: string }) {
   const { getOrderDetails, saveOrderDetails, getOrderCargo, spokeRoute } = useCargo()
   const { getThread } = useCommunications()
-  const { role } = usePrototypeScenario()
+  const { role, network } = usePrototypeScenario()
   const current = getOrderDetails(order)
   const cargo = getOrderCargo(order)
   const route = spokeRoute ?? mockTodaySpokeRoute
@@ -33,6 +35,12 @@ function OrderDetailsForm({ order }: { order: string }) {
   const tasks = orderContextTasks(route.tasks, order, operation)
   const matching = orderContextTasks(tasks, order, operation, params.get('stop') || undefined)
   const task = matching.length === 1 ? matching[0] : undefined
+  const referenceKey = `zaberman-order-reference:v1:${order}`
+  const [refreshed, setRefreshed] = useState(() => {
+    try { return localStorage.getItem(referenceKey) === 'latest' }
+    catch { return false }
+  })
+  const [refreshMessage, setRefreshMessage] = useState('')
   const [edit, setEdit] = useState<OrderDetailsEdit>(() => ({ internal_name: current.internal_name,
     special_cargo_type: current.special_cargo_type, special_cargo_details: current.special_cargo_details }))
   const [message, setMessage] = useState('')
@@ -43,6 +51,24 @@ function OrderDetailsForm({ order }: { order: string }) {
   const issues = orderDetailsIssues({ ...current, ...edit })
   const quantity = cargo ? calculatePieces(cargo.dimensionGroups) : null
   const thread = getThread(order)
+  const name = operationalName(current, order, task?.title)
+  const products = productLines(task?.products)
+  const requirements = getOrderRequirements(order)
+  const reference = getOrderReferenceData(order, refreshed)
+  const refreshOrder = () => {
+    const latest = getOrderReferenceData(order, true)
+    if (latest.photos.length === reference.photos.length) {
+      setRefreshMessage('Order is up to date.')
+      return
+    }
+    try {
+      localStorage.setItem(referenceKey, 'latest')
+      setRefreshed(true)
+      setRefreshMessage('Order refreshed. New reference photo available.')
+    } catch {
+      setRefreshMessage('Could not refresh order. Try again.')
+    }
+  }
   const change = (patch: Partial<OrderDetailsEdit>) => { setEdit((value) => ({ ...value, ...patch })); setMessage('') }
   const save = () => {
     try {
@@ -56,9 +82,30 @@ function OrderDetailsForm({ order }: { order: string }) {
   return <div className="cargo-flow">
     <CargoFlowHeader title="Order details" subtitle={`Order #${order}`} />
     <main className="pickup-form order-details-body">
-      <section className="order-name-summary"><strong>{operationalName(current, order)}</strong><span>Qty <b>{quantity ?? '—'}</b> pcs</span></section>
-      <TeamContactsCard context={{ order, name: operationalName(current, order), quantity, task, workDate: route.workDate,
-        handling: current.special_cargo_type ? `${specialCargoLabels[current.special_cargo_type]} · ${current.special_cargo_details}` : '', comment: cargo?.orderComment ?? '', requirements: getOrderRequirements(order) }}
+      <section className="order-name-summary"><strong>{name}</strong><span>Places <b>{quantity ?? '—'}</b></span></section>
+      <section className="order-detail-card order-reference-card" aria-labelledby="product-list-title">
+        <h2 id="product-list-title">Product List</h2>
+        {products.length ? <ul>{products.map((product, index) => <li key={`${index}:${product}`}>{product}</li>)}</ul> : <p>Product list unavailable.</p>}
+      </section>
+      {requirements || reference.coi || reference.brokerComment ? (
+        <section className="order-requirements" aria-labelledby="order-requirements-title">
+          <h2 id="order-requirements-title">Requirements</h2>
+          {requirements ? <p>{requirements}</p> : null}
+          {reference.coi ? <div><h3>COI</h3><p>{reference.coi}</p></div> : null}
+          {reference.brokerComment ? <div><h3>Broker comment</h3><p>{reference.brokerComment}</p></div> : null}
+        </section>
+      ) : null}
+      <section className="order-detail-card order-reference-card" aria-labelledby="reference-photos-title">
+        <div className="reference-photo-heading">
+          <h2 id="reference-photos-title">Reference photos</h2>
+          <button type="button" className="ebol-secondary" onClick={refreshOrder} disabled={network === 'offline'}><RefreshCw size={16} aria-hidden="true" /> Refresh order</button>
+        </div>
+        {network === 'offline' ? <p>Connect to the internet to refresh the order.</p> : null}
+        {refreshMessage ? <p role="status">{refreshMessage}</p> : null}
+        <ReferencePhotoGallery photos={reference.photos} />
+      </section>
+      <TeamContactsCard context={{ order, name, quantity, task, workDate: route.workDate,
+        handling: current.special_cargo_type ? `${specialCargoLabels[current.special_cargo_type]} · ${current.special_cargo_details}` : '', comment: cargo?.orderComment ?? '', requirements }}
         tasks={tasks} focusContacts={params.get('focus') === 'team'} onSelectStop={(stopId) => { const next = new URLSearchParams(params); next.delete('focus'); if (stopId) next.set('stop', stopId); else next.delete('stop'); setParams(next, { replace: true }) }} />
       {showEditors ? <><section className="order-detail-card">
         <h2>Names</h2>
@@ -97,7 +144,7 @@ function OrderDetailsForm({ order }: { order: string }) {
       </details>
       {showEditors ? <p className="order-role-note">Changes apply to current order data. Previously signed document versions remain unchanged.</p> : null}
       <Link className="order-message-action" to={communicationPath(order)}><MessageCircleMore size={19} /><span><strong>Message customer</strong><small>{thread?.customerName ?? 'Customer contact'} · {thread?.unreadCount ? `${thread.unreadCount} unread` : 'Corporate SMS'}</small></span></Link>
-      <Link className="ebol-secondary" to={task ? spokeTaskPath(task, route.workDate) : `/${operation === 'dropoff' ? 'dropoff' : 'pickup'}?order=${order}`}>Open {(task?.operation ?? operation) === 'dropoff' ? 'Dropoff' : 'Pickup'}</Link>
+      <Link className="ebol-secondary" to={task ? spokeTaskPath(task, route.workDate) : `/${operation === 'dropoff' ? 'dropoff' : 'pickup'}?order=${order}`}>Open {spokeOperationLabels[task?.operation ?? operation ?? 'pickup']}</Link>
     </main><CargoBottomNav />
   </div>
 }

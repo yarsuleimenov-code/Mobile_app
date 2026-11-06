@@ -3,6 +3,8 @@
   --cargo-orange: #ff4b0a;
   --cargo-blue: #0c61d8;
   --cargo-green: #00945f;
+  --pickup-color: #6434a8;
+  --delivery-color: #176344;
   --cargo-line: #d9e0e7;
   --cargo-muted: #687586;
 }
@@ -69,8 +71,8 @@ textarea { font: inherit; }
   transition: transform .15s ease;
 }
 .cargo-action:active { transform: scale(.98); }
-.cargo-action--pickup { color: var(--cargo-orange); }
-.cargo-action--dropoff { color: var(--cargo-navy); }
+.cargo-action--pickup { color: var(--pickup-color); }
+.cargo-action--dropoff { color: var(--delivery-color); }
 .cargo-action strong { font-size: 16px; }
 .cargo-action:hover { background: #f3f7fc; }
 .cargo-action:focus-visible { outline: 2px solid var(--cargo-blue); outline-offset: 2px; }
@@ -158,8 +160,9 @@ textarea { font: inherit; }
 .spoke-task-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .spoke-task-heading time { flex-shrink: 0; font-size: 13px; font-weight: 700; white-space: nowrap; }
 .spoke-task-name { margin-top: 3px; font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
-.spoke-task-operation--pickup { color: var(--cargo-orange); }
-.spoke-task-operation--dropoff { color: var(--cargo-navy); }
+.spoke-task-operation { display: inline-block; padding: 2px 7px; border-radius: 6px; font-size: 12px; line-height: 1.4; }
+.spoke-task-operation--pickup { color: var(--pickup-color); background: #eee6fb; }
+.spoke-task-operation--dropoff { color: var(--delivery-color); background: #e2f4eb; }
 .spoke-task-empty { margin-top: 8px; padding: 26px 15px; color: var(--cargo-muted); background: #f5f7f9; border-radius: 9px; font-size: 13px; text-align: center; }
 
 .cargo-flow-header {
@@ -844,11 +847,34 @@ textarea { font: inherit; }
 .order-summary-actions button { min-height: 44px; }
 .order-name-summary:has(.order-summary-actions) { flex-wrap: wrap; }
 .order-summary-actions { flex-wrap: wrap; }
+.order-stop-summary { display: grid; gap: 12px; margin-bottom: 14px; padding: 14px; border: 1px solid var(--cargo-line); border-radius: 10px; background: #f3f7fc; color: var(--cargo-navy); font-size: 13px; overflow-wrap: anywhere; }
+.order-stop-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.order-stop-title h2 { margin: 0; font-size: 19px; line-height: 1.25; }
+.order-stop-title span { color: var(--cargo-muted); font-weight: 700; }
+.order-stop-summary h3 { margin: 0 0 4px; font-size: 13px; }
+.order-stop-summary p { margin: 0; line-height: 1.45; white-space: pre-line; }
+.order-stop-summary ul { margin: 0; padding-left: 18px; line-height: 1.55; }
+.order-stop-summary label { display: grid; gap: 6px; font-weight: 800; }
+.order-stop-plan { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.order-stop-summary button { border: 1px solid #b6cff1; border-radius: 7px; padding: 7px 10px; background: white; color: var(--cargo-blue); font: inherit; cursor: pointer; }
+.order-stop-summary .order-details-action { background: var(--cargo-blue); border-color: var(--cargo-blue); color: white; font-weight: 800; padding-inline: 14px; }
 .team-contacts-card h2 { display: flex; align-items: center; gap: 8px; }
 .order-requirements { padding: 12px; border-left: 3px solid #c18b28; border-radius: 8px; background: #fff6e3; overflow-wrap: anywhere; }
 .order-requirements h2 { margin: 0 0 8px; font-family: "Segoe UI", Arial, sans-serif; font-size: 17px; font-weight: 700; }
 .order-requirements p { margin: 0; font-family: "Segoe UI", Arial, sans-serif; font-size: 16px; line-height: 1.55; white-space: pre-wrap; }
-.order-requirements small { display: block; margin-top: 8px; color: #715624; font-size: 12px; }
+.order-requirements > div { margin-top: 12px; }
+.order-requirements h3 { margin: 0 0 4px; font-size: 13px; }
+.order-reference-card p { margin: 0; font-size: 13px; line-height: 1.45; }
+.order-reference-card ul { margin: 0; padding-left: 20px; line-height: 1.6; }
+.reference-photo-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.reference-photo-heading h2 { margin: 0; }
+.reference-photo-heading button { display: inline-flex; align-items: center; gap: 6px; }
+.reference-photo-heading button:disabled { opacity: .55; cursor: not-allowed; }
+.reference-photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.reference-photo-grid button { padding: 0; overflow: hidden; border: 1px solid var(--cargo-line); border-radius: 8px; background: white; color: var(--cargo-navy); font: inherit; cursor: pointer; }
+.reference-photo-grid img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; background: #f3f7fc; }
+.reference-photo-grid span { display: block; padding: 6px; font-size: 12px; }
+.reference-photo-preview img { display: block; width: 100%; max-height: 70dvh; object-fit: contain; }
 .team-order-context, .team-contacts-card, .order-handling-summary, .order-note-summary { padding: 0 0 12px; border-bottom: 1px solid var(--cargo-line); overflow-wrap: anywhere; }
 .team-order-context > h2, .team-contacts-card > h2, .order-handling-summary > h2, .order-note-summary > h2 { margin: 0 0 8px; font-size: 16px; }
 .order-details-body > .order-name-summary { padding: 0 0 12px; background: transparent; border-radius: 0; border-bottom: 1px solid var(--cargo-line); font-size: 16px; }
@@ -885,7 +911,7 @@ textarea { font: inherit; }
 .team-contact-list small { display: block; color: var(--cargo-muted); margin-bottom: 3px; font-size: 12px; }
 .team-contact-list strong { font-size: 16px; }
 .team-contact-list a { color: var(--cargo-blue); font-size: 16px; overflow-wrap: anywhere; min-height: 44px; display: flex; align-items: center; }
-.order-name-summary .order-message-button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border-color: #9ebeea; font-weight: 800; }
+.order-stop-summary .order-message-button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border-color: #9ebeea; font-weight: 800; }
 .order-message-button b { min-width: 19px; height: 19px; padding: 0 5px; display: grid; place-items: center; border-radius: 10px; color: #fff; background: #d7473f; font-size: 9px; }
 @media (max-width: 359px) {
   .order-name-summary { align-items: stretch; flex-direction: column; }

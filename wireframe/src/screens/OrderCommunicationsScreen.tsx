@@ -7,7 +7,7 @@ import { useCommunications } from '../communicationStore'
 import { useCargo } from '../cargoStore'
 import { operationalName } from '../orderDetailsDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
-import { mockTodaySpokeRoute, spokeTaskPath } from '../spokeDomain'
+import { mockTodaySpokeRoute, spokeTaskPath, spokeOperationLabels } from '../spokeDomain'
 
 const statusMeta: Record<SmsMessage['status'], { label: string; icon: typeof Check }> = {
   queued: { label: 'Queued until online', icon: Clock3 },
@@ -55,7 +55,7 @@ export function OrderCommunicationsScreen() {
   }
 
   return <div className="cargo-flow message-flow">
-    <CargoFlowHeader title={thread.customerName} subtitle={`Order #${orderNumber} · ${thread.operation === 'pickup' ? 'Pickup' : 'Dropoff'}`} />
+    <CargoFlowHeader title={thread.customerName} subtitle={`Order #${orderNumber} · ${spokeOperationLabels[thread.operation]}`} />
     <main className="message-thread-screen">
       <section className="message-order-context">
         <div><strong>{orderTitle}</strong><span>{task?.address ?? 'Order address unavailable'}</span><span>Route date: {task ? route.workDate : 'Unavailable'}</span></div>

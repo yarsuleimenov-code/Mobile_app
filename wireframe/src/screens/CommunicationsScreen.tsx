@@ -12,7 +12,7 @@ import {
 } from '../communicationDomain'
 import { useCommunications } from '../communicationStore'
 import { useCargo } from '../cargoStore'
-import { mockTodaySpokeRoute } from '../spokeDomain'
+import { mockTodaySpokeRoute, spokeOperationLabels } from '../spokeDomain'
 import { CustomerCallsList } from './CustomerCallsList'
 
 const time = (value: string) => new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
@@ -67,7 +67,7 @@ export function CommunicationsScreen() {
               <span className="communication-avatar">{thread.customerName.split(' ').map((part) => part[0]).join('').slice(0, 2)}</span>
               <span className="communication-thread-main">
                 <span><strong>{thread.customerName}</strong><time>{last ? time(last.createdAt) : ''}</time></span>
-                <small>Order #{thread.orderNumber} · {thread.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</small>
+                <small>Order #{thread.orderNumber} · {spokeOperationLabels[thread.operation]}</small>
                 <small>Route date: {route.tasks.some((task) => task.externalId === thread.orderNumber) ? route.workDate : 'Unavailable'}</small>
                 <p>{last?.body ?? 'No messages yet'}</p>
               </span>

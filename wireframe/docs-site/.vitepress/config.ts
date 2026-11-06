@@ -16,7 +16,7 @@ const ruSidebar = [
     items: [
       { text: 'Первое знакомство', link: '/ru/knowledge-base/getting-started' },
       { text: 'Pickup', link: '/ru/knowledge-base/pickup' },
-      { text: 'Dropoff', link: '/ru/knowledge-base/dropoff' },
+      { text: 'Delivery', link: '/ru/knowledge-base/dropoff' },
       { text: 'Same Day', link: '/ru/knowledge-base/same-day' },
       { text: 'Scan и Cargo', link: '/ru/knowledge-base/scan-and-cargo' },
       {
@@ -46,7 +46,7 @@ const enSidebar = [
     items: [
       { text: 'Getting Started', link: '/en/knowledge-base/getting-started' },
       { text: 'Pickup', link: '/en/knowledge-base/pickup' },
-      { text: 'Dropoff', link: '/en/knowledge-base/dropoff' },
+      { text: 'Delivery', link: '/en/knowledge-base/dropoff' },
       { text: 'Same Day', link: '/en/knowledge-base/same-day' },
       { text: 'Scan and Cargo', link: '/en/knowledge-base/scan-and-cargo' },
       {
@@ -97,7 +97,7 @@ export default defineConfig({
             text: 'Операции',
             items: [
               { text: 'Pickup', link: '/ru/knowledge-base/pickup' },
-              { text: 'Dropoff', link: '/ru/knowledge-base/dropoff' },
+              { text: 'Delivery', link: '/ru/knowledge-base/dropoff' },
               { text: 'Same Day', link: '/ru/knowledge-base/same-day' },
               { text: 'Scan и Cargo', link: '/ru/knowledge-base/scan-and-cargo' },
               {
@@ -136,7 +136,7 @@ export default defineConfig({
             text: 'Operations',
             items: [
               { text: 'Pickup', link: '/en/knowledge-base/pickup' },
-              { text: 'Dropoff', link: '/en/knowledge-base/dropoff' },
+              { text: 'Delivery', link: '/en/knowledge-base/dropoff' },
               { text: 'Same Day', link: '/en/knowledge-base/same-day' },
               { text: 'Scan and Cargo', link: '/en/knowledge-base/scan-and-cargo' },
               {

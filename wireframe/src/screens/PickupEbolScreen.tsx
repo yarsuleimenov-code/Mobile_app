@@ -123,7 +123,7 @@ function PickupEbolContent() {
           ))}
           <p className="ebol-lock-note">Previously signed facts stay unchanged. Add physical places through a Supplemental Pickup with a new document version and new confirmations.</p>
           <button type="button" className="ebol-secondary ebol-add-supplement" onClick={() => navigate(`/pickup?order=${orderNumber}&supplemental=1`)}><FilePlus2 size={19} /> Add places · Supplemental Pickup</button>
-          <div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(orderEbol.delivery.lockedAt ? `/orders/${orderNumber}/ebol/pod` : `/dropoff?order=${orderNumber}`)}>{orderEbol.delivery.lockedAt ? 'View POD' : 'Continue to Dropoff'}</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>
+          <div className="ebol-success-actions"><button type="button" className="cargo-primary" onClick={() => navigate(orderEbol.delivery.lockedAt ? `/orders/${orderNumber}/ebol/pod` : `/dropoff?order=${orderNumber}`)}>{orderEbol.delivery.lockedAt ? 'View POD' : 'Continue to Delivery'}</button><button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>
         </main>
         <CargoBottomNav />
       </div>

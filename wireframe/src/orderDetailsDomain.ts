@@ -23,8 +23,8 @@ export function initialOrderDetails(order: string, title = ''): OrderDetails {
     special_cargo_type: order === '23343782' ? 'fragile' : order === '23343778' ? 'oversized' : '',
     special_cargo_details: order === '23343782' ? 'Glass top. Keep upright; protect corners.' : order === '23343778' ? 'Two-person lift. Check doorway clearance before moving the sofa.' : '', history: [] }
 }
-export function operationalName(details: OrderDetails, order: string) {
-  return details.internal_name.trim() || details.trade_name.trim() || `Order #${order}`
+export function operationalName(details: OrderDetails, order: string, fallbackName?: string) {
+  return details.internal_name.trim() || details.trade_name.trim() || fallbackName?.trim() || `Order #${order}`
 }
 export function canEditInternalName(role: Role, details: OrderDetails) {
   return role === 'dispatcher' || (role === 'supervisor' && !details.internal_name.trim())

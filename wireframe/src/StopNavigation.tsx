@@ -3,7 +3,7 @@ import { useState, type MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useCargo } from './cargoStore'
 import { googleMapsDirectionsUrl } from './externalNavigationDomain'
-import { mockTodaySpokeRoute, type SpokeOperation, type SpokeTask } from './spokeDomain'
+import { mockTodaySpokeRoute, spokeOperationLabels, type SpokeOperation, type SpokeTask } from './spokeDomain'
 import { orderContextTasks, teamContactsPath } from './teamContactsDomain'
 
 export function StopNavigation({ task, blockedMessage, beforeNavigate, unavailableMessage = 'Address unavailable', showContext = true, compact = false }: {
@@ -22,8 +22,8 @@ export function StopNavigation({ task, blockedMessage, beforeNavigate, unavailab
     if (beforeNavigate && !beforeNavigate()) { event.preventDefault(); setSaveFailed(true) }
     else setSaveFailed(false)
   }
-  return <section className={`stop-navigation${compact ? ' stop-navigation-compact' : ''}`} aria-label={task ? `Directions for ${task.operation} stop ${task.sequence}, order ${task.externalId}` : 'Stop directions'}>
-    {task && showContext && !compact ? <small>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'} · Stop {task.sequence} · {task.scheduledTime}</small> : null}
+  return <section className={`stop-navigation${compact ? ' stop-navigation-compact' : ''}`} aria-label={task ? `Directions for ${spokeOperationLabels[task.operation]} stop ${task.sequence}, order ${task.externalId}` : 'Stop directions'}>
+    {task && showContext && !compact ? <small>{spokeOperationLabels[task.operation]} · Stop {task.sequence} · {task.scheduledTime}</small> : null}
     <p className="stop-navigation-address">{separator >= 0 ? <>{address.slice(0, separator + 1)}<br />{address.slice(separator + 1).trim()}</> : address || unavailableMessage}</p>
     {url ? <><div className="stop-navigation-actions">
       {blockedMessage ? <button type="button" disabled aria-label={`Navigate unavailable: ${blockedMessage}`} title={blockedMessage}><Navigation size={compact ? 20 : 18} aria-hidden="true" />{!compact ? 'Navigate' : null}</button> : <a href={url} target="_blank" rel="noopener noreferrer" onClick={open} aria-label={`Navigate to ${address}`} title="Navigate · Google Maps"><Navigation size={compact ? 20 : 18} aria-hidden="true" />{!compact ? 'Navigate' : null}</a>}
@@ -34,14 +34,21 @@ export function StopNavigation({ task, blockedMessage, beforeNavigate, unavailab
   </section>
 }
 
-export function OrderStopNavigation({ order, operation, stopId, beforeNavigate, blockedMessage }: {
-  order: string; operation: SpokeOperation; stopId?: string; beforeNavigate?: () => boolean; blockedMessage?: string
-}) {
+export function useOrderStopContext(order: string, operation: SpokeOperation, stopId?: string) {
   const { spokeRoute } = useCargo()
-  const tasks = orderContextTasks((spokeRoute ?? mockTodaySpokeRoute).tasks, order, operation, stopId)
+  const route = spokeRoute ?? mockTodaySpokeRoute
+  const tasks = orderContextTasks(route.tasks, order, operation, stopId)
   const task = tasks.length === 1 ? tasks[0] : undefined
+  return { task, ambiguous: tasks.length > 1, plannedDate: stopId && task ? route.workDate : undefined }
+}
+
+export function OrderStopNavigation({ order, operation, stop, beforeNavigate, blockedMessage }: {
+  order: string; operation: SpokeOperation; stop: ReturnType<typeof useOrderStopContext>
+  beforeNavigate?: () => boolean; blockedMessage?: string
+}) {
+  const { task, ambiguous } = stop
   return <div className="order-stop-directions">
-    <StopNavigation key={`${order}:${operation}:${stopId}:${task?.address}`} task={task} beforeNavigate={beforeNavigate} blockedMessage={blockedMessage} unavailableMessage={tasks.length > 1 ? 'Select a stop to navigate' : 'Address unavailable'} />
-    {!task ? <Link to={teamContactsPath(order, operation, undefined, tasks.length <= 1)}>{tasks.length > 1 ? 'Select stop in Order details' : 'Contact team'}</Link> : null}
+    <StopNavigation key={`${order}:${operation}:${task?.stopId}:${task?.address}`} task={task} showContext={!stop.plannedDate} beforeNavigate={beforeNavigate} blockedMessage={blockedMessage} unavailableMessage={ambiguous ? 'Select a stop to navigate' : 'Address unavailable'} />
+    {!task ? <Link to={teamContactsPath(order, operation, undefined, !ambiguous)}>{ambiguous ? 'Select stop in Order details' : 'Contact team'}</Link> : null}
   </div>
 }

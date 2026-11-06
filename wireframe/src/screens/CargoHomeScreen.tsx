@@ -11,7 +11,7 @@ import { useCommunications } from '../communicationStore'
 import { getOrderDocumentNavigation } from '../orderEbolNavigation'
 import { readOrderEbols } from '../orderEbolStore'
 import { readPickupDrafts } from '../pickupDraftStore'
-import { filterSpokeTasks, spokeTaskPath } from '../spokeDomain'
+import { filterSpokeTasks, spokeTaskPath, spokeOperationLabels } from '../spokeDomain'
 import { inspectionStatus, preTripPhotos } from '../preTripInspectionDomain'
 import { usePreTripInspection } from '../preTripInspectionStore'
 import { StopNavigation } from '../StopNavigation'
@@ -46,7 +46,7 @@ export function CargoHomeScreen() {
             <ArrowUp size={20} aria-hidden="true" /><strong>Pickup</strong>
           </button>
           <button type="button" className="cargo-action cargo-action--dropoff" onClick={() => navigate('/dropoff')}>
-            <ArrowDown size={20} aria-hidden="true" /><strong>Dropoff</strong>
+            <ArrowDown size={20} aria-hidden="true" /><strong>Delivery</strong>
           </button>
           </div>
         </section>
@@ -80,13 +80,13 @@ export function CargoHomeScreen() {
         ) : (
           <section className="spoke-tasks" aria-labelledby="spoke-tasks-title">
             <header><div><h2 id="spoke-tasks-title">Today’s stops</h2><p>{spokeRoute.name}</p></div><button type="button" aria-label="Remove today’s stops and return to route loading" title="Return to route loading" onClick={resetSpokeRoute}><RefreshCw /></button></header>
-            <div className="spoke-sync-state"><CheckCircle2 size={20} /><span><strong>{spokeRoute.tasks.length} stops loaded</strong><small>{pickupCount} Pickup · {dropoffCount} Dropoff · Updated just now</small></span></div>
+            <div className="spoke-sync-state"><CheckCircle2 size={20} /><span><strong>{spokeRoute.tasks.length} stops loaded</strong><small>{pickupCount} Pickup · {dropoffCount} Delivery · Updated just now</small></span></div>
             <label className="spoke-task-search"><Search size={19} /><input aria-label="Find stop by External ID" inputMode="numeric" placeholder="Find order by External ID" value={routeQuery} onChange={(event) => setRouteQuery(event.target.value)} /></label>
             <div className="spoke-task-list">
               {visibleTasks.map((task) => (
                 <div className="home-stop-with-directions" key={task.stopId}><button type="button" disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
                   <span className="stop-card-heading"><span className="stop-card-title"><span className="stop-card-order">#{task.externalId}</span> · {operationalName(getOrderDetails(task.externalId), task.externalId)}</span><ChevronRight size={19} aria-hidden="true" /></span>
-                  <span className="stop-card-meta"><span><b className={`spoke-task-operation spoke-task-operation--${task.operation}`}>{task.operation === 'pickup' ? 'Pickup' : 'Dropoff'}</b> · Stop {task.sequence} · {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</span><time>{task.scheduledTime}</time></span>
+                  <span className="stop-card-meta"><span><b className={`spoke-task-operation spoke-task-operation--${task.operation}`}>{spokeOperationLabels[task.operation]}</b> · Stop {task.sequence} · {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</span><time>{task.scheduledTime}</time></span>
                 </button><StopNavigation task={task} compact blockedMessage={!routeUnlocked ? 'Complete Pre-trip inspection before departure' : undefined} /></div>
               ))}
               {!visibleTasks.length ? <div className="spoke-task-empty">No stop found for this External ID.</div> : null}
@@ -127,7 +127,7 @@ export function CargoHomeScreen() {
                 <button type="button" key={record.orderNumber} onClick={() => navigate(target)}>
                   <span className={`record-direction record-direction--${record.status}`}><ArrowUp size={19} /></span>
                   <span className="record-main"><strong>#{record.orderNumber}</strong><small>{operationalName(getOrderDetails(record.orderNumber), record.orderNumber)}</small><small>{record.pickupDate} · Qty {calculatePieces(record.dimensionGroups)} pcs / {weightText(record.totalWeight, summarizeMeasurements(record.dimensionGroups))}</small></span>
-                  <span className={`record-status record-status--${record.status}`}>{record.status === 'pickup_recorded' ? (isLocked ? 'Add places' : 'Edit Pickup') : 'Dropoff complete'}</span>
+                  <span className={`record-status record-status--${record.status}`}>{record.status === 'pickup_recorded' ? (isLocked ? 'Add places' : 'Edit Pickup') : 'Delivery complete'}</span>
                   <ChevronRight size={20} />
                 </button>
               )})}

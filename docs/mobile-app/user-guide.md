@@ -8,14 +8,14 @@ This guide describes the **active** Mobile App interface. Buttons can change loc
 
 ![Home with today's stops](images/home.png)
 
-The first screen is **Cargo operations**. The compact **Manual operations** row contains **Pickup** and **Dropoff** for opening an operation directly, even without a loaded route. For additional places on a signed Pickup, use **Recent operations → Add places** or resume **Supplemental Pickup** from **Pickup drafts**; the original signed version remains locked. The **Pre-trip inspection** card controls access to **Load today’s route**: the route remains locked until the inspection passes. A loaded route displays simulated Spoke stops with Order number, sequence, scheduled time, operation, quantity and address. Search the loaded stops by External ID. Order documents, saved Pickup drafts and Recent operations appear below when there are corresponding local records.
+The first screen is **Cargo operations**. The compact **Manual operations** row contains **Pickup** and **Delivery** for opening an operation directly, even without a loaded route. For additional places on a signed Pickup, use **Recent operations → Add places** or resume **Supplemental Pickup** from **Pickup drafts**; the original signed version remains locked. The **Pre-trip inspection** card controls access to **Load today’s route**: the route remains locked until the inspection passes. A loaded route displays simulated Spoke stops with Order number, sequence, scheduled time, operation, quantity and address. Search the loaded stops by External ID. Order documents, saved Pickup drafts and Recent operations appear below when there are corresponding local records.
 
 The bottom navigation contains:
 
 | Section | Use it for |
 | --- | --- |
-| **Home** | Open Pickup/Dropoff, load today's stops, resume a draft or open an Order eBOL. |
-| **Tasks** | Find a loaded stop by Order ID or title; filter All, Pickup, Dropoff; open its operation or Order details. |
+| **Home** | Open Pickup/Delivery, load today's stops, resume a draft or open an Order eBOL. |
+| **Tasks** | Find a loaded stop by Order ID or title; filter All, Pickup, Delivery; open its operation or Order details. |
 | **Scan** | Look up a PlaceID or Order ID and open the matching cargo record. This tab does not record a loading or delivery event. |
 | **More** | Help & Instructions, Sync now, Cargo places, Interstate operations and Administration. Administration controls role, branch, network, operation outcomes, device availability and local scenario data for demonstrations. |
 
@@ -25,10 +25,10 @@ All paths below are hash routes under the deployed site. A listed route is inter
 
 | Entry | Screen and route | Next useful action |
 | --- | --- | --- |
-| Home | Cargo operations — `#/` | Pickup, Dropoff, load route, Order documents |
+| Home | Cargo operations — `#/` | Pickup, Delivery, load route, Order documents |
 | Home | Pre-trip inspection — `#/pre-trip-inspection` | Complete four checks, 13 photos and driver attestation |
 | Home, after Pre-trip | Post-trip inspection — `#/post-trip-inspection` | Record vehicle condition after use; view completed/archived inspections |
-| Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Dropoff stop; Order details |
+| Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Delivery stop; Order details |
 | Bottom nav | Scan — `#/scan` | Open place or order places |
 | Home / Inbox / Tasks / Pickup draft / Order details | Messages & Calls — `#/communications`, `#/communications?tab=calls`, `#/orders/{number}/communications` | Review messages and call history; send SMS or call the selected Order contact |
 | Bottom nav | More — `#/more` | Help & Instructions, Interstate, Cargo places, Sync now, Administration |
@@ -37,8 +37,8 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | Pickup | Place labels — `#/orders/{number}/labels` | Print/preview, Scan, Pickup review |
 | Pickup | Pickup review — `#/orders/{number}/ebol/pickup` | Pickup signing |
 | Pickup review | Pickup signing — `#/orders/{number}/ebol/pickup/sign` | Locked Pickup review |
-| Home / Tasks | Dropoff — `#/dropoff?order={number}` | Delivery review or Pickup review |
-| Dropoff | Delivery review — `#/orders/{number}/ebol/delivery` | Delivery signing |
+| Home / Tasks | Delivery — `#/dropoff?order={number}` | Delivery review or Pickup review |
+| Delivery | Delivery review — `#/orders/{number}/ebol/delivery` | Delivery signing |
 | Delivery review | Delivery signing — `#/orders/{number}/ebol/delivery/sign` | Completed Order eBOL / POD |
 | Completed Order eBOL | POD — `#/orders/{number}/ebol/pod` | View document versions and actions |
 | More | Help & Instructions — `/Mobile_app/help/ru/` | Open the mobile-friendly Russian guide; switch to English from the documentation menu |
@@ -48,7 +48,7 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | Interstate | Unloading — `#/interstate/unloading/{TripID}` | Review and confirm unloading |
 | Interstate | BOL archive — `#/interstate/bols`; document — `#/interstate/bol/{BOL number}` | View, Save as PDF, Print |
 
-The code contains older Home, Pickup, Dropoff and Same Day components that are not in the active route map; do not use their screens as instructions. [Route source](../../wireframe/src/App.tsx).
+The code contains older Home, Pickup, Delivery and Same Day components that are not in the active route map; do not use their screens as instructions. [Route source](../../wireframe/src/App.tsx).
 
 ## Pre-trip inspection
 
@@ -75,24 +75,26 @@ Drafts and read-only results survive refresh. If saving fails, check device stor
 
 ## Tasks and Order details
 
-In **Order details**, read the expanded **Requirements** block before contacting the team. It shows instructions from **Broker comment**, separately from Handling requirements, Order note and signing comments. The full text and line breaks remain visible; **Copy summary** includes these instructions. Orders without requirements show no empty block. For example, #23343775 includes BOL/packing instructions and #23343780 requests delivery together with #23343775. These are static prototype samples; CRM/Spoke synchronization is not connected.
+In **Order details**, check **Product List** for the items and their quantities. **Places** shows the number of recorded cargo places. **Requirements** shows instructions, COI and the broker comment when available. **Copy summary** includes the transport instructions.
+
+Open a thumbnail in **Reference photos** to inspect the image. This gallery contains photos supplied with the order. Photos captured by the crew are in the Pickup and Delivery flows. To see the update, open order **#11098765** and select **Refresh order**. A second photo appears and remains available when the order is reopened. The prototype uses local order snapshots for this scenario.
 
 ![Tasks list](images/tasks.png)
 
 1. After **Vehicle cleared**, select **Load today’s route** on Home if Today's stops are not shown. This loads a local fixture; it does not connect to Spoke.
-2. Open **Tasks**. Search by Order ID or title, or choose All, Pickup or Dropoff.
+2. Open **Tasks**. Search by Order ID or title, or choose All, Pickup or Delivery.
 3. Select the task card to open the correct operation. The compact **Order details** link opens its stop summary and team contacts; the message icon opens the customer conversation, with a badge for unread messages. **Spoke preview** remains available inside Order details.
 4. Use the screen's own primary action to save or confirm. Opening a task alone does not mark it complete.
 
-The current Tasks list does not show a universal task-status lifecycle. It shows scheduled stops; Pickup, Dropoff and Order eBOL have separate local states. Avoid interpreting a task row as server assignment or completion.
+The current Tasks list does not show a universal task-status lifecycle. It shows scheduled stops; Pickup, Delivery and Order eBOL have separate local states. Avoid interpreting a task row as server assignment or completion.
 
-On Home and Tasks, each stop is enclosed in a compact white card with a thin border, rounded corners and a small gap between cards. The Order number and name form one emphasized heading: **#23343775 · Dining Chair**. Below it are **Pickup/Dropoff · Stop · quantity**, the scheduled time, and the full address with map/copy icons. Long names wrap without truncation. There is no internal divider, shadow or extra action panel.
+On Home and Tasks, each stop is enclosed in a compact white card with a thin border, rounded corners and a small gap between cards. The Order number and name form one emphasized heading: **#23343775 · Dining Chair**. Below it are the purple **Pickup** or green **Delivery** label, the stop number and quantity, the scheduled time, and the full address with map/copy icons. Long names wrap without truncation. There is no internal divider, shadow or extra action panel.
 
 For drivers, **Order details** is a reading screen, not an edit form. Handling requirements, when present, stay expanded before the contacts; orders without requirements do not show a Special Cargo: None card. Expand **Additional details** for External name and Source. **Spoke preview** and **Order change history** start collapsed. Dispatcher/Supervisor editors and their existing permissions are unchanged.
 
 ## Team contacts
 
-Open **Order details** from Pickup/Dropoff or Tasks. The single screen contains a compact stop summary followed by **Team contacts**; there is no separate Team contacts button in the operation. The card shows this order's Dispatcher, Broker and Manager, separately from the customer contact. Select **@nickname** to open Telegram; compose and send the message yourself. **Not assigned** means no contact is available for that role.
+Open **Order details** from Pickup/Delivery or Tasks and scroll to **Team contacts**. The card shows this order's Dispatcher, Broker and Manager, separately from the customer contact. Select **@nickname** to open Telegram; compose and send the message yourself. **Not assigned** means no contact is available for that role.
 
 Check the number, name, quantity, operation, address, scheduled time and handling/order note. If several stops are available, choose **Order stop** first. Select **Copy summary**, then paste it into your message. If Clipboard is blocked, select and copy the displayed **Order summary** manually. Missing data is shown explicitly; OTP/signatures are not copied.
 
@@ -100,11 +102,11 @@ Names and Telegram handles are unverified sample data: agree recipients before e
 
 ## Navigate to a stop
 
-On Home's **Today's stops**, Tasks, Pickup/Dropoff or Order details, check the full address and select **Navigate**. It opens Google Maps in a new tab or supported external app; depending on the device/location, you may see directions preview rather than immediate navigation. The original screen remains open. No arrival, stop completion or order status is recorded by this action.
+On Home's **Today's stops**, Tasks, Pickup/Delivery or Order details, check the full address and select **Navigate**. It opens Google Maps in a new tab or supported external app; depending on the device/location, you may see directions preview rather than immediate navigation. The original screen remains open. No arrival, stop completion or order status is recorded by this action.
 
-On Home/Tasks and Order details, the arrow icon beside the address opens Maps; the overlapping-sheets icon copies the complete address and changes to a checkmark on success. On Pickup/Dropoff, **Copy address** changes to **Copied** without moving the content. **Copy summary** similarly changes to **Summary copied**. If Clipboard is unavailable, select the displayed text manually. For several possible stops, use **Select stop in Order details** and choose **Order stop** first. An unavailable address has no active Navigate link; select **Contact team** to clarify the destination.
+On Home/Tasks and Order details, the arrow icon beside the address opens Maps; the overlapping-sheets icon copies the complete address and changes to a checkmark on success. On Pickup/Delivery, **Copy address** changes to **Copied** without moving the content. **Copy summary** similarly changes to **Summary copied**. If Clipboard is unavailable, select the displayed text manually. For several possible stops, use **Select stop in Order details** and choose **Order stop** first. An unavailable address has no active Navigate link; select **Contact team** to clarify the destination.
 
-On Home, departure actions remain blocked before Pre-trip clearance or after Post-trip completion. When navigating from Pickup/Dropoff, a save error blocks opening Maps: keep the form open, check device storage and retry. Ordinary driving directions do not guarantee commercial-vehicle height/weight/access compliance. Set up navigation while safely stopped, not while driving.
+On Home, departure actions remain blocked before Pre-trip clearance or after Post-trip completion. When navigating from Pickup/Delivery, a save error blocks opening Maps: keep the form open, check device storage and retry. Ordinary driving directions do not guarantee commercial-vehicle height/weight/access compliance. Set up navigation while safely stopped, not while driving.
 
 ## Pickup
 
@@ -115,7 +117,7 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 **When to use:** open a Pickup stop from Home/Tasks or choose Pickup on Home, then select the correct order.
 
 1. Check the **Order #**, operational name and **Order details**. If you need to contact the customer without leaving the order, select **SMS** in the order card; an unread badge shows new replies. If the name or handling details are incomplete, open Order details and fill fields available to your current role.
-2. Set Pickup date, responsible manager, packaging and any order comment.
+2. Check **Items** and **Pickup Notes** in the order card. Add an **Order comment** if needed. For a stop opened from the route, the order number, planned date and address are read-only. When opening Pickup manually, enter the order number and Pickup date.
 3. For each **dimension group**, enter **Qty**, L/W/H in inches and weight per place in pounds. Groups represent places with the same attributes; each place retains its own PlaceID. Add or remove groups as needed. If a measurement cannot be supplied, mark it or leave it unknown and record **Reason for unmeasured values**. The screen displays known totals separately from incomplete places.
 4. Inspect **Cargo photos**. Add with **Take photo** or **Choose from gallery**, select a category and review the thumbnails. An individual photo can be previewed and removed while editing. In this wireframe these actions use local sample assets/metadata.
 5. Wait for the draft status to say saved. The form autosaves locally and can be resumed from Home. Correct any **Order data incomplete** or measurement warnings. **Continue to Pickup review** enables only when the Order number, at least one place, at least one photo and required details are present and the draft saved.
@@ -126,14 +128,14 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 
 **Result:** the Pickup snapshot is locked and read-only. An additional place must be entered as **Supplemental Pickup** with a new document version and fresh confirmations. A saved Pickup draft or a “Pickup draft ready” message alone is not the final handoff confirmation. [Pickup source](../../wireframe/src/screens/PickupCaptureScreen.tsx), [review](../../wireframe/src/screens/PickupEbolScreen.tsx), [signing](../../wireframe/src/screens/PickupSignatureScreen.tsx).
 
-## Dropoff
+## Delivery
 
-![Dropoff verification](images/dropoff.png)
+![Delivery verification](images/dropoff.png)
 
 **Purpose:** compare delivered cargo against Pickup evidence, record condition and confirm the Delivery handoff.
 
-1. Open the Dropoff stop from Home/Tasks or choose **Dropoff** and enter the Order number. Select **Search**. “Order not found” means the current local state has no recorded Pickup for that number.
-2. Check the Order name, number of places, weight, volume, Pickup date, responsible manager and Pickup photos. An unfinished Supplemental Pickup must be completed and signed before Delivery can be confirmed.
+1. Open the Delivery stop from Home/Tasks. The card displays the order number, planned date and address from the route. For a manual lookup, choose **Delivery**, enter the order number and select **Search**. “Order not found” means the current local state has no recorded Pickup for that number.
+2. Check the name, **Items**, **Delivery Notes** and order comment. Review the actual places, weight, volume, Pickup date and Pickup photos separately. Complete and sign any unfinished Supplemental Pickup before confirming Delivery.
 3. Add **Delivery photos** and compare the cargo against Pickup evidence.
 4. Select **Cargo matches pickup photos** only when the comparison is true. Select **No visible damage**, or choose **Report damage instead** and enter **Damage details**. Documented damage does not block the handoff.
 5. Select **Continue to Delivery review**. This saves Delivery evidence; the handoff is not completed yet. If the Pickup snapshot is not locked, use the offered **Open Pickup review** action first.
@@ -144,7 +146,7 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 8. Select **Continue to signing** or **Continue to driver signature**. Obtain the required signatures and select **Complete Order eBOL**.
 9. Open **View POD**. With SMS code, POD records OTP verification, the recipient name and only the last four phone digits; it does not store the code.
 
-**Result:** Dropoff is locally confirmed at step 5; the Order eBOL becomes completed at step 8. Its POD is a view of that completed document, not a third document. [Dropoff source](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx).
+**Result:** Step 5 saves Delivery evidence. The Order eBOL is completed at step 8. Its POD is a view of that completed document, not a third document. [Delivery source](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx).
 
 ## Comments during signing
 
@@ -158,7 +160,7 @@ These rules apply to Pickup, Supplemental Pickup and Delivery:
 
 ## Same Day
 
-The approved process model treats Pickup and Dropoff as separate operations linked to one RouteRun. The active app can show both types of stop on Today's route, but has no routed Same Day progress screen or verified automatic pairing of the two. Complete each stop through its normal Pickup or Dropoff path. Do not assume that finishing Pickup automatically completes or creates a Dropoff task. [Same Day article](../../knowledge-base/mobile-app/same-day.md).
+The approved process model treats Pickup and Delivery as separate operations linked to one RouteRun. The active app can show both types of stop on Today's route, but has no routed Same Day progress screen or verified automatic pairing of the two. Complete each stop through its normal Pickup or Delivery path. Do not assume that finishing Pickup automatically completes or creates a Delivery task. [Same Day article](../../knowledge-base/mobile-app/same-day.md).
 
 ## Customer messages and calls
 
@@ -187,7 +189,7 @@ To look up cargo, open **Scan**. Use **Scan label** if the simulated scanner is 
 
 ## Photos
 
-Pickup and Dropoff forms each require at least one photo for their primary confirmation action in the active UI. The editor supports categories **Before pickup**, **After delivery**, **Packaging**, **Condition** and **Damage**, preview and removal during editing. Pickup and Delivery galleries stay separate in review/POD; Supplemental Pickup has its own photos. The current camera/gallery actions use bundled sample images and local metadata. The app does not establish a production policy for required angles or exact subject matter. [Photo editor](../../wireframe/src/PhotoEvidence.tsx).
+Pickup and Delivery forms each require at least one photo for their primary confirmation action in the active UI. The editor supports categories **Before pickup**, **After delivery**, **Packaging**, **Condition** and **Damage**, preview and removal during editing. Pickup and Delivery galleries stay separate in review/POD; Supplemental Pickup has its own photos. The current camera/gallery actions use bundled sample images and local metadata. The app does not establish a production policy for required angles or exact subject matter. [Photo editor](../../wireframe/src/PhotoEvidence.tsx).
 
 ## Order eBOL, POD and documents
 
@@ -213,8 +215,8 @@ The active prototype has a local Trip and receiving simulation. It does not demo
 | --- | --- |
 | Draft is saving / save error | Wait or keep the screen open, free browser storage if needed and retry. Do not sign from an unsaved draft. |
 | Order data or measurements incomplete | Open Order details or add a reason for unknown measurement; return to the operation. |
-| Order not found at Dropoff | Check the number and that Pickup was recorded in this browser state. |
-| Pending Supplemental Pickup | Resume and sign its new version before Dropoff. |
+| Order not found at Delivery | Check the number and that Pickup was recorded in this browser state. |
+| Pending Supplemental Pickup | Resume and sign its new version before Delivery. |
 | Review required | Return to the relevant review screen; direct signing links do not bypass review. |
 | Pre-trip inspection required | Open the Home card and complete all four checks, 13 photos and the attestation before loading the route. |
 | Route locked / Issue reported | Do not depart. Review the issue and follow the operating team's escalation process; the wireframe has no supervisor override. |

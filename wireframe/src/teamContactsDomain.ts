@@ -1,4 +1,4 @@
-import type { SpokeOperation, SpokeTask } from './spokeDomain'
+import { spokeOperationLabels, type SpokeOperation, type SpokeTask } from './spokeDomain'
 
 export const teamRoles = ['Dispatcher', 'Broker', 'Manager'] as const
 export interface TeamContact { name: string; nickname: string }
@@ -40,7 +40,7 @@ export function orderSummaryText(context: TeamOrderContext) {
   const { order, name, quantity, task, workDate, handling, comment, requirements } = context
   return [
     `Order #${order}`, `Name: ${name}`, `Quantity: ${quantity ?? 'Not recorded'}${quantity === null ? '' : ' pcs'}`,
-    task ? `${task.operation === 'pickup' ? 'Pickup' : 'Dropoff'} · Stop ${task.sequence}` : 'Stop: Not selected / not available',
+    task ? `${spokeOperationLabels[task.operation]} · Stop ${task.sequence}` : 'Stop: Not selected / not available',
     `Address: ${task?.address.trim() || 'Not available'}`,
     ...(task ? [`Scheduled: ${workDate} · ${task.scheduledTime}`] : []),
     ...(requirements?.trim() ? [`Requirements: ${requirements.trim()}`] : []),

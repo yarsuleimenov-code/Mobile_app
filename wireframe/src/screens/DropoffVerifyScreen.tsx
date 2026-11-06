@@ -6,7 +6,8 @@ import { calculatePieces, calculateVolume, normalizeOrderNumber, type CargoRecor
 import { dimensionText, summarizeMeasurements, weightText, volumeText } from '../measurementDomain'
 import { operationalName } from '../orderDetailsDomain'
 import { teamContactsPath } from '../teamContactsDomain'
-import { OrderStopNavigation } from '../StopNavigation'
+import { OrderStopNavigation, useOrderStopContext } from '../StopNavigation'
+import { OrderStopSummary } from '../OrderStopSummary'
 import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { useCargo } from '../cargoStore'
 import { findDraftSupplementalPickup, prepareDeliveryEbol } from '../orderEbolDomain'
@@ -40,6 +41,11 @@ function DropoffVerifyForm() {
   const [damageNote, setDamageNote] = useState('')
   const [deliveryEbolReady, setDeliveryEbolReady] = useState(false)
   const [documentSaveError, setDocumentSaveError] = useState('')
+  const requestedOrder = normalizeOrderNumber(params.get('order') ?? '')
+  const order = record?.orderNumber ?? requestedOrder
+  const stopId = order === requestedOrder ? params.get('stop') ?? undefined : undefined
+  const stop = useOrderStopContext(order, 'dropoff', stopId)
+  const details = record || stop.plannedDate ? getOrderDetails(order) : undefined
   const changingOrder = Boolean(record && normalizeOrderNumber(query) !== record.orderNumber)
   const pendingSupplement = Boolean(record && (findPickupDraft(readPickupDrafts(), record.orderNumber, 'supplemental')?.places.length
     || findDraftSupplementalPickup(findOrderEbol(readOrderEbols(), record.orderNumber))))
@@ -117,14 +123,14 @@ function DropoffVerifyForm() {
   }
 
   if (complete && record) return (
-    <div className="cargo-flow"><CargoFlowHeader title="Dropoff" /><SuccessState title="Delivery ready for review" message={deliveryEbolReady ? `Delivery evidence for order #${record.orderNumber} is ready for Order eBOL review.` : `Delivery evidence for order #${record.orderNumber} is saved. Lock the Pickup snapshot before Delivery signing.`} action={<div className="ebol-success-actions">{deliveryEbolReady ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery${params.get('stop') ? `?stop=${encodeURIComponent(params.get('stop')!)}` : ''}`)}>Open Delivery review</button> : <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/pickup`)}>Open Pickup review</button>}<button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>} /><CargoBottomNav /></div>
+    <div className="cargo-flow"><CargoFlowHeader title="Delivery" /><SuccessState title="Delivery ready for review" message={deliveryEbolReady ? `Delivery evidence for order #${record.orderNumber} is ready for Order eBOL review.` : `Delivery evidence for order #${record.orderNumber} is saved. Lock the Pickup snapshot before Delivery signing.`} action={<div className="ebol-success-actions">{deliveryEbolReady ? <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/delivery${params.get('stop') ? `?stop=${encodeURIComponent(params.get('stop')!)}` : ''}`)}>Open Delivery review</button> : <button type="button" className="cargo-primary" onClick={() => navigate(`/orders/${record.orderNumber}/ebol/pickup`)}>Open Pickup review</button>}<button type="button" className="ebol-secondary" onClick={() => navigate('/')}>Back to Home</button></div>} /><CargoBottomNav /></div>
   )
 
   return (
     <div className="cargo-flow">
-      <CargoFlowHeader title="Dropoff" subtitle={params.get('order') ? `Spoke order #${params.get('order')}` : undefined} />
+      <CargoFlowHeader title="Delivery" />
       <div className="dropoff-body">
-        <form className="order-search" onSubmit={(event) => {
+        {!stop.plannedDate ? <form className="order-search" onSubmit={(event) => {
           event.preventDefault()
           const order = normalizeOrderNumber(query)
           if (order !== params.get('order')) navigate(`/dropoff?order=${order}`)
@@ -132,21 +138,27 @@ function DropoffVerifyForm() {
         }}>
           <label htmlFor="order-search">Order number</label>
           <div><span>#</span><input id="order-search" inputMode="numeric" value={query.replace('#', '')} onChange={(event) => setQuery(event.target.value)} /><button type="submit"><Search size={20} /><span>Search</span></button></div>
-        </form>
+        </form> : null}
+
+        {changingOrder ? <p className="measurement-warning">The evidence below belongs to #{order}. Press Search to open the selected order.</p> : null}
+        {details ? <>
+          <OrderStopSummary order={order} name={operationalName(details, order, stop.task?.title)} operation="dropoff" task={stop.task} plannedDate={stop.plannedDate}
+            actions={<button type="button" className="order-details-action" onClick={() => navigate(teamContactsPath(order, 'dropoff', stopId))}>Order details</button>}>
+            <div><h3>Order comment</h3><p>{record?.orderComment?.trim() || 'No order comment'}</p></div>
+          </OrderStopSummary>
+          <OrderStopNavigation order={order} operation="dropoff" stop={stop} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Press Search to open the selected order before navigating' : undefined} />
+        </> : null}
 
         {searched && !record ? <div className="not-found"><AlertTriangle /><h2>Order not found</h2><p>Check the number or confirm that Pickup was recorded.</p></div> : null}
 
         {record ? (
           <>
-            {changingOrder ? <p className="measurement-warning">The evidence below belongs to #{record.orderNumber}. Press Search to open the selected order.</p> : null}
-            <OrderStopNavigation order={record.orderNumber} operation="dropoff" stopId={record.orderNumber === normalizeOrderNumber(params.get('order') ?? '') ? params.get('stop') ?? undefined : undefined} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Press Search to open the selected order before navigating' : undefined} />
             {pendingSupplement ? <div className="measurement-warning"><p>Finish the Supplemental Pickup and its signatures before confirming Delivery.</p><button type="button" onClick={() => navigate(`/pickup?order=${record.orderNumber}&supplemental=1`)}>Resume Supplemental Pickup</button></div> : null}
-            <section className="order-name-summary"><strong>{operationalName(getOrderDetails(record.orderNumber), record.orderNumber)}</strong><div className="order-summary-actions"><button type="button" onClick={() => navigate(teamContactsPath(record.orderNumber, 'dropoff', record.orderNumber === normalizeOrderNumber(params.get('order') ?? '') ? params.get('stop') ?? undefined : undefined))}>Order details</button></div></section>
             <section className="found-summary">
               <div><Box size={22} /><strong>{calculatePieces(record.dimensionGroups)} pcs</strong></div>
               <div><Weight size={22} /><strong>{weightText(record.totalWeight, summarizeMeasurements(record.dimensionGroups))}</strong></div>
               <div><Box size={22} /><strong>{volumeText(calculateVolume(record.dimensionGroups), summarizeMeasurements(record.dimensionGroups))}</strong></div>
-              <dl><div><dt>Pickup date</dt><dd>{record.pickupDate}</dd></div><div><dt>Responsible manager</dt><dd>{record.responsible}</dd></div></dl>
+              <dl><div><dt>Pickup date</dt><dd>{record.pickupDate}</dd></div></dl>
             </section>
 
             <section className="dropoff-photos">
