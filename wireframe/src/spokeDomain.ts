@@ -19,6 +19,7 @@ export interface SpokeTask {
 
 export interface SpokeRoute {
   routeId: string
+  runId?: string
   name: string
   vehicle: string
   workDate: string

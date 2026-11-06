@@ -1,7 +1,9 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { ORDER_EBOLS_STORAGE_KEY } from './orderEbolStore'
+import { EVIDENCE_QUEUE_KEY, readEvidenceQueue } from './photoEvidenceDomain'
 import { mockTodaySpokeRoute } from './spokeDomain'
-import { hasStopConfirmation, isActiveStop, parseStopProgress, progressForStop, stopProgressKey, updateStopProgress } from './routeStopProgress'
+import { completeSpokeRoute, hasStopConfirmation, isActiveStop, parseStopProgress, progressForStop, readRouteCompletion, routeHasWork, stopProgressKey, summarizeRouteStops, updateStopProgress } from './routeStopProgress'
+import { SPOKE_ROUTE_STORAGE_KEY } from './spokeRouteStore'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -9,10 +11,11 @@ afterEach(() => {
 })
 
 function mockStorage() {
-  const storage = new Map<string, string>()
+  const storage = new Map([[SPOKE_ROUTE_STORAGE_KEY, JSON.stringify(mockTodaySpokeRoute)]])
   vi.stubGlobal('localStorage', {
     getItem: (key: string) => storage.get(key) ?? null,
     setItem: (key: string, value: string) => storage.set(key, value),
+    removeItem: (key: string) => storage.delete(key),
   })
   vi.stubGlobal('navigator', {})
   vi.stubGlobal('window', { dispatchEvent: vi.fn() })
@@ -90,6 +93,7 @@ it('fails an unstarted or active stop and restores it to ready without changing 
   await updateStopProgress(route, pickup, 'start')
   await updateStopProgress(route, delivery, 'undo')
   expect(progressForStop(progress(), delivery)).toBeUndefined()
+  expect(readEvidenceQueue()).toMatchObject([{ detail: 'Failure undone · Ready', status: 'pending', revision: 2 }])
   await expect(updateStopProgress(route, delivery, 'start')).rejects.toThrow('Complete the active stop')
   await updateStopProgress(route, pickup, 'fail', 'Customer refused')
   expect(progress().find(isActiveStop)).toBeUndefined()
@@ -98,4 +102,57 @@ it('fails an unstarted or active stop and restores it to ready without changing 
   expect(progressForStop(progress(), pickup)).toBeUndefined()
   expect(progress().find(isActiveStop)?.stopId).toBe(delivery.stopId)
   expect(storage.has(ORDER_EBOLS_STORAGE_KEY)).toBe(false)
+})
+
+it('requires terminal stops and records warehouse return independently of the last stop and repeat actions', async () => {
+  const storage = mockStorage()
+  const route = { ...mockTodaySpokeRoute, runId: '2026-11-06T08:00:00Z', tasks: mockTodaySpokeRoute.tasks.slice(0, 2) }
+  storage.set(SPOKE_ROUTE_STORAGE_KEY, JSON.stringify(route))
+  const [pickup, delivery] = route.tasks
+  const at = (hour: number) => new Date(`2026-11-06T${hour}:00:00.000Z`)
+  vi.setSystemTime(at(19))
+  storage.set(stopProgressKey(route), JSON.stringify([{
+    stopId: pickup.stopId, order: pickup.externalId, operation: pickup.operation,
+    startedAt: at(18).toISOString(), completedAt: at(19).toISOString(),
+  }]))
+  await expect(completeSpokeRoute(route)).rejects.toThrow('Resolve all stops')
+  await updateStopProgress(route, delivery, 'start')
+  await expect(completeSpokeRoute(route)).rejects.toThrow('Resolve all stops')
+  await updateStopProgress(route, delivery, 'fail', 'Customer unavailable')
+  const progress = parseStopProgress(storage.get(stopProgressKey(route))!)
+  expect(summarizeRouteStops(route, progress)).toMatchObject({ completed: 1, remaining: [], failed: [{ reason: 'Customer unavailable' }] })
+  expect(readRouteCompletion(route)).toBeUndefined()
+  vi.setSystemTime(at(21))
+  await completeSpokeRoute(route)
+  vi.setSystemTime(at(22))
+  await completeSpokeRoute(route)
+  expect(readRouteCompletion(route)).toEqual({ lastStopAt: at(19).toISOString(), completedAt: at(21).toISOString() })
+  expect(readEvidenceQueue().filter((item) => item.label === 'Warehouse return')).toMatchObject([{ recordedAt: at(21).toISOString(), status: 'pending' }])
+  await expect(updateStopProgress(route, delivery, 'undo')).rejects.toThrow('already been completed')
+  expect(readRouteCompletion({ ...route, runId: 'another-cycle' })).toBeUndefined()
+})
+
+it('rolls back a failed stop save when the sync queue cannot be persisted', async () => {
+  const storage = mockStorage()
+  const setItem = localStorage.setItem
+  localStorage.setItem = (key, value) => {
+    if (key === EVIDENCE_QUEUE_KEY) throw new Error('quota')
+    setItem(key, value)
+  }
+  const route = mockTodaySpokeRoute
+  await expect(updateStopProgress(route, route.tasks[0], 'fail', 'Customer unavailable')).rejects.toThrow('Could not save the sync queue')
+  expect(storage.has(stopProgressKey(route))).toBe(false)
+  expect(readEvidenceQueue()).toEqual([])
+})
+
+it('retains evidence that route work started after undo removes the last failed entry', async () => {
+  const storage = mockStorage()
+  const route = mockTodaySpokeRoute
+  await updateStopProgress(route, route.tasks[0], 'fail', 'Customer unavailable')
+  await updateStopProgress(route, route.tasks[0], 'undo')
+  const snapshot = storage.get(stopProgressKey(route))!
+  expect(parseStopProgress(snapshot)).toEqual([])
+  expect(routeHasWork(snapshot)).toBe(true)
+  storage.delete(SPOKE_ROUTE_STORAGE_KEY)
+  await expect(updateStopProgress(route, route.tasks[0], 'start')).rejects.toThrow('current route')
 })

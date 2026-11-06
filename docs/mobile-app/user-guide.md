@@ -59,20 +59,30 @@ The code contains older Home, Pickup, Delivery and Same Day components that are 
 
 ## Post-trip inspection
 
-1. Open **Post-trip inspection** from Home after completing Pre-trip.
+1. Open **Post-trip inspection** from Home after completing Pre-trip. If you used a route, record your warehouse return with **Complete route** first.
 2. Capture the same 13 photos across **Vehicle** and **Equipment** and enter the ending odometer. If a start reading exists, the end cannot be lower. The review shows the difference as **Trip distance**.
-3. Confirm the record, acknowledge unfinished stops if shown, and select **Complete Post-trip**.
+3. Confirm the record and select **Complete Post-trip**.
 4. **Start next vehicle cycle** archives the pair under **Previous vehicle inspections**. Completed records are read-only. Older records may have no odometer or driver name.
 
 Drafts and captured-photo markers are saved in the browser. If **Camera unavailable** appears, restore camera access before taking missing photos.
 
+## Complete the route at the warehouse
+
+Home shows **Return to warehouse** when every stop is completed or marked **Failed** with a reason. After arriving at the warehouse, select **Complete route**. The recorded return time separates time on the route from time at the warehouse. Start **Post-trip inspection** separately when you are ready. The inspection history shows the last stop, warehouse return and inspection times.
+
 ## Route Loading
 
-Open **Route Loading** on Home to preview the next warehouse route, including Pickup and Delivery stops. Select **Start loading** to see only the Delivery orders assigned to the warehouse load. Open **Packing photos** to identify the packaged cargo.
+Open **Route Loading** on Home to preview the next warehouse route, including Pickup and Delivery stops. Select **Start loading** to see only the Delivery orders assigned to the warehouse load. Open **Broker photos** for reference images in either view. **Packing photos** shows the packaged cargo.
 
 Scan each place as it goes onto the vehicle or enter its **PlaceID** and select **Add**. The app checks the code against the planned load. If a place is taken off the vehicle before closing the load, select **Remove** next to that place. Progress is saved on the device, so you can resume after leaving or refreshing the screen.
 
 Select **Complete loading** when every planned place is loaded. The completed load shows the confirmed places and completion time.
+
+## Sync saved changes
+
+1. Continue working if the connection drops. Saved changes remain in this browser, and the status at the top of Home shows how many are pending.
+2. When the connection returns, open **More → Sync now**. Expand **Queue details** to see each record and its status. The queue includes handoff and stop results, packing photos, inspections, completed loads and warehouse returns.
+3. If a record shows **Retry needed**, select **Sync now** again. The retry processes pending records and keeps the original operation times. **Synced** shows the outcome of the prototype's local sync scenario.
 
 ## Tasks and Order details
 

@@ -11,7 +11,7 @@ import {
   canReviewOrderEvidence, withCurrentOrderDetails, canLockPickupEbol, createOrderEbol, isValidContactEmail, lockPickupEbol, lockSupplementalPickup,
   type OrderEbol, type PickupEbolConfirmationInput, type SignedStopVisit,
 } from '../orderEbolDomain'
-import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
+import { findOrderEbol, readOrderEbols, saveSignedOrderEbol } from '../orderEbolStore'
 import { readPickupDrafts, removePickupDraft, writePickupDrafts } from '../pickupDraftStore'
 import { pickupReviewNeedsRefresh } from '../pickupReviewState'
 import { SignaturePad } from '../signature-components'
@@ -95,7 +95,7 @@ function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
     const locked = supplementVersion === undefined
       ? lockPickupEbol(current, input)
       : lockSupplementalPickup(current, supplementVersion, input)
-    const saved = writeOrderEbols(upsertOrderEbol(readOrderEbols(), locked))
+    const saved = saveSignedOrderEbol(locked, 'pickup', supplementVersion)
     if (!saved) {
       setStorageError(true)
       return

@@ -12,7 +12,7 @@ import { mockTodaySpokeRoute, productLines, spokeTaskPath, spokeOperationLabels 
 import { TeamContactsCard } from '../TeamContactsCard'
 import { orderContextTasks } from '../teamContactsDomain'
 import { getOrderRequirements } from '../orderRequirements'
-import { getOrderReferenceData } from '../orderReferenceData'
+import { getOrderReferenceData, hasRefreshedOrderReference, orderReferenceKey } from '../orderReferenceData'
 import { ReferencePhotoGallery } from '../ReferencePhotoGallery'
 import { PackingPhotos } from '../PackingPhotos'
 
@@ -36,11 +36,7 @@ function OrderDetailsForm({ order }: { order: string }) {
   const tasks = orderContextTasks(route.tasks, order, operation)
   const matching = orderContextTasks(tasks, order, operation, params.get('stop') || undefined)
   const task = matching.length === 1 ? matching[0] : undefined
-  const referenceKey = `zaberman-order-reference:v1:${order}`
-  const [refreshed, setRefreshed] = useState(() => {
-    try { return localStorage.getItem(referenceKey) === 'latest' }
-    catch { return false }
-  })
+  const [refreshed, setRefreshed] = useState(() => hasRefreshedOrderReference(order))
   const [refreshMessage, setRefreshMessage] = useState('')
   const [edit, setEdit] = useState<OrderDetailsEdit>(() => ({ internal_name: current.internal_name,
     special_cargo_type: current.special_cargo_type, special_cargo_details: current.special_cargo_details }))
@@ -63,7 +59,7 @@ function OrderDetailsForm({ order }: { order: string }) {
       return
     }
     try {
-      localStorage.setItem(referenceKey, 'latest')
+      localStorage.setItem(orderReferenceKey(order), 'latest')
       setRefreshed(true)
       setRefreshMessage('Order refreshed. New reference photo available.')
     } catch {

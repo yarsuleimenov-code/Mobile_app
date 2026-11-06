@@ -38,13 +38,25 @@ export type EvidenceSyncStatus = 'pending' | 'syncing' | 'synced' | 'retry' | 'c
 export interface EvidenceSyncItem {
   id: string
   operationId: string
-  kind: 'operation' | 'photo'
+  kind: 'operation' | 'photo' | 'workflow'
   label: string
   detail: string
   fingerprint: string
   revision: number
   status: EvidenceSyncStatus
+  recordedAt?: string
+  startedAt?: string
   resolution?: 'keep-local'
+}
+export type WorkflowChange = Pick<EvidenceSyncItem, 'id' | 'label' | 'detail' | 'startedAt'> & { recordedAt: string }
+
+export function trackWorkflowChange(queue: EvidenceSyncItem[], change: WorkflowChange): EvidenceSyncItem[] {
+  const fingerprint = JSON.stringify(change)
+  const previous = queue.find((item) => item.id === change.id)
+  if (previous?.fingerprint === fingerprint) return queue
+  return [...queue.filter((item) => item.id !== change.id), {
+    ...change, operationId: change.id, kind: 'workflow', fingerprint, revision: (previous?.revision ?? 0) + 1, status: 'pending',
+  }]
 }
 export interface EvidenceOperation {
   id: string
@@ -78,14 +90,17 @@ export function beginEvidenceSync(queue: EvidenceSyncItem[], operationId?: strin
     && !blocked.has(item.operationId) && item.status !== 'synced' && item.status !== 'syncing')
 }
 
-export function finishEvidenceSync(queue: EvidenceSyncItem[], batch: EvidenceSyncItem[], outcome: 'success' | 'retry' | 'conflict' | 'rejected' | 'offline') {
+export function finishEvidenceSync(queue: EvidenceSyncItem[], batch: EvidenceSyncItem[], outcome: 'success' | 'retry' | 'partial' | 'conflict' | 'rejected' | 'offline') {
   const revisions = new Map(batch.map((item) => [item.id, item.revision]))
   const resolved = new Set(batch.filter((item) => item.resolution === 'keep-local').map((item) => item.operationId))
+  const newItems = outcome === 'partial' ? batch.filter((item) => item.status === 'pending') : []
+  const failedId = (newItems.filter((item) => item.kind === 'workflow').at(-1) ?? newItems.at(-1))?.id
   return queue.map((item): EvidenceSyncItem => {
     // A late result cannot acknowledge a newer edit, a removed photo, or another operation.
     if (revisions.get(item.id) !== item.revision) return item
-    const status = outcome === 'offline' ? 'pending' : outcome === 'success' ? 'synced'
-      : outcome === 'conflict' ? (resolved.has(item.operationId) ? 'synced' : item.kind === 'operation' ? 'conflict' : 'pending') : outcome
+    const status = outcome === 'offline' ? item.status : outcome === 'success' ? 'synced'
+      : outcome === 'partial' ? (item.id === failedId ? 'retry' : 'synced')
+      : outcome === 'conflict' ? (item.kind === 'workflow' ? 'retry' : resolved.has(item.operationId) ? 'synced' : item.kind === 'operation' ? 'conflict' : 'pending') : outcome
     return { ...item, status }
   })
 }
@@ -104,7 +119,7 @@ export function readEvidenceQueue(storage: EvidenceStorage = localStorage): Evid
     return value.filter((item): item is EvidenceSyncItem => item && typeof item.id === 'string'
       && typeof item.operationId === 'string' && typeof item.fingerprint === 'string'
       && typeof item.label === 'string' && typeof item.detail === 'string'
-      && Number.isInteger(item.revision) && (item.kind === 'operation' || item.kind === 'photo')
+      && Number.isInteger(item.revision) && ['operation', 'photo', 'workflow'].includes(item.kind)
       && ['pending', 'syncing', 'synced', 'retry', 'conflict', 'rejected'].includes(item.status))
       .map((item) => item.status === 'syncing' ? { ...item, status: 'pending' } : item)
   } catch { return [] }

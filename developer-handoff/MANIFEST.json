@@ -21,7 +21,9 @@
     "2026-11-06: label generation and scan use one successful location scenario with test coordinates.",
     "2026-11-06: documented pending contact confirmation and local dispatcher follow-up for Pickup and Delivery.",
     "2026-11-06: Pre-trip and Post-trip prototype use separate vehicle and equipment photos, odometer readings, driver confirmation and preserved history.",
-    "2026-11-06: added a separate next-day warehouse Route Loading flow with a frozen place manifest and complete-load validation."
+    "2026-11-06: added a separate next-day warehouse Route Loading flow with a frozen place manifest and complete-load validation.",
+    "2026-11-06: warehouse return closes the active route and records its own timestamp before separate Post-trip inspection.",
+    "2026-11-06: extended the local sync queue to field and warehouse operations, with partial failure and revision-aware retry."
   ],
   "files": [
     {
@@ -75,8 +77,8 @@
     {
       "path": "requirements/WORKFLOWS_AND_USE_CASES.md",
       "source": "docs/requirements/WORKFLOWS_AND_USE_CASES.md",
-      "sourceSha256": "8b3e435427623395d6cf1be3b160543f3052ef67f6160784ce18eefa00d1dcad",
-      "sha256": "8b3e435427623395d6cf1be3b160543f3052ef67f6160784ce18eefa00d1dcad"
+      "sourceSha256": "62f1db4eca9d9e555df8a59162df7b8dbdbc302d0b1442e4205e80f7358a7c0c",
+      "sha256": "62f1db4eca9d9e555df8a59162df7b8dbdbc302d0b1442e4205e80f7358a7c0c"
     },
     {
       "path": "architecture/SYSTEM_ARCHITECTURE_AND_INTEGRATIONS.md",
@@ -111,8 +113,8 @@
     {
       "path": "PROJECT_BASELINE.md",
       "source": "docs/PROJECT_BASELINE.md",
-      "sourceSha256": "d17ac6b964361894b3b03f0ade11dad28c7c30c31ce2a3b9d508e8166011582d",
-      "sha256": "9d02a26248c71d00a3f06130adf3e39e7f9d6d7e74e465e59d5cb46df6073be5"
+      "sourceSha256": "2445ef0eb4e1b335b45b121c9f95e1bd2ce2b84b3f5a39ce399676a08616479a",
+      "sha256": "fa392957f6ad6bbe94799ed558ef30e488d437b78e82591ab672a91e860f735f"
     },
     {
       "path": "decisions/DECISION_LOG.md",
@@ -189,8 +191,8 @@
     {
       "path": "requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md",
       "source": "docs/requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md",
-      "sourceSha256": "6772fb4c117799cf230a03a24f0a266c266156ce8efa1bf612419434942aba59",
-      "sha256": "6772fb4c117799cf230a03a24f0a266c266156ce8efa1bf612419434942aba59"
+      "sourceSha256": "e0555f897722b6125806beb97e04dc007e0b34dd7549ff43733ee9d7cf53e9f4",
+      "sha256": "e0555f897722b6125806beb97e04dc007e0b34dd7549ff43733ee9d7cf53e9f4"
     }
   ]
 }

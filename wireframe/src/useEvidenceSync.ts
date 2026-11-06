@@ -1,21 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { beginEvidenceSync, finishEvidenceSync, readEvidenceQueue, resolveEvidenceConflict, trackEvidence, writeEvidenceQueue, type EvidenceOperation, type EvidenceSyncItem } from './photoEvidenceDomain'
+import { beginEvidenceSync, EVIDENCE_QUEUE_KEY, finishEvidenceSync, readEvidenceQueue, resolveEvidenceConflict, trackEvidence, type EvidenceOperation, type EvidenceSyncItem } from './photoEvidenceDomain'
 import type { SyncOutcome } from './prototypeScenarioStore'
+import { syncQueueEvent, updateSavedSyncQueue } from './syncQueueStore'
 
 export function useEvidenceSync(network: string, outcome: SyncOutcome) {
-  const [evidenceQueue, setQueue] = useState(readEvidenceQueue)
+  const [savedQueue, setQueue] = useState(readEvidenceQueue)
+  const [activeBatch, setActiveBatch] = useState<EvidenceSyncItem[]>([])
   const [evidenceStorageError, setStorageError] = useState(false)
-  const queueRef = useRef(evidenceQueue)
   const networkRef = useRef(network)
   networkRef.current = network
   const busy = useRef(false)
   const updateQueue = useCallback((change: (queue: EvidenceSyncItem[]) => EvidenceSyncItem[]) => {
-    const next = change(queueRef.current)
-    queueRef.current = next
-    setQueue(next)
-    setStorageError(!writeEvidenceQueue(next))
+    try {
+      setQueue(updateSavedSyncQueue(change))
+      setStorageError(false)
+    } catch { setStorageError(true) }
   }, [])
-  useEffect(() => { setStorageError(!writeEvidenceQueue(queueRef.current)) }, [])
+  useEffect(() => {
+    const refresh = () => setQueue(readEvidenceQueue())
+    const onStorage = (event: StorageEvent) => { if (!event.key || event.key === EVIDENCE_QUEUE_KEY) refresh() }
+    window.addEventListener(syncQueueEvent, refresh)
+    window.addEventListener('storage', onStorage)
+    refresh()
+    return () => {
+      window.removeEventListener(syncQueueEvent, refresh)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [])
   const trackEvidenceOperation = useCallback((operation: EvidenceOperation) => {
     updateQueue((queue) => trackEvidence(queue, operation))
   }, [updateQueue])
@@ -24,15 +35,26 @@ export function useEvidenceSync(network: string, outcome: SyncOutcome) {
   }, [updateQueue])
   const syncEvidence = useCallback(async (operationId?: string) => {
     if (busy.current || networkRef.current === 'offline' || !navigator.onLine) return
-    const batch = beginEvidenceSync(queueRef.current, operationId)
-    if (!batch.length) return
     busy.current = true
-    const ids = new Set(batch.map((item) => item.id))
-    updateQueue((queue) => queue.map((item) => ids.has(item.id) ? { ...item, status: 'syncing' } : item))
-    await new Promise((resolve) => window.setTimeout(resolve, networkRef.current === 'slow' ? 1800 : 700))
-    const result = networkRef.current === 'offline' || !navigator.onLine ? 'offline' : outcome
-    updateQueue((queue) => finishEvidenceSync(queue, batch, result))
-    busy.current = false
+    const send = async () => {
+      const batch = beginEvidenceSync(readEvidenceQueue(), operationId)
+      if (!batch.length) return
+      setActiveBatch(batch)
+      await new Promise((resolve) => window.setTimeout(resolve, networkRef.current === 'slow' ? 1800 : 700))
+      if (networkRef.current === 'offline' || !navigator.onLine) return
+      updateQueue((queue) => finishEvidenceSync(queue, batch, outcome))
+    }
+    try {
+      if (navigator.locks) await navigator.locks.request(EVIDENCE_QUEUE_KEY, { ifAvailable: true }, async (lock) => { if (lock) await send() })
+      else await send()
+    } finally {
+      setActiveBatch([])
+      busy.current = false
+    }
   }, [outcome, updateQueue])
+  const syncing = new Map(activeBatch.map((item) => [item.id, item.revision]))
+  const evidenceQueue = activeBatch.length ? savedQueue.map((item): EvidenceSyncItem => (
+    syncing.get(item.id) === item.revision ? { ...item, status: 'syncing' } : item
+  )) : savedQueue
   return { evidenceQueue, evidenceStorageError, trackEvidenceOperation, keepLocalEvidence, syncEvidence }
 }

@@ -19,7 +19,7 @@ export function CargoShell({ children }: { children: ReactNode }) {
       : syncStatus === 'syncing'
         ? 'Syncing…'
         : syncStatus === 'retry'
-          ? 'Retry needed'
+          ? `Retry needed · ${pendingChanges}`
           : syncStatus === 'conflict'
             ? 'Conflict'
             : syncStatus === 'rejected' ? 'Rejected' : 'Synced'
@@ -32,7 +32,7 @@ export function CargoShell({ children }: { children: ReactNode }) {
         <div className="cargo-meta">
           <strong>{branch}</strong>
           <div className={`cargo-sync cargo-sync--${syncStatus}`}>
-            <span><SyncIcon size={14} /> {syncLabel}</span>
+            <span role="status"><SyncIcon size={14} /> {syncLabel}</span>
             <button type="button" onClick={forceSync} disabled={syncDisabled} aria-label={syncStatus === 'offline' ? 'Connect to the internet to sync data' : 'Sync data now'} title={syncStatus === 'offline' ? 'Connect to the internet to sync data' : 'Sync data now'}>
               <span className={syncStatus === 'syncing' ? 'is-spinning' : ''}><RefreshCw size={15} /></span>
             </button>

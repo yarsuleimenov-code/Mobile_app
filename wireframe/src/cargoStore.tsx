@@ -1,7 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CARGO_RECORDS_STORAGE_KEY, initialCargoRecords, normalizeOrderNumber, type CargoRecord } from './cargoDomain'
 import { usePrototypeScenario } from './prototypeScenarioStore'
-import { mockTodaySpokeRoute, refreshDemoRoute, type SpokeRoute } from './spokeDomain'
+import { mockTodaySpokeRoute, type SpokeRoute } from './spokeDomain'
+import { readSpokeRoute, routeForVehicleCycle, SPOKE_ROUTE_STORAGE_KEY } from './spokeRouteStore'
+import { readStopProgressSnapshot, routeHasWork, stopProgressKey, withRouteStopLock } from './routeStopProgress'
+import { readVehicleInspection, usePreTripInspection } from './preTripInspectionStore'
 import { useEvidenceSync } from './useEvidenceSync'
 import { editOrderDetails, initialOrderDetails, ORDER_DETAILS_STORAGE_KEY, readOrderDetails, type OrderDetails, type OrderDetailsEdit } from './orderDetailsDomain'
 import { findPickupDemoRecord } from './pickupDemoData'
@@ -22,14 +25,13 @@ interface CargoContextValue extends ReturnType<typeof useEvidenceSync> {
   pendingChanges: number
   findRecord: (orderNumber: string) => CargoRecord | undefined
   loadTodaySpokeRoute: () => Promise<void>
-  clearSpokeRoute: () => void
+  clearSpokeRoute: () => Promise<boolean>
   forceSync: () => Promise<void>
   savePickup: (record: CargoRecord) => void
   completeDropoff: (orderNumber: string) => void
 }
 
 const STORAGE_KEY = CARGO_RECORDS_STORAGE_KEY
-const SPOKE_ROUTE_STORAGE_KEY = 'zaberman-spoke-route:v1'
 const PENDING_SYNC_STORAGE_KEY = 'zaberman-pending-sync:v1'
 const CargoContext = createContext<CargoContextValue | null>(null)
 
@@ -39,15 +41,6 @@ function readRecords() {
     return stored ? JSON.parse(stored) as CargoRecord[] : initialCargoRecords
   } catch {
     return initialCargoRecords
-  }
-}
-
-function readSpokeRoute() {
-  try {
-    const stored = localStorage.getItem(SPOKE_ROUTE_STORAGE_KEY)
-    return stored ? refreshDemoRoute(JSON.parse(stored) as SpokeRoute) : undefined
-  } catch {
-    return undefined
   }
 }
 
@@ -62,14 +55,22 @@ function readPendingChanges() {
 
 export function CargoProvider({ children }: { children: ReactNode }) {
   const { network, syncOutcome, role } = usePrototypeScenario()
+  const { inspection, postTrip, history } = usePreTripInspection()
   const evidenceSync = useEvidenceSync(network, syncOutcome)
   const { evidenceQueue, syncEvidence } = evidenceSync
   const [orderDetails, setOrderDetails] = useState(readOrderDetails)
   const [records, setRecords] = useState<CargoRecord[]>(readRecords)
-  const [spokeRoute, setSpokeRoute] = useState<SpokeRoute | undefined>(readSpokeRoute)
+  const [storedRoute, setSpokeRoute] = useState<SpokeRoute | undefined>(() => {
+    const stored = readSpokeRoute()
+    if (stored || history.length || postTrip.completedAt) return stored
+    // Older builds could start a fixture stop directly from Tasks.
+    return routeHasWork(readStopProgressSnapshot(stopProgressKey(mockTodaySpokeRoute))) ? mockTodaySpokeRoute : undefined
+  })
+  const spokeRoute = routeForVehicleCycle(storedRoute, inspection.completedAt)
   const [isSpokeRouteLoading, setIsSpokeRouteLoading] = useState(false)
   const [pendingChanges, setPendingChanges] = useState(readPendingChanges)
   const networkRef = useRef(network)
+  const syncBusy = useRef(false)
   const isOffline = useCallback(() => networkRef.current === 'offline' || !navigator.onLine, [])
   const [syncStatus, setSyncStatus] = useState<CargoSyncStatus>(() => (
     network !== 'offline' && navigator.onLine ? (pendingChanges ? 'pending' : 'synced') : 'offline'
@@ -84,8 +85,19 @@ export function CargoProvider({ children }: { children: ReactNode }) {
   }, [records])
 
   useEffect(() => {
-    if (spokeRoute) localStorage.setItem(SPOKE_ROUTE_STORAGE_KEY, JSON.stringify(spokeRoute))
-  }, [spokeRoute])
+    if (storedRoute && !readSpokeRoute()) {
+      try { localStorage.setItem(SPOKE_ROUTE_STORAGE_KEY, JSON.stringify(storedRoute)) }
+      catch { /* Route mutations check that the assignment was saved. */ }
+    }
+  }, [storedRoute])
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === SPOKE_ROUTE_STORAGE_KEY) setSpokeRoute(readSpokeRoute())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   useEffect(() => {
     if (pendingChanges) localStorage.setItem(PENDING_SYNC_STORAGE_KEY, String(pendingChanges))
@@ -143,38 +155,57 @@ export function CargoProvider({ children }: { children: ReactNode }) {
       : evidenceQueue.some((item) => item.status === 'conflict') ? 'conflict'
       : evidenceQueue.some((item) => item.status === 'rejected') ? 'rejected'
       : evidenceQueue.some((item) => item.status === 'retry') ? 'retry'
-      : evidenceQueue.some((item) => item.status === 'pending') ? 'pending' : syncStatus,
+      : evidenceQueue.some((item) => item.status === 'pending') || (syncStatus === 'synced' && pendingChanges > 0) ? 'pending' : syncStatus,
     pendingChanges: pendingChanges + evidenceQueue.filter((item) => item.status !== 'synced').length,
     findRecord: (value) => records.find((record) => record.orderNumber === normalizeOrderNumber(value)),
     loadTodaySpokeRoute: async () => {
       setIsSpokeRouteLoading(true)
-      await new Promise((resolve) => window.setTimeout(resolve, 650))
-      setSpokeRoute({ ...mockTodaySpokeRoute, syncedAt: new Date().toISOString() })
-      setIsSpokeRouteLoading(false)
+      try {
+        await new Promise((resolve) => window.setTimeout(resolve, 650))
+        const cycle = readVehicleInspection()
+        const runId = cycle.inspection.completedAt
+        if (!runId || cycle.postTrip.startedAt || cycle.postTrip.completedAt || routeForVehicleCycle(readSpokeRoute(), runId)) return
+        const route = { ...mockTodaySpokeRoute, runId, syncedAt: new Date().toISOString() }
+        localStorage.setItem(SPOKE_ROUTE_STORAGE_KEY, JSON.stringify(route))
+        setSpokeRoute(route)
+      } finally { setIsSpokeRouteLoading(false) }
     },
-    clearSpokeRoute: () => {
-      setSpokeRoute(undefined)
-      setIsSpokeRouteLoading(false)
-      localStorage.removeItem(SPOKE_ROUTE_STORAGE_KEY)
+    clearSpokeRoute: async () => {
+      if (!spokeRoute) return true
+      let cleared = false
+      await withRouteStopLock(spokeRoute, () => {
+        const current = readSpokeRoute()
+        if (!current || stopProgressKey(current) !== stopProgressKey(spokeRoute)) return
+        if (routeHasWork(localStorage.getItem(stopProgressKey(current)) ?? '') && !readVehicleInspection().postTrip.completedAt) return
+        localStorage.removeItem(SPOKE_ROUTE_STORAGE_KEY)
+        setSpokeRoute(undefined)
+        cleared = true
+      })
+      return cleared
     },
     forceSync: async () => {
+      if (syncBusy.current) return
       if (isOffline()) {
         setSyncStatus('offline')
         return
       }
+      syncBusy.current = true
       setSyncStatus('syncing')
-      await Promise.all([syncEvidence(), new Promise((resolve) => window.setTimeout(resolve, network === 'slow' ? 1800 : 700))])
-      if (isOffline()) {
-        setSyncStatus('offline')
-        return
+      try {
+        await Promise.all([syncEvidence(), pendingChanges > 0 && new Promise((resolve) => window.setTimeout(resolve, network === 'slow' ? 1800 : 700))])
+        if (isOffline()) {
+          setSyncStatus('offline')
+          return
+        }
+        if (syncOutcome === 'success' || syncOutcome === 'partial') {
+          setPendingChanges((current) => Math.max(0, current - pendingChanges))
+          setSyncStatus('synced')
+          return
+        }
+        setSyncStatus(pendingChanges ? syncOutcome : 'synced')
+      } finally {
+        syncBusy.current = false
       }
-      if (syncOutcome === 'success') {
-        setPendingChanges(0)
-        setSyncStatus('synced')
-        return
-      }
-      // Evidence failures live in their own queue; do not invent a legacy pending item.
-      setSyncStatus(pendingChanges ? syncOutcome : 'synced')
     },
     savePickup: (record) => {
       setRecords((current) => [record, ...current.filter((item) => item.orderNumber !== record.orderNumber)])
@@ -184,7 +215,6 @@ export function CargoProvider({ children }: { children: ReactNode }) {
       setRecords((current) => current.map((record) => (
         record.orderNumber === normalizeOrderNumber(value) ? { ...record, status: 'dropoff_complete' } : record
       )))
-      queueChange()
     },
   }), [orderDetails, role, records, spokeRoute, isSpokeRouteLoading, syncStatus, pendingChanges, network, syncOutcome, queueChange, isOffline, evidenceSync, evidenceQueue, syncEvidence])
 

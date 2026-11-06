@@ -4,7 +4,7 @@ import { deliveryPhotoIssues, readDeliveryDraft, writeDeliveryDraft } from './de
 import { addPickupDraftGroup, createPickupDraft, pickupDraftToRecord } from './pickupDraftDomain'
 import { readPickupDrafts, writePickupDrafts } from './pickupDraftStore'
 import { createOrderEbol, lockDeliveryEbol, lockPickupEbol, lockSupplementalPickup, prepareDeliveryEbol, prepareSupplementalPickup, syncPickupOrderEbolDraft } from './orderEbolDomain'
-import { addEvidencePhoto, beginEvidenceSync, demoPhotos, evidencePhotos, finishEvidenceSync, readEvidenceQueue, removeEvidencePhoto, resolveEvidenceConflict, trackEvidence, writeEvidenceQueue, type EvidenceOperation } from './photoEvidenceDomain'
+import { addEvidencePhoto, beginEvidenceSync, demoPhotos, evidencePhotos, finishEvidenceSync, readEvidenceQueue, removeEvidencePhoto, resolveEvidenceConflict, trackEvidence, trackWorkflowChange, writeEvidenceQueue, type EvidenceOperation } from './photoEvidenceDomain'
 
 const memoryStorage = () => {
   const data = new Map<string, string>()
@@ -200,5 +200,29 @@ describe('Local demo evidence queue', () => {
     expect(readEvidenceQueue({ getItem: () => 'invalid', setItem: () => {} })).toEqual([])
     expect(readEvidenceQueue({ getItem: () => '[{},null]', setItem: () => {} })).toEqual([])
     expect(writeEvidenceQueue([], { getItem: () => null, setItem: () => { throw new Error('quota') } })).toBe(false)
+  })
+
+  it('restores workflow records and retries only the failed operation after a partial transfer', () => {
+    const warehouseReturn = { id: 'return', label: 'Warehouse return', detail: 'NJ1', recordedAt: '2026-11-06T21:00:00.000Z' }
+    const postTrip = { id: 'post-trip', label: 'Post-trip', detail: 'Inspection completed', recordedAt: '2026-11-06T21:30:00.000Z' }
+    const storage = memoryStorage()
+    const queue = trackWorkflowChange(trackWorkflowChange([], warehouseReturn), postTrip)
+    expect(writeEvidenceQueue(queue, storage)).toBe(true)
+    const restored = readEvidenceQueue(storage)
+    const partial = finishEvidenceSync(restored, beginEvidenceSync(restored), 'partial')
+    expect(partial).toMatchObject([{ ...warehouseReturn, status: 'synced' }, { ...postTrip, status: 'retry' }])
+    const retry = beginEvidenceSync(partial)
+    expect(retry).toMatchObject([{ ...postTrip, status: 'retry' }])
+    const done = finishEvidenceSync(partial, retry, 'partial')
+    expect(done).toMatchObject([{ ...warehouseReturn, status: 'synced' }, { ...postTrip, status: 'synced' }])
+    expect(beginEvidenceSync(done)).toEqual([])
+  })
+
+  it('keeps Undo pending when an earlier failed status is acknowledged late', () => {
+    const failed = { id: 'stop', label: 'Pickup stop', detail: 'Failed · Customer unavailable', recordedAt: '2026-11-06T12:00:00.000Z' }
+    const undo = { ...failed, detail: 'Failure undone · Ready', recordedAt: '2026-11-06T12:15:00.000Z' }
+    const before = trackWorkflowChange([], failed)
+    const current = trackWorkflowChange(before, undo)
+    expect(finishEvidenceSync(current, beginEvidenceSync(before), 'success')).toMatchObject([{ ...undo, revision: 2, status: 'pending' }])
   })
 })

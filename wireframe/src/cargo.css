@@ -355,7 +355,8 @@ textarea { font: inherit; }
 .evidence-queue summary { cursor: pointer; }
 .evidence-queue ul { margin: 10px 0 0; padding: 0; list-style: none; }
 .evidence-queue li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid var(--cargo-line); }
-.evidence-queue li small { text-align: right; flex-shrink: 0; }
+.evidence-queue li > small { text-align: right; flex-shrink: 0; }
+.evidence-queue li > span > small { display: block; margin-top: 3px; color: var(--cargo-muted); overflow-wrap: anywhere; }
 .evidence-queue > a { color: var(--cargo-blue); }
 .evidence-sync-note { display: block; margin-top: 5px; color: var(--cargo-muted); font-size: 10px; }
 .evidence-conflict { margin-top: 10px; padding: 10px; border-radius: 7px; background: #fff4df; }
@@ -1199,6 +1200,14 @@ textarea { font: inherit; }
 .inspection-photo-record ul { display: grid; gap: 6px; padding: 0; margin: 10px 0 0; list-style: none; }
 .inspection-photo-record li { display: flex; align-items: center; gap: 7px; font-size: 13px; }
 .inspection-photo-record li svg { flex-shrink: 0; color: var(--cargo-green); }
+.route-completion-card { display: grid; gap: 9px; margin-top: 14px; }
+.route-completion-card h2, .route-completion-card p { margin: 0; }
+.route-completion-card p, .route-completion-card li { font-size: 13px; overflow-wrap: anywhere; }
+.route-completion-card ul { margin: 8px 0 0; padding-left: 18px; }
+.route-completion-card li + li { margin-top: 6px; }
+.route-completion-card a { color: var(--cargo-blue); }
+.route-completion-time { display: flex; gap: 8px; align-items: center; color: var(--cargo-green); font-size: 13px; font-weight: 800; }
+.pretrip-home-card button:disabled, .spoke-tasks header button:disabled { opacity: .55; cursor: not-allowed; }
 .warehouse-loading-body { display: grid; gap: 12px; }
 .warehouse-loading-body .loading-progress p { margin: 7px 0 0; font-size: 13px; }
 .warehouse-loading-body .loading-orders { margin: 0; }
@@ -1207,10 +1216,10 @@ summary.warehouse-order-summary { cursor: pointer; list-style: none; }
 summary.warehouse-order-summary::-webkit-details-marker { display: none; }
 .warehouse-loading-orders .warehouse-order-summary > span { min-width: 0; display: grid; gap: 3px; }
 .warehouse-order-summary strong { overflow-wrap: anywhere; }
-.warehouse-preview-details, .warehouse-packing-photos { padding: 0 14px 12px; }
-.warehouse-preview-details .warehouse-packing-photos { padding: 0; }
+.warehouse-preview-details, .warehouse-photo-group { padding: 0 14px 12px; }
+.warehouse-preview-details .warehouse-photo-group { padding: 0; }
 .warehouse-preview-details p { margin-block: 7px; font-size: 13px; }
-.warehouse-packing-photos summary { color: var(--cargo-blue); font-size: 13px; font-weight: 800; cursor: pointer; padding-block: 8px; }
+.warehouse-photo-group summary { color: var(--cargo-blue); font-size: 13px; font-weight: 800; cursor: pointer; padding-block: 8px; }
 .warehouse-scan { display: grid; gap: 8px; }
 .warehouse-scan > button { display: flex; justify-content: center; align-items: center; gap: 7px; }
 .warehouse-scan .unloading-scan { margin: 0; grid-template-columns: minmax(0, 1fr) auto; }

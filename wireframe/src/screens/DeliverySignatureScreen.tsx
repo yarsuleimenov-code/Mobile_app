@@ -7,7 +7,7 @@ import {
   canReviewOrderEvidence, withCurrentOrderDetails, canLockDeliveryEbol, lockDeliveryEbol,
   type DeliveryEbolConfirmationInput, type OrderEbol, type SignedStopVisit,
 } from '../orderEbolDomain'
-import { findOrderEbol, readOrderEbols, upsertOrderEbol, writeOrderEbols } from '../orderEbolStore'
+import { findOrderEbol, readOrderEbols, saveSignedOrderEbol } from '../orderEbolStore'
 import { SignaturePad } from '../signature-components'
 import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { ContactFollowUpNotice } from '../order-document-components'
@@ -73,7 +73,7 @@ function DeliverySignatureContent({ orderNumber }: { orderNumber: string }) {
     const current = withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? orderEbol, 'delivery', getOrderDetails(orderNumber))!
     if (current.delivery.lockedAt) { navigate(reviewPath, { replace: true }); return }
     const locked = lockDeliveryEbol(current, { ...confirmationInput, stopVisit, contactComment: comments.contact, driverComment: comments.driver })
-    const saved = writeOrderEbols(upsertOrderEbol(readOrderEbols(), locked))
+    const saved = saveSignedOrderEbol(locked, 'delivery')
     if (!saved) {
       setStorageError(true)
       return

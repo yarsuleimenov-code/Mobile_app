@@ -1,5 +1,7 @@
 import { findOrderEbol, readOrderEbols } from './orderEbolStore'
 import type { SpokeOperation, SpokeRoute, SpokeTask } from './spokeDomain'
+import { readSpokeRoute } from './spokeRouteStore'
+import { saveWorkflowChange } from './syncQueueStore'
 
 export interface StopProgress {
   stopId: string
@@ -15,12 +17,38 @@ export type StopProgressAction = 'start' | 'complete' | 'fail' | 'undo'
 export const stopProgressEvent = 'zaberman-route-stop-progress'
 
 export function stopProgressKey(route: SpokeRoute) {
-  return `zaberman-route-stops:v1:${JSON.stringify([route.routeId, route.workDate])}`
+  const identity = route.runId ? [route.routeId, route.workDate, route.runId] : [route.routeId, route.workDate]
+  return `zaberman-route-stops:v1:${JSON.stringify(identity)}`
+}
+
+function routeCompletionKey(route: SpokeRoute) {
+  return stopProgressKey(route).replace('route-stops:', 'route-completion:')
+}
+
+export interface RouteCompletion {
+  lastStopAt: string
+  completedAt: string
 }
 
 export function readStopProgressSnapshot(key: string) {
   try { return localStorage.getItem(key) ?? '' }
   catch { return '' }
+}
+
+export function readRouteCompletionSnapshot(route: SpokeRoute) {
+  return readStopProgressSnapshot(routeCompletionKey(route))
+}
+
+export function parseRouteCompletion(snapshot: string): RouteCompletion | undefined {
+  try {
+    const value = JSON.parse(snapshot) as RouteCompletion
+    if (typeof value?.lastStopAt === 'string' && typeof value.completedAt === 'string'
+      && Date.parse(value.completedAt) >= Date.parse(value.lastStopAt)) return value
+  } catch { /* Missing or invalid data has no recorded completion. */ }
+}
+
+export function readRouteCompletion(route: SpokeRoute) {
+  return parseRouteCompletion(readRouteCompletionSnapshot(route))
 }
 
 export async function withRouteStopLock(route: SpokeRoute, update: () => void) {
@@ -31,9 +59,10 @@ export async function withRouteStopLock(route: SpokeRoute, update: () => void) {
 export function parseStopProgress(snapshot: string): StopProgress[] {
   const isTimestamp = (value: unknown) => typeof value === 'string' && Number.isFinite(Date.parse(value))
   try {
-    const value: unknown = JSON.parse(snapshot)
-    if (!Array.isArray(value)) return []
-    return value.filter((item) => typeof item?.stopId === 'string'
+    const value = JSON.parse(snapshot)
+    const entries = Array.isArray(value) ? value : value?.entries
+    if (!Array.isArray(entries)) return []
+    return entries.filter((item) => typeof item?.stopId === 'string'
       && typeof item.order === 'string' && (item.operation === 'pickup' || item.operation === 'dropoff')
       && (item.startedAt === undefined || isTimestamp(item.startedAt))
       && (item.failure === undefined || (isTimestamp(item.failure?.at)
@@ -43,8 +72,52 @@ export function parseStopProgress(snapshot: string): StopProgress[] {
   } catch { return [] }
 }
 
+export function routeHasWork(snapshot: string) {
+  try {
+    const value = JSON.parse(snapshot)
+    return value?.hasWork === true || parseStopProgress(snapshot).length > 0
+  } catch { return false }
+}
+
 export function progressForStop(entries: StopProgress[], task: SpokeTask) {
   return entries.find((entry) => entry.stopId === task.stopId && entry.order === task.externalId && entry.operation === task.operation)
+}
+
+export function summarizeRouteStops(route: SpokeRoute, entries: StopProgress[]) {
+  const remaining: SpokeTask[] = []
+  const failed: Array<{ task: SpokeTask; reason: string }> = []
+  let lastStopAt: string | undefined
+  for (const task of route.tasks) {
+    const progress = progressForStop(entries, task)
+    const endedAt = progress?.completedAt ?? progress?.failure?.at
+    if (!endedAt) remaining.push(task)
+    else if (!lastStopAt || Date.parse(endedAt) > Date.parse(lastStopAt)) lastStopAt = endedAt
+    if (progress?.failure) failed.push({ task, reason: progress.failure.reason })
+  }
+  return { remaining, failed, lastStopAt, completed: route.tasks.length - remaining.length - failed.length }
+}
+
+export function assertCurrentRoute(route: SpokeRoute) {
+  const loaded = readSpokeRoute()
+  if (!loaded || stopProgressKey(loaded) !== stopProgressKey(route)) throw new Error('Open the current route from Home.')
+  return loaded
+}
+
+export async function completeSpokeRoute(route: SpokeRoute) {
+  await withRouteStopLock(route, () => {
+    const loaded = assertCurrentRoute(route)
+    if (readRouteCompletion(route)) return
+    const entries = parseStopProgress(localStorage.getItem(stopProgressKey(route)) ?? '')
+    const { remaining, lastStopAt } = summarizeRouteStops(loaded, entries)
+    if (remaining.length || !lastStopAt) throw new Error('Resolve all stops before completing the route.')
+    const completedAt = new Date().toISOString()
+    if (Date.parse(completedAt) < Date.parse(lastStopAt)) throw new Error('Check the device time and try again.')
+    const key = routeCompletionKey(route)
+    saveWorkflowChange(key, { lastStopAt, completedAt }, {
+      id: key, label: 'Warehouse return', detail: `Route ${route.routeId}`, recordedAt: completedAt,
+    })
+    window.dispatchEvent(new Event(stopProgressEvent))
+  })
 }
 
 export function isActiveStop(progress: StopProgress | undefined) {
@@ -74,6 +147,11 @@ export function hasStopConfirmation(task: SpokeTask, progress: StopProgress) {
 export async function updateStopProgress(route: SpokeRoute, task: SpokeTask, action: StopProgressAction, reason = '') {
   const key = stopProgressKey(route)
   const update = () => {
+    const loaded = assertCurrentRoute(route)
+    if (!loaded.tasks.some((item) => item.stopId === task.stopId && item.externalId === task.externalId && item.operation === task.operation)) {
+      throw new Error('This stop is unavailable on the current route.')
+    }
+    if (readRouteCompletion(route)) throw new Error('This route has already been completed.')
     const entries = parseStopProgress(localStorage.getItem(key) ?? '')
     const progress = progressForStop(entries, task)
     const now = new Date().toISOString()
@@ -106,7 +184,16 @@ export async function updateStopProgress(route: SpokeRoute, task: SpokeTask, act
         entries.splice(entries.indexOf(progress), 1)
         break
     }
-    localStorage.setItem(key, JSON.stringify(entries))
+    const next = { entries, hasWork: true }
+    if (action === 'start') localStorage.setItem(key, JSON.stringify(next))
+    else {
+      const visit = task.operation === 'pickup' ? 'Pickup' : 'Delivery'
+      const detail = action === 'fail' ? `Failed · ${reason.trim()}` : action === 'undo' ? 'Failure undone · Ready' : 'Stop completed'
+      saveWorkflowChange(key, next, {
+        id: `${key}:${JSON.stringify([task.stopId, task.externalId, task.operation])}`,
+        label: `${visit} stop #${task.externalId}`, detail, recordedAt: now,
+      })
+    }
     window.dispatchEvent(new Event(stopProgressEvent))
   }
   await withRouteStopLock(route, update)

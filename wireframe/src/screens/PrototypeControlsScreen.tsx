@@ -25,6 +25,7 @@ const networks = [
 const outcomes: Array<{ value: SyncOutcome; label: string; icon: typeof CheckCircle2 }> = [
   { value: 'success', label: 'Success', icon: CheckCircle2 },
   { value: 'retry', label: 'Retry', icon: RefreshCw },
+  { value: 'partial', label: 'Partial failure', icon: AlertTriangle },
   { value: 'conflict', label: 'Conflict', icon: AlertTriangle },
   { value: 'rejected', label: 'Rejected', icon: ShieldX },
 ]
@@ -98,7 +99,7 @@ export function PrototypeControlsScreen() {
           <div className="scenario-options scenario-options--two">
             {outcomes.map(({ value, label, icon: Icon }) => <button type="button" key={value} className={syncOutcome === value ? 'is-active' : ''} aria-pressed={syncOutcome === value} onClick={() => setSyncOutcome(value)}><Icon size={19} /><span>{label}</span></button>)}
           </div>
-          <p>Run sync from the top bar or More to apply this outcome.</p>
+          <p>Run sync from the top bar or More to apply this outcome. Partial failure leaves one new operation for retry. The retry succeeds.</p>
         </section>
 
         <section className="scenario-section">

@@ -52,12 +52,14 @@ export function PhotoGallery({ photos, onRemove, statuses, packing = false }: {
   </div>
 }
 
-export function EvidenceQueuePanel({ operationId }: { operationId?: string }) {
+export function EvidenceQueuePanel({ operationId, showAction = true }: { operationId?: string; showAction?: boolean }) {
   const { evidenceQueue, evidenceStorageError, syncEvidence, keepLocalEvidence, pendingChanges, forceSync, syncStatus } = useCargo()
   const { network } = usePrototypeScenario()
   const [showAll, setShowAll] = useState(false)
   const items = evidenceQueue.filter((item) => !operationId || item.operationId === operationId)
   const pending = items.filter((item) => item.status !== 'synced')
+  const orderedItems = [...pending.filter((item) => item.status === 'retry' || item.status === 'rejected'),
+    ...pending.filter((item) => item.status !== 'retry' && item.status !== 'rejected'), ...items.filter((item) => item.status === 'synced')]
   const otherPending = operationId ? 0 : Math.max(0, pendingChanges - evidenceQueue.filter((item) => item.status !== 'synced').length)
   const pendingCount = pending.length + otherPending
   const conflicts = items.filter((item) => item.status === 'conflict')
@@ -66,9 +68,9 @@ export function EvidenceQueuePanel({ operationId }: { operationId?: string }) {
   const needsRetry = (!operationId && otherPending > 0 && ['retry', 'rejected', 'conflict'].includes(syncStatus))
     || items.some((item) => item.status === 'retry' || item.status === 'rejected')
   if (!items.length && !otherPending && !evidenceStorageError) return null
-  return <section className="evidence-queue" aria-label="Evidence sync queue">
+  return <section className="evidence-queue" aria-label={operationId ? 'Evidence sync queue' : 'Sync queue'}>
     <div className="evidence-queue-heading" role="status"><span><strong>{evidenceStorageError ? 'Could not save queue' : 'Saved on device'}</strong><small>{offline ? `Offline · ${pendingCount} pending` : syncing ? 'Syncing…' : conflicts.length ? 'Needs review' : needsRetry ? 'Retry needed' : pendingCount ? `${pendingCount} pending` : 'Synced'}</small></span>
-      <button type="button" disabled={offline || syncing || !pendingCount || (Boolean(operationId) && !!conflicts.length)} onClick={() => void (operationId ? syncEvidence(operationId) : forceSync())}><RefreshCw size={15} />{needsRetry ? 'Retry sync' : 'Sync now'}</button>
+      {showAction ? <button type="button" disabled={offline || syncing || !pendingCount || (Boolean(operationId) && !!conflicts.length)} onClick={() => void (operationId ? syncEvidence(operationId) : forceSync())}><RefreshCw size={15} />{needsRetry ? 'Retry sync' : 'Sync now'}</button> : null}
     </div>
     {evidenceStorageError ? <p role="alert">Local storage is unavailable or full. Keep this page open; these changes may not survive a reload.</p> : null}
     {conflicts.map((item) => <div className="evidence-conflict" key={item.id}>
@@ -77,9 +79,15 @@ export function EvidenceQueuePanel({ operationId }: { operationId?: string }) {
       <p>Keep this device’s draft when syncing. Signed documents will not be replaced.</p>
       <button type="button" onClick={() => keepLocalEvidence(item.operationId)}>Keep local changes</button>
     </div>)}
-    {needsRetry ? <p>Transfer failed. Photos remain saved on this device. Check your connection and retry.</p> : null}
+    {needsRetry ? <p>Transfer failed. Changes remain saved on this device. Check your connection and retry.</p> : null}
     <details><summary>Queue details · {pendingCount} pending / {items.length + otherPending} items</summary>
-      <ul>{(showAll ? items : items.slice(0, 8)).map((item) => <li key={item.id}><span>{item.label}</span><small className={`photo-status photo-status--${item.status}`}>{syncLabels[item.status]}</small></li>)}</ul>
+      <ul>{(showAll ? orderedItems : orderedItems.slice(0, 8)).map((item) => <li key={item.id}>
+        <span>{item.label}
+          {item.startedAt ? <small>Started · <time dateTime={item.startedAt}>{new Date(item.startedAt).toLocaleString()}</time></small> : null}
+          {item.recordedAt ? <small>{item.detail} · <time dateTime={item.recordedAt}>{new Date(item.recordedAt).toLocaleString()}</time></small> : null}
+        </span>
+        <small className={`photo-status photo-status--${item.status}`}>{syncLabels[item.status]}</small>
+      </li>)}</ul>
       {otherPending ? <p>Other local changes: {otherPending} pending (saved Pickup / Delivery records).</p> : null}
       {items.length > 8 ? <button type="button" onClick={() => setShowAll((current) => !current)}>{showAll ? 'Show less' : `Show all ${items.length} items`}</button> : null}
     </details>

@@ -4,6 +4,7 @@ import { CargoShell } from '../cargo-components'
 import { useCargo } from '../cargoStore'
 import { roleLabels } from '../data'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
+import { EvidenceQueuePanel } from '../PhotoEvidence'
 
 export function MoreScreen() {
   const { forceSync, pendingChanges, syncStatus } = useCargo()
@@ -11,7 +12,9 @@ export function MoreScreen() {
   const syncDisabled = syncStatus === 'offline' || syncStatus === 'syncing'
   const syncDescription = syncStatus === 'offline'
     ? `${pendingChanges} pending · offline`
-    : syncStatus === 'syncing' ? 'Syncing local changes…' : `${pendingChanges} pending · ${syncStatus}`
+    : syncStatus === 'syncing' ? 'Syncing local changes…'
+      : syncStatus === 'pending' ? `${pendingChanges} pending`
+        : `${pendingChanges} pending · ${syncStatus === 'retry' ? 'retry needed' : syncStatus}`
   const availableDevices = Object.values(devices).filter(Boolean).length
   const helpUrl = '/Mobile_app/help/ru/'
 
@@ -24,6 +27,9 @@ export function MoreScreen() {
           <button type="button" className="menu-row" onClick={forceSync} disabled={syncDisabled}>
             <span className="menu-icon"><CloudCog size={21} /></span><span><strong>Sync now</strong><small>{syncDescription}</small></span><RefreshCw className={syncStatus === 'syncing' ? 'is-spinning' : ''} size={19} />
           </button>
+        </div>
+        <EvidenceQueuePanel showAction={false} />
+        <div className="menu-group">
           <Link to="/interstate" className="menu-row"><span className="menu-icon"><Truck size={21} /></span><span><strong>Interstate operations</strong><small>Loading, trips and BOL archive</small></span><ChevronRight size={19} /></Link>
         </div>
         <div className="menu-group">

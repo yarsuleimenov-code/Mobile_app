@@ -1,5 +1,6 @@
 import { findOrderEbol, readOrderEbols } from './orderEbolStore'
 import type { EvidencePhoto } from './photoEvidenceDomain'
+import { saveWorkflowChange } from './syncQueueStore'
 
 const packingPhotosKey = (order: string) => `zaberman-packing-photos:v1:${order}`
 export const packingPhotoLimit = 100
@@ -25,7 +26,9 @@ export async function addPackingPhoto(order: string, source: 'camera' | 'gallery
       id: crypto.randomUUID(), orderNumber: order, handoff: 'pickup', category: 'packaging', source, asset: photos.length % 4,
     }
     const updated = [...photos, photo]
-    localStorage.setItem(key, JSON.stringify(updated))
+    saveWorkflowChange(key, updated, {
+      id: `${key}/${photo.id}`, label: `Packing photo #${order}`, detail: `Photo ${updated.length}`, recordedAt: new Date().toISOString(),
+    })
     return updated
   }
   return navigator.locks ? navigator.locks.request(key, add) : add()

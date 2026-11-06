@@ -5,21 +5,23 @@ import { useCargo } from './cargoStore'
 import { communicationPath } from './communicationDomain'
 import { operationalName } from './orderDetailsDomain'
 import { OrderStopSummary } from './OrderStopSummary'
-import { hasStopConfirmation, isActiveStop, parseStopProgress, progressForStop, readStopProgressSnapshot, stopHandoff, stopProgressKey, updateStopProgress, withRouteStopLock, type StopProgressAction } from './routeStopProgress'
+import { assertCurrentRoute, hasStopConfirmation, isActiveStop, parseStopProgress, progressForStop, readRouteCompletion, readStopProgressSnapshot, stopHandoff, stopProgressKey, updateStopProgress, withRouteStopLock, type StopProgressAction } from './routeStopProgress'
 import type { SignedStopVisit } from './orderEbolDomain'
 import { spokeOperationLabels, spokeTaskPath, type SpokeOperation } from './spokeDomain'
 import { OrderStopNavigation, useOrderStopContext } from './StopNavigation'
 import { teamContactsPath } from './teamContactsDomain'
-import { useRouteStopProgress } from './useRouteStopProgress'
+import { useRouteCompletion, useRouteStopProgress } from './useRouteStopProgress'
 
 function useExecution(order: string, operation: SpokeOperation) {
   const [params] = useSearchParams()
+  const { spokeRoute } = useCargo()
   const stopId = params.get('stop') || undefined
   const stop = useOrderStopContext(order, operation, stopId)
   const entries = useRouteStopProgress(stop.route)
   const task = stopId ? stop.task : undefined
   const progress = task ? progressForStop(entries, task) : undefined
-  return { stopId, stop, task, progress, active: entries.find(isActiveStop) }
+  const routeCompletion = useRouteCompletion(spokeRoute)
+  return { stopId, stop, task, progress, spokeRoute, routeCompletion, active: entries.find(isActiveStop) }
 }
 
 export function useSignAtStop(order: string, operation: SpokeOperation) {
@@ -28,6 +30,8 @@ export function useSignAtStop(order: string, operation: SpokeOperation) {
   return async (sign: (visit?: SignedStopVisit) => void, supplemental = false) => {
     if (!stopId || supplemental) { sign(); return }
     await withRouteStopLock(route, () => {
+      assertCurrentRoute(route)
+      if (readRouteCompletion(route)) throw new Error('This route has already been completed.')
       const latest = task && progressForStop(parseStopProgress(readStopProgressSnapshot(stopProgressKey(route))), task)
       if (!task || !latest?.startedAt || !isActiveStop(latest) || latest.startedAt !== visitStartedAt) {
         throw new Error('Return to the stop and start it before confirming the handoff.')
@@ -48,8 +52,11 @@ function RouteStopActions({ execution, review = false, missingCargo = false, bef
   const [error, setError] = useState('')
   const [reportingFailure, setReportingFailure] = useState(false)
   const [reason, setReason] = useState('')
-  const { stop, task, progress, active } = execution
+  const { stop, task, progress, active, spokeRoute, routeCompletion } = execution
   if (!task) return null
+  if (!spokeRoute) return <section className="order-detail-card route-stop-actions" aria-label="Stop progress">
+    <h2>Load today’s route first</h2><Link className="ebol-secondary" to="/">Back to Home</Link>
+  </section>
   const { route } = stop
   const activeTask = route.tasks.find((item) => active?.stopId === item.stopId
     && active.order === item.externalId && active.operation === item.operation)
@@ -99,7 +106,7 @@ function RouteStopActions({ execution, review = false, missingCargo = false, bef
     {failure ? <>
       <p>Failed <time dateTime={failure.at}>{new Date(failure.at).toLocaleString()}</time></p>
       <p className="route-stop-failure-reason"><strong>Reason:</strong> {failure.reason}</p>
-      <button type="button" className="ebol-secondary" disabled={saving} onClick={() => void update('undo')}>Undo</button>
+      {!routeCompletion ? <button type="button" className="ebol-secondary" disabled={saving} onClick={() => void update('undo')}>Undo</button> : null}
     </> : null}
     {isActiveStop(progress) && locked && !ready ? <p>The signed handoff is linked to a different stop or an earlier visit.</p> : null}
     {!review && locked ? <Link className="ebol-secondary" to={reviewPath}>Open {label} review</Link> : null}
@@ -116,7 +123,7 @@ export function RouteStopGate({ order, operation, review = false, children }: {
 }) {
   const execution = useExecution(order, operation)
   const { getOrderDetails, getOrderCargo, findRecord } = useCargo()
-  const { stopId, stop, task, progress } = execution
+  const { stopId, stop, task, progress, spokeRoute, routeCompletion } = execution
   if (!stopId) return children
   const label = spokeOperationLabels[operation]
   if (!task) return <div className="cargo-flow">
@@ -125,7 +132,7 @@ export function RouteStopGate({ order, operation, review = false, children }: {
     <CargoBottomNav />
   </div>
   const locked = Boolean(stopHandoff(task)?.lockedAt)
-  if ((review && locked) || (isActiveStop(progress) && !locked)) return children
+  if ((review && locked) || (spokeRoute && !routeCompletion && isActiveStop(progress) && !locked)) return children
 
   const details = getOrderDetails(order)
   const comment = getOrderCargo(order)?.orderComment

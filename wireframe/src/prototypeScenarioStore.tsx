@@ -3,7 +3,7 @@ import type { NetworkMode, Role } from './domain'
 import type { OtpOutcome } from './deliveryOtpDomain'
 
 export type PrototypeBranch = 'NJ1' | 'CA1' | 'CA2'
-export type SyncOutcome = 'success' | 'retry' | 'conflict' | 'rejected'
+export type SyncOutcome = 'success' | 'retry' | 'partial' | 'conflict' | 'rejected'
 export type SmsOutcome = 'success' | 'error'
 export type DeviceKind = 'camera' | 'scanner' | 'printer'
 

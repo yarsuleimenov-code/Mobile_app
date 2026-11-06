@@ -1,4 +1,5 @@
 import { expectedLoadPlaces, updateRouteLoading, type RouteLoadingAction, type RouteLoadingPlan, type RouteLoadingSession } from './routeLoadingDomain'
+import { saveWorkflowChange } from './syncQueueStore'
 
 const loadingEvent = 'zaberman-route-loading'
 
@@ -37,7 +38,12 @@ export async function saveRouteLoadingAction(plan: RouteLoadingPlan, action: Rou
     const current = readRouteLoadingSession(plan, localStorage.getItem(key) ?? '')
     const next = updateRouteLoading(plan, current, action, new Date().toISOString())
     if (next !== current) {
-      localStorage.setItem(key, JSON.stringify(next))
+      if (next.completedAt && !current?.completedAt) {
+        saveWorkflowChange(key, next, {
+          id: key, label: 'Route Loading completed', detail: `${plan.warehouse} · ${plan.workDate} · ${next.loadedPlaceIds.length} places`,
+          recordedAt: next.completedAt,
+        })
+      } else localStorage.setItem(key, JSON.stringify(next))
       window.dispatchEvent(new Event(loadingEvent))
     }
     return next

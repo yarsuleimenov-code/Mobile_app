@@ -16,6 +16,9 @@ The workflow is designed for the crew that records Pickup and Delivery evidence,
 | Task / Stop | A scheduled Pickup or Delivery row on Today's Spoke route, with sequence, time, address and Order. Tasks are displayed in Home and Tasks. The active router has no separate task detail screen. |
 | Pre-trip inspection | Odometer, 13 required photos and driver attestation. Completing the inspection unlocks loading Today’s route. |
 | Post-trip inspection | Ending odometer, trip distance when both readings exist, 13 required photos and driver attestation. Completed records are read-only and paired in history. |
+| Route Loading | A separate warehouse workflow for tomorrow’s route. A load closes after every planned Delivery PlaceID is confirmed. |
+| Warehouse return | Complete route records arrival at the warehouse separately from the last stop and Post-trip. |
+| Sync now | The local queue preserves saved operations after a reload and supports retry of pending records. |
 | Pickup | An operation that records dimension groups, individual cargo places, photos and order context; it prepares Pickup evidence for Order eBOL review. |
 | Delivery | Verification of a previously recorded order against Pickup evidence, with Delivery photo or damage report/exception; it prepares Delivery review. |
 | Same Day | A movement type whose Pickup and Delivery are intended to be connected through a RouteRun in the approved product model. An older Same Day screen exists in source but is not routed in the active app. |

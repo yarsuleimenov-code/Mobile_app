@@ -1,5 +1,6 @@
 import { normalizeOrderNumber } from './cargoDomain'
 import type { OrderEbol } from './orderEbolDomain'
+import { saveWorkflowChange } from './syncQueueStore'
 
 export const ORDER_EBOLS_STORAGE_KEY = 'zaberman-order-ebols:v2'
 
@@ -35,6 +36,20 @@ export function writeOrderEbols(orderEbols: OrderEbol[], storage: OrderEbolStora
   } catch {
     return false
   }
+}
+
+export function saveSignedOrderEbol(order: OrderEbol, handoff: 'pickup' | 'delivery', version?: number) {
+  const signed = version === undefined ? order[handoff] : order.pickupSupplements.find((item) => item.version === version)
+  if (!signed?.lockedAt) return false
+  try {
+    saveWorkflowChange(ORDER_EBOLS_STORAGE_KEY, upsertOrderEbol(readOrderEbols(), order), {
+      id: `signed:${handoff}:${order.orderNumber}:${version ?? 1}`,
+      label: `${handoff === 'pickup' ? 'Pickup' : 'Delivery'} eBOL #${order.orderNumber}${version === undefined ? '' : ` · v${version}`}`,
+      detail: signed.contact.status === 'follow_up' ? 'Signed · Contact confirmation pending' : 'Signed',
+      recordedAt: signed.lockedAt,
+    })
+    return true
+  } catch { return false }
 }
 
 export function upsertOrderEbol(orderEbols: OrderEbol[], orderEbol: OrderEbol) {

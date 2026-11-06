@@ -1,4 +1,5 @@
 import { emptyPreTripInspection, inspectionCanComplete, inspectionDriver, inspectionPhotosComplete, isOdometerReading, legacyPreTripChecks, legacyPreTripPhotos, preTripChecks, preTripPhotos, type PreTripAnswer, type PreTripCheckId, type PreTripInspectionState, type PreTripPhotoId } from './preTripInspectionDomain'
+import { parseRouteCompletion, type RouteCompletion } from './routeStopProgress'
 
 export type PostTripCheckId = PreTripCheckId | 'equipment'
 export type PostTripPhotoId = PreTripPhotoId | 'dashboard'
@@ -8,6 +9,8 @@ export interface PostTripInspectionState {
   photos: PostTripPhotoId[]
   odometer?: number
   inspectedBy?: string
+  startedAt?: string
+  routeCompletion?: RouteCompletion
   attested: boolean
   completedAt: string | null
   unfinishedStops: number
@@ -66,6 +69,8 @@ export function restoreVehicleInspection(raw: string | null, legacy: string | nu
         attested: p?.attested === true,
         odometer: isOdometerReading(p?.odometer) ? p.odometer : undefined,
         inspectedBy: typeof p?.inspectedBy === 'string' ? p.inspectedBy : undefined,
+        startedAt: Number.isFinite(Date.parse(p?.startedAt ?? '')) ? p.startedAt : undefined,
+        routeCompletion: p?.routeCompletion ? parseRouteCompletion(JSON.stringify(p.routeCompletion)) : undefined,
         unfinishedStops: Number.isInteger(p?.unfinishedStops) && p.unfinishedStops >= 0 ? p.unfinishedStops : 0,
       }
       const currentPostTrip = {

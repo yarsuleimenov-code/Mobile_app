@@ -14,7 +14,15 @@ Open **Cargo operations**. Before **Load today’s route** becomes available, co
 
 ## Finish vehicle use
 
-Open **Post-trip inspection** from Home. Capture the same 13 photos, enter the ending odometer, review the trip distance if both readings are available, acknowledge any unfinished stops and select **Complete Post-trip**. **Start next vehicle cycle** archives the pair. [Post-trip instructions](user-guide.md#post-trip-inspection).
+If you used a route, select **Complete route** on Home when you return to the warehouse. Open **Post-trip inspection** separately. Capture the same 13 photos, enter the ending odometer, review the trip distance if both readings are available and select **Complete Post-trip**. **Start next vehicle cycle** archives the pair. [Post-trip instructions](user-guide.md#post-trip-inspection).
+
+## Load the next warehouse route
+
+Open **Route Loading** on Home to preview the next route. Select **Start loading**, then scan or enter each expected Delivery **PlaceID**. Select **Complete loading** after all places are confirmed. [Route Loading instructions](user-guide.md#route-loading).
+
+## Sync after reconnecting
+
+Select **More → Sync now** when the connection returns. Open **Queue details** to check the result. If a record shows **Retry needed**, select **Sync now** again. [Sync instructions](user-guide.md#sync-saved-changes).
 
 ## Main navigation
 

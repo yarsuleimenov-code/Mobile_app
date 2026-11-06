@@ -31,6 +31,20 @@ const references: Record<string, OrderReferenceData> = {
     photos: [table],
     addedPhotos: [chair],
   },
+  '76000002': { photos: [table] },
+  '76000003': { photos: [chair] },
+  '76000004': { photos: [table] },
+  '76000005': { photos: [table] },
+  '76000006': { photos: [chair] },
+}
+
+export function orderReferenceKey(order: string) {
+  return `zaberman-order-reference:v1:${order}`
+}
+
+export function hasRefreshedOrderReference(order: string) {
+  try { return localStorage.getItem(orderReferenceKey(order)) === 'latest' }
+  catch { return false }
 }
 
 export function getOrderReferenceData(order: string, refreshed = false) {

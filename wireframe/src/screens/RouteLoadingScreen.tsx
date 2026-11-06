@@ -3,6 +3,8 @@ import { useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 
 import { useNavigate } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { OrderStopSummary } from '../OrderStopSummary'
+import { getOrderReferenceData, hasRefreshedOrderReference } from '../orderReferenceData'
+import { ReferencePhotoGallery } from '../ReferencePhotoGallery'
 import { readPackingPhotos } from '../packingPhotoStore'
 import { PhotoGallery } from '../PhotoEvidence'
 import type { EvidencePhoto } from '../photoEvidenceDomain'
@@ -14,12 +16,20 @@ import { readRouteLoadingSession, routeLoadingSnapshot, saveRouteLoadingAction, 
 import { spokeOperationLabels } from '../spokeDomain'
 import { useTrackedCargoPlaces } from '../useTrackedCargoPlaces'
 
+function WarehouseBrokerPhotos({ order }: { order: string }) {
+  const { photos } = getOrderReferenceData(order, hasRefreshedOrderReference(order))
+  return <details className="warehouse-photo-group">
+    <summary>Broker photos ({photos.length})</summary>
+    <ReferencePhotoGallery photos={photos} />
+  </details>
+}
+
 function WarehousePackingPhotos({ stop }: { stop: RouteLoadingStop }) {
   const saved = readPackingPhotos(stop.externalId)
   const sample: EvidencePhoto = { id: `packing-${stop.externalId}`, orderNumber: stop.externalId, handoff: 'pickup',
     category: 'packaging', asset: 0, source: 'fixture' }
   const photos = saved.length || !stop.packingPhotoSample ? saved : [sample]
-  return <details className="warehouse-packing-photos">
+  return <details className="warehouse-photo-group">
     <summary>Packing photos ({photos.length})</summary>
     <PhotoGallery photos={photos} packing />
   </details>
@@ -35,6 +45,7 @@ function PlannedRoute({ plan }: { plan: RouteLoadingPlan }) {
         </summary>
         <div className="warehouse-preview-details">
           <OrderStopSummary order={stop.externalId} name={stop.title} operation={stop.operation} task={stop} actions={null} />
+          <WarehouseBrokerPhotos order={stop.externalId} />
           {stop.operation === 'dropoff' ? <>
             <p>{stop.loadSource === 'route_pickup' ? 'Picked up during this route' : stop.placeIds?.length ? `${stop.placeIds.length} places to load` : 'Place list needs review'}</p>
             <WarehousePackingPhotos stop={stop} />
@@ -67,6 +78,7 @@ function DeliveryLoadOrders({ plan, loaded, completed, busy, onRemove }: {
             {!completed && loaded.has(id) ? <button type="button" className="ebol-secondary" disabled={busy} aria-label={`Remove ${id} from load`} onClick={() => onRemove(id)}>Remove</button> : null}
           </li>)}
         </ul>
+        <WarehouseBrokerPhotos order={stop.externalId} />
         <WarehousePackingPhotos stop={stop} />
       </article>
     })}
