@@ -4,6 +4,7 @@ import { expandCargoPlaces } from './cargoDomain'
 import { useCargo } from './cargoStore'
 import { approveHandoff, locationMessages, verifyHandoff, type HandoffVerification } from './handoffVerificationDomain'
 import { captureHandoffLocation, locationScenarios, readHandoffSettings, writeHandoffSettings, type LocationScenario } from './handoffVerificationStore'
+import { isActiveStop, parseStopProgress, progressForStop, readStopProgressSnapshot, stopHandoff, stopProgressKey, withRouteStopLock } from './routeStopProgress'
 import { mockTodaySpokeRoute, type SpokeOperation } from './spokeDomain'
 import { orderContextTasks } from './teamContactsDomain'
 import { usePrototypeScenario } from './prototypeScenarioStore'
@@ -28,7 +29,8 @@ export function HandoffVerificationButton({ order, operation, driver, disabled, 
   const { records, findRecord, spokeRoute } = useCargo()
   const { devices } = usePrototypeScenario()
   const [params] = useSearchParams()
-  const tasks = orderContextTasks((spokeRoute ?? mockTodaySpokeRoute).tasks, order, operation)
+  const route = spokeRoute ?? mockTodaySpokeRoute
+  const tasks = orderContextTasks(route.tasks, order, operation)
   const routeTask = tasks.find((item) => item.stopId === params.get('stop'))
   const [selectedStop, setSelectedStop] = useState(params.get('stop') ?? '')
   const task = routeTask ?? (tasks.length === 1 && !selectedStop ? tasks[0] : tasks.find((item) => item.stopId === selectedStop))
@@ -66,7 +68,15 @@ export function HandoffVerificationButton({ order, operation, driver, disabled, 
       const changed = check?.qr !== next.qr || check?.location !== next.location
         || check?.policy.radius !== next.policy.radius || check?.policy.maxAccuracy !== next.policy.maxAccuracy
       if (warning && (changed || !reason.trim())) { setReason(''); return }
-      onConfirm(approveHandoff(next, reason))
+      const approved = approveHandoff(next, reason)
+      if (!routeTask) { onConfirm(approved); return }
+      await withRouteStopLock(route, () => {
+        if (request !== requestId.current) return
+        const progress = progressForStop(parseStopProgress(readStopProgressSnapshot(stopProgressKey(route))), routeTask)
+        const activeVisit = progress?.startedAt && isActiveStop(progress) && Date.parse(approved.checkedAt) >= Date.parse(progress.startedAt)
+        if (!activeVisit && !stopHandoff(routeTask)?.lockedAt) throw new Error('Return to the stop and start it before confirming the handoff.')
+        onConfirm(approved)
+      })
     } catch (failure) {
       if (request === requestId.current) setError(failure instanceof Error ? failure.message : 'Check could not be completed. Please retry.')
     } finally { if (request === requestId.current) setBusy(false) }

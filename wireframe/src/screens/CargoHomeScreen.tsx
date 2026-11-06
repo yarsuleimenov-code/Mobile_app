@@ -15,7 +15,7 @@ import { filterSpokeTasks, mockTodaySpokeRoute, spokeTaskPath, spokeOperationLab
 import { inspectionStatus, preTripPhotos } from '../preTripInspectionDomain'
 import { usePreTripInspection } from '../preTripInspectionStore'
 import { StopNavigation } from '../StopNavigation'
-import { progressForStop } from '../routeStopProgress'
+import { progressForStop, stopProgressLabel } from '../routeStopProgress'
 import { useRouteStopProgress } from '../useRouteStopProgress'
 
 export function CargoHomeScreen() {
@@ -91,7 +91,7 @@ export function CargoHomeScreen() {
                 return <div className="home-stop-with-directions" key={task.stopId}><button type="button" disabled={!routeUnlocked} onClick={() => navigate(spokeTaskPath(task, spokeRoute.workDate))}>
                   <span className="stop-card-heading"><span className="stop-card-title"><span className="stop-card-order">#{task.externalId}</span> · {operationalName(getOrderDetails(task.externalId), task.externalId)}</span><ChevronRight size={19} aria-hidden="true" /></span>
                   <span className="stop-card-meta"><span><b className={`spoke-task-operation spoke-task-operation--${task.operation}`}>{spokeOperationLabels[task.operation]}</b> · Stop {task.sequence} · {calculatePieces(getOrderCargo(task.externalId)?.dimensionGroups ?? [])} pcs</span><time>{task.scheduledTime}</time></span>
-                  {progress ? <small className="route-stop-list-status">{progress.completedAt ? 'Completed' : 'In progress'}</small> : null}
+                  {progress ? <small className={progress.failure ? 'route-stop-list-status is-failed' : 'route-stop-list-status'}>{stopProgressLabel(progress)}</small> : null}
                 </button><StopNavigation task={task} compact blockedMessage={!routeUnlocked ? 'Complete Pre-trip inspection before departure' : undefined} /></div>
               })}
               {!visibleTasks.length ? <div className="spoke-task-empty">No stop found for this External ID.</div> : null}

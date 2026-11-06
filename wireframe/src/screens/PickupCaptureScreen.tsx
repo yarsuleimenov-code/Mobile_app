@@ -26,7 +26,7 @@ import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { teamContactsPath } from '../teamContactsDomain'
 import { OrderStopNavigation, useOrderStopContext } from '../StopNavigation'
 import { OrderStopSummary } from '../OrderStopSummary'
-import { RouteStopGate } from '../RouteStopExecution'
+import { ActiveRouteStopActions, RouteStopGate } from '../RouteStopExecution'
 
 const groupFields: Array<{ field: 'quantity' | 'length' | 'width' | 'height' | 'weight'; label: string; suffix: string }> = [
   { field: 'quantity', label: 'Qty', suffix: 'pcs' },
@@ -200,6 +200,7 @@ function PickupCaptureForm() {
         </div> : null}
         {changingOrder ? <div className="measurement-warning"><p>You are viewing order #{draft.orderNumber}. Open the selected order to load its own cargo and draft.</p><button type="button" disabled={!normalizeOrderNumber(orderLookup) || saveState !== 'saved'} onClick={() => navigate(`/pickup?order=${normalizeOrderNumber(orderLookup)}`)}>Open selected order</button></div> : null}
         <OrderStopNavigation order={draft.orderNumber} operation="pickup" stop={stop} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Open the selected order before navigating' : undefined} />
+        <ActiveRouteStopActions order={draft.orderNumber} operation="pickup" beforeFail={saveBeforeNavigation} />
 
         <section className="draft-places-section">
           <div className="form-section-title"><h2>{supplemental ? 'New dimension groups' : 'Dimension groups'}</h2><span>{groups.length} {groups.length === 1 ? 'group' : 'groups'}</span></div>

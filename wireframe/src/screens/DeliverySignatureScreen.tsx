@@ -13,6 +13,7 @@ import { OrderEvidenceDetails } from '../OrderEvidenceDetails'
 import { useCargo } from '../cargoStore'
 import { HandoffVerificationButton } from '../HandoffVerification'
 import type { HandoffVerification } from '../handoffVerificationDomain'
+import { RouteStopGate } from '../RouteStopExecution'
 import { ContactCommentView, HandoffCommentEditor, HandoffCommentSaveError, useHandoffComments } from '../orderReviewComments'
 
 interface DeliverySignatureLocationState {
@@ -20,10 +21,14 @@ interface DeliverySignatureLocationState {
 }
 
 export function DeliverySignatureScreen() {
-  const navigate = useNavigate()
-  const location = useLocation()
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
+  return <RouteStopGate key={orderNumber} order={orderNumber} operation="dropoff" review><DeliverySignatureContent orderNumber={orderNumber} /></RouteStopGate>
+}
+
+function DeliverySignatureContent({ orderNumber }: { orderNumber: string }) {
+  const navigate = useNavigate()
+  const location = useLocation()
   const reviewPath = `/orders/${orderNumber}/ebol/delivery${location.search}`
   const { getOrderDetails, completeDropoff } = useCargo()
   const [orderEbol] = useState<OrderEbol | null>(() => withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? null, 'delivery', getOrderDetails(orderNumber)))

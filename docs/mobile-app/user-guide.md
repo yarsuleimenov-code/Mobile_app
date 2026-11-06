@@ -86,6 +86,8 @@ Open a thumbnail in **Reference photos** to inspect the image. This gallery cont
 3. Select a stop to review its order, open **Order details**, send an SMS or use **Navigate**. Select **Start Pickup** or **Start Delivery** when work begins at the stop.
 4. Confirm the handoff through Order eBOL. When work at that location is finished, select **Complete stop**. Until then, other stops can be viewed and **Return to active stop** opens the one in progress.
 
+If a handoff cannot go ahead, select **Fail stop** before confirming the handoff, enter a reason and select **Confirm failure**. The stop appears as **Failed** in Home and Tasks. Use **Back to Tasks** to move on. To try again, reopen the failed stop and select **Undo**, then start the stop when you are ready. Any other stop already in progress must be resolved first.
+
 Home and Tasks display **In progress** and **Completed** for route stops. The prototype saves start and completion times locally. Handoff confirmation and stop completion are separate actions.
 
 On Home and Tasks, each stop is enclosed in a compact white card with a thin border, rounded corners and a small gap between cards. The Order number and name form one emphasized heading: **#23343775 · Dining Chair**. Below it are the purple **Pickup** or green **Delivery** label, the stop number and quantity, the scheduled time, and the full address with map/copy icons. Long names wrap without truncation. There is no internal divider, shadow or extra action panel.

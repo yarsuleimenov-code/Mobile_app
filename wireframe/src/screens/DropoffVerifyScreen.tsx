@@ -8,7 +8,7 @@ import { operationalName } from '../orderDetailsDomain'
 import { teamContactsPath } from '../teamContactsDomain'
 import { OrderStopNavigation, useOrderStopContext } from '../StopNavigation'
 import { OrderStopSummary } from '../OrderStopSummary'
-import { RouteStopGate } from '../RouteStopExecution'
+import { ActiveRouteStopActions, RouteStopGate } from '../RouteStopExecution'
 import { MeasurementNotice } from '../OrderEvidenceDetails'
 import { useCargo } from '../cargoStore'
 import { findDraftSupplementalPickup, prepareDeliveryEbol } from '../orderEbolDomain'
@@ -144,6 +144,7 @@ function DropoffVerifyForm() {
             <div><h3>Order comment</h3><p>{record?.orderComment?.trim() || 'No order comment'}</p></div>
           </OrderStopSummary>
           <OrderStopNavigation order={order} operation="dropoff" stop={stop} beforeNavigate={saveBeforeNavigation} blockedMessage={changingOrder ? 'Press Search to open the selected order before navigating' : undefined} />
+          <ActiveRouteStopActions order={order} operation="dropoff" beforeFail={saveBeforeNavigation} />
         </> : null}
 
         {searched && !record ? <div className="not-found"><AlertTriangle /><h2>Order not found</h2><p>Check the number or confirm that Pickup was recorded.</p></div> : null}

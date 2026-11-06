@@ -20,6 +20,7 @@ import { ContactCommentView, HandoffCommentEditor, HandoffCommentSaveError, useH
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { HandoffVerificationButton } from '../HandoffVerification'
 import type { HandoffVerification } from '../handoffVerificationDomain'
+import { RouteStopGate } from '../RouteStopExecution'
 
 interface PickupSignatureLocationState {
   confirmationInput: PickupEbolConfirmationInput
@@ -28,10 +29,14 @@ interface PickupSignatureLocationState {
 
 
 export function PickupSignatureScreen() {
-  const navigate = useNavigate()
-  const location = useLocation()
   const { orderNumber: orderParam = '' } = useParams()
   const orderNumber = normalizeOrderNumber(orderParam)
+  return <RouteStopGate key={orderNumber} order={orderNumber} operation="pickup" review><PickupSignatureContent orderNumber={orderNumber} /></RouteStopGate>
+}
+
+function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
+  const navigate = useNavigate()
+  const location = useLocation()
   const reviewPath = `/orders/${orderNumber}/ebol/pickup${location.search}`
   const { findRecord, getOrderDetails } = useCargo()
   const { network, emailOutcome } = usePrototypeScenario()

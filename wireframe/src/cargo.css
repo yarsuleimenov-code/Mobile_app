@@ -855,6 +855,10 @@ textarea { font: inherit; }
 .order-detail-card.route-stop-actions h2, .route-stop-actions p { margin: 0; }
 .route-stop-actions p { font-size: 13px; line-height: 1.45; }
 .route-stop-actions a.ebol-secondary { display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.route-stop-list-status.is-failed, .route-stop-fail { color: #9d2e27; }
+.route-stop-fail { border-color: #d9aaa6; }
+.route-stop-fail:disabled { opacity: .55; }
+.route-stop-failure-reason { overflow-wrap: anywhere; white-space: pre-wrap; }
 .team-contacts-card h2 { display: flex; align-items: center; gap: 8px; }
 .order-requirements { padding: 12px; border-left: 3px solid #c18b28; border-radius: 8px; background: #fff6e3; overflow-wrap: anywhere; }
 .order-requirements h2 { margin: 0 0 8px; font-family: "Segoe UI", Arial, sans-serif; font-size: 17px; font-weight: 700; }
