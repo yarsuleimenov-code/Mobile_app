@@ -1,12 +1,12 @@
 # Project baseline
 
-Дата фиксации: **2026-10-16**. Пользователи документа: аналитик, Product, разработчики и QA. Назначение: однозначно определить исходную базу для подготовки ТЗ, архитектуры и плана разработки без изменения продукта.
+Исходный срез принят **2026-10-16**. Текущее состояние обновлено **2026-11-06**. Пользователи документа: аналитик, Product, разработчики и QA. Назначение: однозначно определить исходную базу для подготовки ТЗ, архитектуры и плана разработки без изменения продукта.
 
 ## Project status
 
-**Prototype approved by CEO.** Основание — прямое подтверждение owner в задаче синхронизации от 2026-10-16. Утверждены текущие UI/UX и реализованная логика прототипа. Следующий этап — подготовка документации для передачи разработке. Отдельные старые отметки «приёмка этапа 7 не подтверждена» описывают прежний срез, а не текущий статус.
+**Prototype approved by CEO.** Историческая приёмка исходного среза зафиксирована owner 2026-10-16. Текущее состояние Pickup и Delivery описано в [Pickup и Delivery — шаги 1–7](requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md).
 
-Проверяемая исходная ревизия: `1abe03ce0cd54697dedf713a0657c5f41f69ece3`. На старте три barcode-файла в `docs/system-report/` были untracked; они учтены как локальные research-материалы, не как часть этого commit. Аудит и новые документы ещё не являются отдельной Git-ревизией. Удалённый deploy в этой задаче не проверялся.
+Историческая ревизия исходного среза — `1abe03ce0cd54697dedf713a0657c5f41f69ece3`.
 
 Не утверждены этим подтверждением: окончательный production-стек/backend, поставщики интеграций, полный production scope, SLA, безопасность, юридическая сила подписей, миграция, бюджет и сроки. Ранее принятые продуктовые решения сохранены в [реестре](decisions/DECISION_LOG.md); рекомендации и неизвестные решения отделены от них.
 
@@ -14,7 +14,7 @@
 
 Owner согласовал 12 BD и отложил 3; актуальные ответы и остатки всех 15 OQ — [Release 1 decisions](requirements/RELEASE_1_DECISIONS.md). Ядро: Pickup/Dropoff, фото/размеры и комментарий при недоступных данных, подписи и PDF, Spoke API route, offline-friendly сохранность, полный доступ зарегистрированному пользователю, iPhone/iPad. Branch=Warehouse; dispatcher/Same Day orchestration вне app; Interstate позднее. Backend/API/NFR параметры не утверждены. Подготовлены [архитектурный draft](architecture/SYSTEM_ARCHITECTURE_AND_INTEGRATIONS.md) и [план зависимостей](requirements/DEVELOPMENT_PLAN.md).
 
-Ниже **AS-IS утверждённого прототипа**: scope/навигация/локальные gates не изменены. Их отличия от уточнённых target требований фиксируются в Gap Analysis; фактическая готовность live сервисов не повысилась от изменения документов.
+Ниже описано текущее состояние браузерного прототипа. Отличия от целевых требований и готовность внешних сервисов фиксируются в Gap Analysis.
 
 ## Current application scope
 
@@ -22,15 +22,16 @@ Owner согласовал 12 BD и отложил 3; актуальные от�
 
 | Контур | Текущее поведение | Источник |
 |---|---|---|
-| Home / Tasks | Маршрут Spoke из fixtures, остановки Pickup/Dropoff, поиск/фильтры, manual operations, drafts, recent operations, документы | `CargoHomeScreen`, `TasksScreen`, `cargoStore`, `spokeDomain` |
+| Home / Tasks | Маршрут Spoke из fixtures, поиск и фильтры Pickup/Delivery, черновики, ручные операции и документы. Для назначенных точек видны статусы, Start, Complete stop и возврат к активной точке. | `CargoHomeScreen`, `TasksScreen`, `cargoStore`, `spokeDomain` |
 | Осмотры | Обязательный Pre-trip перед загрузкой дневного маршрута: 4 checks, 13 фото-маркеров (5 исходных и 8 новых), attestation; Issue блокирует. Post-trip: те же 4 проверки и 13 фото, дефекты с описанием, отчёт без такого блокирования, история пар, новый цикл с новым Pre-trip | `preTripInspectionDomain`, `postTripInspectionDomain`, `preTripInspectionStore` |
-| Pickup | Autosave/restore, dimension groups (Qty, L/W/H, вес места), индивидуальные PlaceID, история, упаковка, фото; неизвестные измерения с reason перед review. Original после подписания read-only; дополнительные места — Supplemental с новой версией | `PickupCaptureScreen`, `pickupDraftDomain`, `orderEbolDomain` |
-| Dropoff | Поиск Order, сверка Pickup evidence, фото Delivery, match и condition/exception, защита от неподписанного Supplemental; Delivery review и подтверждения завершают eBOL | `DropoffVerifyScreen`, `DeliveryEbolScreen`, `DeliverySignatureScreen` |
+| Pickup | Сводка заказа, автосохранение, группы замеров, PlaceID, итоги мест, известного веса и объёма, фото и подписи. После подписания Original доступен для чтения. Новые места оформляются через Supplemental. | `PickupCaptureScreen`, `pickupDraftDomain`, `orderEbolDomain` |
+| Delivery | Поиск заказа, сверка Pickup evidence, обычное фото либо фото и описание повреждения, защита от неподписанного Supplemental. После review, подписей и проверки QR/адреса завершается eBOL. | `DropoffVerifyScreen`, `DeliveryEbolScreen`, `DeliverySignatureScreen` |
 | Local / Same Day | Pickup и Dropoff — отдельные операции. Local доступен через обычные задачи. Same Day через RouteRun — принятая концепция; отдельного активного flow, автоматической пары и общего completed нет | `App.tsx`, `domain.ts`, [бизнес-обзор](https://github.com/yarsuleimenov-code/Mobile_app/blob/main/docs/mobile-app/ru/business-overview.md) |
-| Order details | External/internal name, Qty, Special Cargo, source/Spoke preview, Requirements из broker fixtures, Team contacts, Order note. Локальные role-gates, audit, map/copy | `OrderDetailsScreen`, `orderDetailsDomain`, `orderRequirements`, `teamContactsDomain` |
+| Order details | Product List, Requirements, COI при наличии, комментарии брокера, контакты, Reference photos и локальное обновление фото. Сохраняются role-gates, audit, map/copy. | `OrderDetailsScreen`, `orderDetailsDomain`, `orderRequirements`, `teamContactsDomain` |
 | eBOL / POD | Order eBOL на заказ; Pickup/Delivery snapshots, комментарий каждой стороны на её шаге, контакт: device signature или проверенный OTP, водитель: подпись; locked versions и Supplemental. POD — итоговое представление completed eBOL | `orderEbolDomain`, `OrderDocumentHistory`, `OrderDocumentActions` |
 | Документы | Preview/version history, действия Download/Print/Email/Share; необязательная email-копия подписанной версии Pickup. Order-действия моделируют результат, не создают настоящий PDF/отправку | `orderDocumentDomain`, `documentEmailStore` |
 | Фото / offline | Фото-ID, категории, фильтр/preview/remove, раздельное evidence версий; локальная очередь retry/conflict, Keep local changes, состояния offline/slow/error | `photoEvidenceDomain`, `useEvidenceSync`, `prototypeScenarioStore` |
+| Packing photos | Необязательные фото упаковки после подписания Pickup, в том числе после завершения остановки. Локальное хранение по заказу отдельно от eBOL. | `PackingPhotos`, `packingPhotoStore` |
 | Cargo / labels / Scan | Проекция отдельного места и событий; Code 128, `ZB-{ORDER}-{NN}`, печать all/selected/one, reprint/history. Общий Scan — lookup, а Loading/Unloading отмечают места внутри операции; duplicate/unknown и ручной ввод | `cargoDomain`, `cargoPlaceTracking`, `placeLabelsDomain`, `placeScanDomain` |
 | Interstate | Выбор origin/destination и truck → подходящие Pickup records → выбор/ввод PlaceID → review loaded manifest → Create Trip & BOL; отдельные incoming fixtures → receive → review missing → Confirm unloading; поиск/архив BOL | `interstateDomain`, `interstateStore`, активные Interstate screens |
 | Communications | Inbox → Messages / Calls, индикаторы unread/new missed, поиск и Missed, дата маршрута отдельно от звонка, order thread/quick texts/offline queue/retry, Call back и локальная история исходящих, Mute/Speaker. [Инкремент 2026-10-27](requirements/INBOX_CALLS_INCREMENT_2026_10_27.md). Настоящих SMS, звонков и аудио нет | `communicationDomain`, `callDomain`, `communicationStore` |

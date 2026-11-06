@@ -1,8 +1,8 @@
 # Текущее техническое состояние
 
-Срез: **2026-10-16**, исходный commit `1abe03ce0cd54697dedf713a0657c5f41f69ece3`.
+Актуализировано **2026-11-06**. Исторический срез от 2026-10-16 зафиксирован в commit `1abe03ce0cd54697dedf713a0657c5f41f69ece3`.
 
-Единый актуальный источник состояния — [PROJECT_BASELINE](../PROJECT_BASELINE.md). Прототип принят CEO согласно подтверждению owner в задаче от 2026-10-16. Текущий этап — подготовка технической документации. UI/UX, workflows и код не изменялись при синхронизации.
+Текущее состояние описано в [PROJECT_BASELINE](../PROJECT_BASELINE.md) и дополнении [Pickup и Delivery — шаги 1–7](../requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md). Приёмка исходного среза подтверждена owner 2026-10-16.
 
 ## Реализованные контуры
 
@@ -10,7 +10,7 @@
 
 | Контур | Факт | Граница |
 |---|---|---|
-| Wireframe | React/Vite + HashRouter; Home, Tasks, Scan, Inbox, More; Pickup/Dropoff, осмотры, eBOL/POD, Cargo/labels, Interstate, Messages / Calls и quick texts | Fixtures и browser localStorage; без production identity, real sync/media/OTP/SMS/email/printer API |
+| Wireframe | React/Vite + HashRouter; Home, Tasks, Scan, Inbox, More; Pickup/Delivery с ходом работы по остановкам, Order Details, Packing photos, осмотры, eBOL/POD, Cargo/labels, Interstate, Messages / Calls и quick texts | Fixtures и browser localStorage; без production identity, real sync/media/OTP/SMS/email/printer API |
 | Documentation site | Markdown RU/EN + knowledge-base → prepare-docs → VitePress → dist/help; Pages workflow | Только пользовательский help; внутренние audit/decisions/research автоматически не публикуются в help |
 | Backend POC | NestJS POST /api/cargo-places: permission, validation, idempotency, transaction/events/outbox | Development actor adapter; не вызывается wireframe; не готовый deployed backend |
 | SQL POC | 001_initial_schema.sql и optional 002_api_context_rls.sql | Нет подтверждения runtime migrations, RLS и production grants |

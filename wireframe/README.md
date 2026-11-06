@@ -2,7 +2,9 @@
 
 Инкремент 2026-11-03: [HOV-001 — QR / заказ / геопозиция](../docs/requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md). Перед финальным Pickup/Supplemental/Delivery lock: Scan label → Check QR & location → обычное подтверждение либо Return to check / обязательная причина для Continue & confirm. Document versions → QR & location history показывает результат. В More → Administration задаются QR/геосценарии, радиус (предварительно 100 м) и точность. Device location использует browser GPS, остальные геосценарии синтетические; камера/QR decoder и реальные координаты адресов не подключены. Кнопка Continue to Delivery review лишь готовит evidence; Delivery завершается после финальной проверки и подписи. Текстовое ТЗ и developer-handoff синхронизированы.
 
-Интерактивный mobile-first прототип фиксации груза менеджерами Pickup/Dropoff. Маршрут на день остаётся в Spoke и не дублируется в Zaberman.
+Текущее состояние на 2026-11-06 — [Pickup и Delivery — шаги 1–7](../docs/requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md).
+
+Интерактивный mobile-first прототип фиксации груза бригадой при Pickup и Delivery. Маршрут на день остаётся в Spoke и не дублируется в Zaberman.
 
 Публичный прототип: https://yarsuleimenov-code.github.io/Mobile_app/
 
@@ -38,12 +40,12 @@ pnpm docs:preview
 
 ## Что оценивать
 
-- Home: быстрый выбор операции, Today’s stops, контекстная навигация `Order documents` и последние операции.
+- Home / Tasks: сводки заказа, статусы остановок, Start Pickup / Start Delivery, Return to active stop и Complete stop после подтверждения передачи по адресу.
 - Pickup: автосохраняемый draft, восстановление после перезапуска, dimension groups (Qty, L/W/H, вес одного места), add/edit/delete, change history, автоматические итоги и фотографии. Отдельные PlaceID сохраняются внутри групп.
 - Locked Pickup: исходная версия read-only; новые места оформляются через Supplemental Pickup, новую document version и новые mock-подписи.
-- Фото: отдельные ID, пять категорий, фильтр/preview и удаление конкретного фото; mock camera/gallery, локальная очередь с persisted retry/conflict. Фото original/supplemental/Delivery отображаются отдельно в review/POD.
-- Dropoff: поиск заказа, сравнение Pickup evidence, Delivery-фотографии и фиксация damage/exception без блокировки передачи.
-- Нижнее меню: `Home | Tasks | Scan | Inbox | More`; Pickup и Dropoff открываются из Home/Tasks, Interstate — из More. Inbox → Messages / Calls: история, Missed, Call back и отдельная дата маршрута. [Правила инкремента 2026-10-27](../docs/requirements/INBOX_CALLS_INCREMENT_2026_10_27.md).
+- Фото: Take photo и отдельное добавление из галереи, просмотр и удаление. Фото передач разделены по версиям eBOL. Фото брокера доступны в Order Details, а необязательные Packing photos после подписи Pickup сохраняются отдельно по заказу.
+- Delivery: поиск заказа, сверка Pickup evidence и фото Delivery. Record damage требует фото повреждения и описания.
+- Нижнее меню: `Home | Tasks | Scan | Inbox | More`; Pickup и Delivery открываются из Home/Tasks, Interstate — из More. Inbox → Messages / Calls: история, Missed, Call back и отдельная дата маршрута. [Правила инкремента 2026-10-27](../docs/requirements/INBOX_CALLS_INCREMENT_2026_10_27.md).
 - Administration (`#/more/demo`): роль/филиал, online/offline/slow, результаты sync/print/email/SMS/OTP, доступность camera/scanner/printer и полный сброс локальных данных.
 - More → Cargo places: стабильный `PlaceID`, Order и `n/N`, размеры/источник веса, label, current location/status и короткая event history для каждого места.
 - Labels: all/selected/one, отдельные Original/Supplemental filters, точный preview и история mock print/reprint. Scan различает valid/duplicate/unknown и поддерживает ручной PlaceID/OrderID.
@@ -53,7 +55,7 @@ pnpm docs:preview
 
 ## Демо для owner
 
-Home → Load today’s route → Pickup: заявки `23343775`, `23343778`, `23343780`, `23343782` открываются с mock-размерами, количеством, весом, упаковкой, ответственным, комментарием и тремя демонстрационными фото. Dropoff-заявки маршрута уже связаны с существующими Cargo records.
+Home → Load today’s route → Pickup: заявки `23343775`, `23343778`, `23343780`, `23343782` открываются с mock-размерами, количеством, весом, упаковкой, ответственным, комментарием и тремя демонстрационными фото. Delivery-заявки маршрута уже связаны с существующими Cargo records.
 
 Пример `23343775`: 3 стула × 24 × 24 × 36 in, 18 lb/place → 54 lb и 36.00 cu ft. Изменение Qty на 4 → 72 lb и 48.00 cu ft. Новые planned Pickup не становятся выполненными от одного открытия формы.
 

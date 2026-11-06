@@ -17,7 +17,7 @@ The workflow is designed for the crew that records Pickup and Delivery evidence,
 | Pre-trip inspection | Four vehicle safety checks, 13 required photos and driver attestation. A passed inspection unlocks loading Today's route; any Issue keeps it locked. |
 | Post-trip inspection | Four checks, 13 required photos, required defect notes and driver attestation. Defects do not block reporting. Read-only results and paired history; next cycle requires fresh Pre-trip. No timekeeping or automatic order/Interstate close. |
 | Pickup | An operation that records dimension groups, individual cargo places, photos and order context; it prepares Pickup evidence for Order eBOL review. |
-| Delivery | Verification of a previously recorded order against Pickup evidence, with Delivery photos and condition/exception; it prepares Delivery review. |
+| Delivery | Verification of a previously recorded order against Pickup evidence, with Delivery photo or damage report/exception; it prepares Delivery review. |
 | Same Day | A movement type whose Pickup and Delivery are intended to be connected through a RouteRun in the approved product model. An older Same Day screen exists in source but is not routed in the active app. |
 | Interstate | A separate workflow for warehouse-to-warehouse movement of selected places: loading, manifest review, Trip creation, unloading and Interstate BOL. |
 | Trip / Manifest | A selected direction, truck and confirmed set of PlaceIDs. The Trip is created after loading review; unloading reconciles against its confirmed manifest. |
@@ -81,7 +81,7 @@ flowchart LR
   G --> H["Order eBOL completed; POD available"]
 ```
 
-The Delivery screen requires a recorded order and at least one Delivery photo. A damage report requires a damage photo and a description. An unsigned Supplemental Pickup blocks confirmation. “Delivery ready for review” means the evidence was saved. Delivery review offers contact signature or SMS code. SMS code must be verified before the driver can sign; POD stores the confirmation method and masked phone reference, not the code. Delivery signing locks the snapshot and completes the Order eBOL. If Pickup is not yet locked, the app directs the user to Pickup review first. [Delivery screen](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../wireframe/src/screens/OrderPodScreen.tsx).
+The Delivery screen requires a recorded order and at least one Delivery photo for a standard handoff. A damage report requires a damage photo and a description. An unsigned Supplemental Pickup blocks confirmation. “Delivery ready for review” means the evidence was saved. Delivery review offers contact signature or SMS code. SMS code must be verified before the driver can sign; POD stores the confirmation method and masked phone reference, not the code. Delivery signing locks the snapshot and completes the Order eBOL. If Pickup is not yet locked, the app directs the user to Pickup review first. [Delivery screen](../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../wireframe/src/screens/OrderPodScreen.tsx).
 
 ### Same Day
 
@@ -108,7 +108,7 @@ Only Pickup-recorded orders matching the selected direction are eligible for loa
 | --- | --- |
 | A Pickup can continue to review only with an Order number, at least one place, at least one photo, saved draft, complete order details, and no measurement issues. Unknown measurements need a reason. | [Pickup form](../../wireframe/src/screens/PickupCaptureScreen.tsx) — Implemented local validation. |
 | The original Pickup snapshot becomes read-only after the driver confirmation. Additional places use Supplemental Pickup and new confirmations. | [Pickup signing](../../wireframe/src/screens/PickupSignatureScreen.tsx) — Implemented local state. |
-| A Delivery confirmation requires cargo matches, at least one Delivery photo, condition or documented damage, and no unsigned Supplemental Pickup. | [Delivery form](../../wireframe/src/screens/DropoffVerifyScreen.tsx) — Implemented local validation. |
+| Delivery review requires a Delivery photo for a standard handoff or a damage photo and description for a damage report. An unsigned Supplemental Pickup blocks review. | [Delivery form](../../wireframe/src/screens/DropoffVerifyScreen.tsx) — Implemented local validation. |
 | Pickup and Delivery reviews require either an on-device contact signature or a verified SMS code. OTP is available for every handoff and must be verified before driver signing. The driver always signs. Damage requires an exception note. | [Pickup review](../../wireframe/src/screens/PickupEbolScreen.tsx), [Delivery review](../../wireframe/src/screens/DeliveryEbolScreen.tsx) — Implemented local validation. |
 | POD is available only after both snapshots are locked. | [POD screen](../../wireframe/src/screens/OrderPodScreen.tsx) — Implemented local guard. |
 | Main Scan is lookup only: scanning does not add or move cargo. It distinguishes found, repeat during the current visit, order match, and unknown code. | [Scan screen](../../wireframe/src/screens/ScanScreen.tsx), [scan domain](../../wireframe/src/placeScanDomain.ts) — Implemented simulation. |

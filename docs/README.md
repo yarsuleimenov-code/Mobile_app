@@ -8,7 +8,7 @@
 
 ## Порядок чтения и приоритет источников
 
-Текущий инкремент прототипирования от **2026-11-03**: [HOV-001 — QR, заказ и местоположение](requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md), 15 HOV-AC. Синхронизированы ТЗ, UC-05/06/08, RTM, baseline и developer-handoff. Проверка допускает объяснённое продолжение как допущение MVP; радиус, реальные QR/координаты и native iOS/Android acceptance остаются открытыми.
+Текущее состояние на **2026-11-06** — [Pickup и Delivery — шаги 1–7](requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md). Проверка передачи описана в [HOV-001](requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md); production QR, координаты, радиус и приёмка на iOS/Android остаются открытыми.
 
 Синхронизация 2026-11-02 включает COM-002: шаблон **We'll be there in 20 minutes** из принятого прототипа `a524ea0`, обновлённые RU/EN-инструкции, ТЗ/UC-16 и комплект передачи. Дополнение уточняет существующий COM-AC-12; базовые количества требований/AC не меняются.
 

@@ -2,7 +2,7 @@
 
 **Use this article when:** you collect cargo for an Order.
 
-1. Open the Pickup stop from **Tasks** or Home. Verify the **Order #** and name. Use **SMS** in the order card for a quick customer message; select **Call** inside the conversation to start an Order-linked call from the corporate number. Open **Order details** if order information needs review.
+1. Open the Pickup stop from **Tasks** or Home. Verify the **Order #** and name. Use **SMS** in the order card for a quick customer message; select **Call** inside the conversation to start an Order-linked call from the corporate number. Open **Order details** if order information needs review. At an assigned stop, select **Start Pickup** when work begins.
 2. Complete Pickup date, responsible manager, packaging and any comment.
 3. For each **dimension group**, enter Qty, L/W/H and weight per place. Add groups for different kinds of places. If a value is unknown, record the reason.
 4. Add at least one **Cargo photo**. You can preview and remove individual photos before signing. Wait for the local draft to show saved.
@@ -10,7 +10,9 @@
 6. Check evidence, photos and exceptions. Choose **Sign on device** or **SMS code**. Each party enters an optional **Your comment** on their own signing screen. For SMS code, enter **Contact comment (reported)** before verifying the six-digit code; the driver comments before their signature. In the prototype `111111` is always invalid.
 7. Select **Continue to signing** for an on-device signature or **Continue to driver signature** after OTP verification. Complete the contact confirmation, obtain the Zaberman driver signature and select **Confirm & lock Pickup snapshot**.
 
-**Expected result:** the Pickup snapshot is locked in the Order eBOL. The saved draft alone is not the final confirmation.
+8. At an assigned stop, select **Complete stop** after confirming the handoff.
+
+**Expected result:** the Pickup snapshot is locked in the Order eBOL. You can add optional packing photos later from the signed Pickup or **Order details**.
 
 **Important:** after locking, added places require **Supplemental Pickup**, a new document version and new confirmations. The email-copy request is optional and simulated in this build.
 

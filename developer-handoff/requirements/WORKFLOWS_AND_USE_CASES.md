@@ -98,10 +98,10 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed Release 1; контракт refresh/cancel открыт |
 | Начальное состояние | Home без completed Pre-trip текущего cycle; Tasks может показывать fixture context независимо от Home import. |
-| Последовательность экранов/действий | Start Pre-trip → завершить UC-04 → Load today’s route → выбрать stop; в Tasks All/Pickup/Dropoff + поиск → нужная операция. |
+| Последовательность экранов/действий | Start Pre-trip → завершить UC-04 → Load today’s route → выбрать stop; в Tasks All/Pickup/Delivery + поиск → нужная операция. Для назначенной точки Start Pickup / Start Delivery → передача по eBOL → Complete stop. |
 | Валидации | Home routeUnlocked требует passed и Post-trip не completed; Task/stop привязаны к своему Order. |
-| Системные операции / изменение состояния | Target: импорт подготовленного маршрута через Spoke API после Pre-trip; local cached context сохраняется. AS-IS импорт остаётся fixture. Не объявлять sync date доказательством live receipt. |
-| Конечное состояние | Открыт Pickup/Dropoff нужной остановки; простое открытие не завершает работу. |
+| Системные операции / изменение состояния | Target: импорт подготовленного маршрута через Spoke API после Pre-trip; local cached context сохраняется. AS-IS импорт остаётся fixture, начало и завершение остановки сохраняются локально. [Шаги 1–7](PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md). |
+| Конечное состояние | Открыт Pickup или Delivery нужной точки. Завершение остановки фиксируется отдельным действием после подтверждения передачи. |
 | Альтернативные ветки | Remove route возвращает Home к import; новый vehicle cycle вновь требует Pre-trip. |
 | Ошибки / ограничения | Gate только import по BD-11; остальные функции могут быть открыты. Сбой API не означает успешный пустой импорт; RQ-03/04 остаются. |
 | Требования / источники | [FR-003](TECHNICAL_SPECIFICATION.md#fr-003), [FR-004](TECHNICAL_SPECIFICATION.md#fr-004) |
@@ -114,7 +114,7 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference |
 | Начальное состояние | Открыта операция/stop конкретного Order. |
-| Последовательность экранов/действий | Order details → прочитать Requirements/handling → Team contacts → Copy summary/handle; Navigate/Copy address для своего stop → вернуться. |
+| Последовательность экранов/действий | Order details → Product List, Requirements, COI и комментарии брокера при наличии, контакты и Reference photos. Refresh order обновляет данные локального сценария. Navigate/Copy address относится к выбранной точке. |
 | Валидации | Internal name 1..80 перед review; Special Cargo требует details; role edit gates; address/handle validation. |
 | Системные операции / изменение состояния | Изменения current details пишут локальную history; существующие locked versions не меняются; Maps — внешний destination link. |
 | Конечное состояние | Пользователь получил данные/контакт/адрес; draft сохранён. |
@@ -167,7 +167,7 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 | Системные операции / изменение состояния | Добавить новую version/addedPlaceIds и confirmations; сохранить original без изменений; effective Pickup включает только locked supplements. |
 | Конечное состояние | Original + locked supplement читаемы; только подтверждённые additions доступны для Delivery. |
 | Альтернативные ветки | Unsigned supplement продолжить позже; original всегда read-only. |
-| Ошибки / ограничения | Pending additions блокируют Confirm Dropoff; ошибочный исходный факт исправляется через UC-15, не Supplemental. |
+| Ошибки / ограничения | Pending additions блокируют переход к Delivery review; ошибочный исходный факт исправляется через UC-15, не Supplemental. |
 | Требования / источники | [FR-015](TECHNICAL_SPECIFICATION.md#fr-015) |
 
 ### UC-07
@@ -194,12 +194,12 @@ RQ-01 определяет freeze checkpoint; диаграмма не утвер
 |---|---|
 | Статус | Confirmed reference; authoritative checkpoint Needs Decision |
 | Начальное состояние | Order CargoRecord найден; Delivery ещё не locked. |
-| Последовательность экранов/действий | Home/Task → Dropoff → Search/сверка Pickup → Delivery photos/condition → matches → Continue to Delivery review (ещё не completed); если Pickup locked → Delivery review → contact signature/OTP → driver → QR и свежая геопроверка адреса Delivery HOV-001 → completed eBOL либо предупреждение с обязательной причиной. |
-| Валидации | Недоступные сведения/фото допускаются с комментарием BD-09; физическое несовпадение/отказ не маскировать matches. Нужны свой Order, актуальная версия и подтверждения; unsigned additions отдельно. |
+| Последовательность экранов/действий | Home/Tasks → Delivery → сверка заказа и Pickup evidence → Delivery photo или Record damage → Continue to Delivery review. После Pickup lock: review → подпись контакта или OTP → подпись водителя → проверка QR и адреса Delivery по HOV-001 → завершённый eBOL. Для назначенной остановки затем доступно Complete stop. |
+| Валидации | Прототип требует фото Delivery либо фото повреждения с описанием. Для Release 1 правило недоступных материалов с объяснением задано BD-09. Нужны правильный заказ, актуальная версия и подтверждения. |
 | Системные операции / изменение состояния | Сохранить Delivery draft; при Pickup locked подготовить Delivery review без завершения доставки. Финальный lock после проверки HOV-001 сохраняет audit, завершает eBOL и переводит локальный record в dropoff_complete. |
 | Конечное состояние | При обеих locked snapshots eBOL completed, POD доступен; локальный record завершён после финального подтверждения. Production authoritative close/sync остаются отдельными. |
 | Альтернативные ветки | Нет фото: сохранить причину и продолжить. Ошибка/отказ передачи: сообщить диспетчеру и открыть другую точку, не завершив проблемную (BD-05). Pickup не locked: сохранить draft и перейти к Pickup review. |
-| Ошибки / ограничения | Unknown Order, changed query, pending additions/storage/document failure не дают обычный success. Refused/partial не маскировать matches=true. |
+| Ошибки / ограничения | Unknown Order, changed query, pending additions/storage/document failure не дают обычный success. Детали обработки отказа и частичной доставки открыты по BD-05. |
 | Требования / источники | [FR-020](TECHNICAL_SPECIFICATION.md#fr-020), [FR-021](TECHNICAL_SPECIFICATION.md#fr-021), [FR-022](TECHNICAL_SPECIFICATION.md#fr-022) |
 
 ### UC-09
@@ -373,7 +373,7 @@ COM-002: в Messages первым доступен шаблон **We'll be there
 | Pickup draft | Editable → saved → ready/review; original при lock read-only | Saved не authoritative closed; нет complete server operation service |
 | eBOL | pickup_review → pickup_locked; delivery_review → completed после driver lock | Declared draft/in_transit/correction_requested не доказывают доступные полные flows |
 | Supplemental | draft → locked с новой version; original immutable | Unsigned additions не Delivery composition; correction не новое физическое место |
-| Delivery record vs document | Local Confirm Dropoff может дать dropoff_complete; document completion отдельно | До Pickup lock не разрешён Delivery signing; local status не финальная server выдача |
+| Delivery record vs document | Delivery review готовит evidence. Pickup lock требуется до подписания Delivery, финальная проверка завершает eBOL. | Complete stop фиксирует отдельное локальное состояние назначенной точки после передачи; серверный checkpoint остаётся открытым. |
 | Inspection cycle | required/in_progress/blocked → passed; Post report → cycle completed → new Pre required | Issue не снимается reconnect; cycle не shift accounting и не auto completion заказов |
 | Interstate | Selected subset → review → generated summary; receiving draft → local completion marker | Persistent outbound manifest, globally unique numbers, atomic server close и real discrepancy case не реализованы |
 | Sync | pending/retry/conflict/rejected → local result с revision guard | Не выбраны production merge, ordering и authoritative ack protocol |

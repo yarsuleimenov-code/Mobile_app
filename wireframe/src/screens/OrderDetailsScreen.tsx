@@ -14,6 +14,7 @@ import { orderContextTasks } from '../teamContactsDomain'
 import { getOrderRequirements } from '../orderRequirements'
 import { getOrderReferenceData } from '../orderReferenceData'
 import { ReferencePhotoGallery } from '../ReferencePhotoGallery'
+import { PackingPhotos } from '../PackingPhotos'
 
 export function OrderDetailsScreen() {
   const { orderNumber = '' } = useParams()
@@ -104,6 +105,7 @@ function OrderDetailsForm({ order }: { order: string }) {
         {refreshMessage ? <p role="status">{refreshMessage}</p> : null}
         <ReferencePhotoGallery photos={reference.photos} />
       </section>
+      <PackingPhotos order={order} />
       <TeamContactsCard context={{ order, name, quantity, task, workDate: route.workDate,
         handling: current.special_cargo_type ? `${specialCargoLabels[current.special_cargo_type]} · ${current.special_cargo_details}` : '', comment: cargo?.orderComment ?? '', requirements }}
         tasks={tasks} focusContacts={params.get('focus') === 'team'} onSelectStop={(stopId) => { const next = new URLSearchParams(params); next.delete('focus'); if (stopId) next.set('stop', stopId); else next.delete('stop'); setParams(next, { replace: true }) }} />

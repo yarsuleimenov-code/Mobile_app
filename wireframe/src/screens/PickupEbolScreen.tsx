@@ -21,6 +21,7 @@ import { otpRecipient } from '../deliveryOtpDomain'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { useCommunications } from '../communicationStore'
 import { CompleteRouteStop, RouteStopGate } from '../RouteStopExecution'
+import { PackingPhotos } from '../PackingPhotos'
 
 function EvidenceSummary({ evidence }: { evidence: OrderEbolEvidenceSnapshot }) {
   return (
@@ -112,6 +113,7 @@ function PickupEbolContent() {
         <main className="pickup-ebol-body">
           <section className="ebol-locked-state"><span><LockKeyhole size={30} /></span><h2>Pickup snapshot locked</h2><p>Version 1 and its confirmations cannot be edited.</p></section>
           <CompleteRouteStop order={orderNumber} operation="pickup" />
+          <PackingPhotos order={orderNumber} />
           <section className="ebol-section"><div className="ebol-section-heading"><FileText size={20} /><h2>Pickup evidence</h2></div><EvidenceSummary evidence={evidence} /><EvidenceGallery count={evidence.photoCount} photos={evidence.photos} />{evidence.hasDamage ? <div className="ebol-exception"><AlertTriangle size={20} /><span><strong>Exception documented</strong><small>{evidence.exceptionNote}</small></span></div> : <div className="ebol-clean"><CheckCircle2 size={20} /> No exception documented</div>}</section>
           <section className="ebol-section"><div className="ebol-section-heading"><ShieldCheck size={20} /><h2>Confirmations</h2></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>{orderEbol.pickup.contact.status === 'otp' ? 'Pickup contact · OTP verified' : 'Pickup contact'}</strong><small>{contactLabel}</small></span><CheckCircle2 size={21} /></div><div className="ebol-confirmed-row"><UserRound size={20} /><span><strong>Zaberman driver</strong><small>{orderEbol.pickup.driver.signerName}</small></span><CheckCircle2 size={21} /></div></section>
           <PickupEmailDeliveryStatus documentNumber={`${orderNumber}-PU-1`} request={orderEbol.pickup.contact.emailCopyRequest} />

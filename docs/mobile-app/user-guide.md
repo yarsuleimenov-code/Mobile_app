@@ -92,6 +92,8 @@ On Home and Tasks, each stop is enclosed in a compact white card with a thin bor
 
 For drivers, **Order details** is a reading screen, not an edit form. Handling requirements, when present, stay expanded before the contacts; orders without requirements do not show a Special Cargo: None card. Expand **Additional details** for External name and Source. **Spoke preview** and **Order change history** start collapsed. Dispatcher/Supervisor editors and their existing permissions are unchanged.
 
+After Pickup is confirmed, use **Add packing photos** on the signed Pickup or in **Order details**. Photos of the packed cargo are optional and save on this device in **Packing photos**. You can add them later at the warehouse, including after completing the stop. The signed eBOL keeps its original photos.
+
 ## Team contacts
 
 Open **Order details** from Pickup/Delivery or Tasks and scroll to **Team contacts**. The card shows this order's Dispatcher, Broker and Manager, separately from the customer contact. Select **@nickname** to open Telegram; compose and send the message yourself. **Not assigned** means no contact is available for that role.
@@ -136,8 +138,8 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 
 1. Open the Delivery stop from Home/Tasks. The card displays the order number, planned date and address from the route. For a manual lookup, choose **Delivery**, enter the order number and select **Search**. “Order not found” means the current local state has no recorded Pickup for that number.
 2. Check the name, **Items**, **Delivery Notes** and order comment. Review the actual places, weight, volume, Pickup date and Pickup photos separately. Complete and sign any unfinished Supplemental Pickup before confirming Delivery.
-3. Add **Delivery photos** and compare the cargo against Pickup evidence.
-4. If there is visible damage, select **Record damage**, add at least one **Damage photo**, and enter **Damage details**.
+3. Compare the cargo against Pickup evidence.
+4. Add at least one **Delivery photo**, or for visible damage select **Record damage**, add at least one **Damage photo**, and enter **Damage details**.
 5. Select **Continue to Delivery review**. This saves Delivery evidence; the handoff is not completed yet. If the Pickup snapshot is not locked, use the offered **Open Pickup review** action first.
 6. Open **Delivery review**. Check evidence and exceptions, enter the driver name and choose one contact confirmation method:
    - **Sign on device** — enter the contact name and obtain the contact signature;

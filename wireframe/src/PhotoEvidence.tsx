@@ -9,31 +9,32 @@ const syncLabels: Record<EvidenceSyncStatus, string> = {
   pending: 'Pending', syncing: 'Syncing…', synced: 'Synced', retry: 'Retry needed', conflict: 'Needs review', rejected: 'Rejected',
 }
 
-function PhotoPreview({ photo, onClose }: { photo: EvidencePhoto; onClose: () => void }) {
+function PhotoPreview({ photo, onClose, packing }: { photo: EvidencePhoto; onClose: () => void; packing: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => { dialog.current?.showModal() }, [])
-  return createPortal(<dialog className="photo-preview" ref={dialog} onClose={onClose} aria-label="Photo preview">
+  return createPortal(<dialog className="photo-preview" ref={dialog} onClose={onClose} aria-label={packing ? 'Packing photo preview' : 'Photo preview'}>
     <header><strong>{photoCategories[photo.category]}</strong><button type="button" aria-label="Close photo preview" onClick={() => dialog.current?.close()}><X size={22} /></button></header>
     <div className={`evidence-photo evidence-photo--${photo.asset + 1}`} role="img" aria-label={`${photoCategories[photo.category]} cargo`} />
-    <p>Order #{photo.orderNumber} · {photo.handoff === 'pickup' ? 'Pickup' : 'Delivery'}</p>
+    <p>Order #{photo.orderNumber} · {packing ? 'Packing' : photo.handoff === 'pickup' ? 'Pickup' : 'Delivery'}</p>
     <small>{photo.source === 'fixture' ? 'Cargo photo' : photo.source === 'camera' ? 'Camera' : 'Gallery'}</small>
     <code>{photo.id}</code>
   </dialog>, document.body)
 }
 
-export function PhotoGallery({ photos, onRemove, statuses }: {
+export function PhotoGallery({ photos, onRemove, statuses, packing = false }: {
   photos: EvidencePhoto[]; onRemove?: (id: string) => void; statuses?: Map<string, EvidenceSyncStatus>
+  packing?: boolean
 }) {
   const [category, setCategory] = useState<PhotoCategory | 'all'>('all')
   const [limit, setLimit] = useState(12)
   const [preview, setPreview] = useState<EvidencePhoto | null>(null)
   const visible = photos.filter((photo) => category === 'all' || photo.category === category)
   return <div className="photo-library">
-    <label className="photo-filter">Show photos<select aria-label="Filter photos" value={category} onChange={(event) => { setCategory(event.target.value as PhotoCategory | 'all'); setLimit(12) }}>
+    {!packing ? <label className="photo-filter">Show photos<select aria-label="Filter photos" value={category} onChange={(event) => { setCategory(event.target.value as PhotoCategory | 'all'); setLimit(12) }}>
       <option value="all">All photos ({photos.length})</option>
       {Object.entries(photoCategories).map(([value, label]) => <option value={value} key={value}>{label} ({photos.filter((photo) => photo.category === value).length})</option>)}
-    </select></label>
-    <div className="photo-grid" aria-label={`${visible.length} cargo photos`}>
+    </select></label> : null}
+    <div className="photo-grid" aria-label={`${visible.length} ${packing ? 'packing' : 'cargo'} photos`}>
       {visible.slice(0, limit).map((photo) => {
         const number = photos.indexOf(photo) + 1
         const status = statuses?.get(photo.id)
@@ -45,9 +46,9 @@ export function PhotoGallery({ photos, onRemove, statuses }: {
         </article>
       })}
     </div>
-    {!visible.length ? <p className="photo-empty">{photos.length ? 'No photos in this category.' : 'No photos yet. Add a photo to continue.'}</p> : null}
+    {!visible.length ? <p className="photo-empty">{packing ? 'No packing photos yet.' : photos.length ? 'No photos in this category.' : 'No photos yet. Add a photo to continue.'}</p> : null}
     {visible.length > limit ? <button type="button" className="camera-action" onClick={() => setLimit((current) => current + 12)}>Show more photos ({visible.length - limit} remaining)</button> : null}
-    {preview ? <PhotoPreview photo={preview} onClose={() => setPreview(null)} /> : null}
+    {preview ? <PhotoPreview photo={preview} onClose={() => setPreview(null)} packing={packing} /> : null}
   </div>
 }
 

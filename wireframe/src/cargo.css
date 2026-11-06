@@ -872,6 +872,7 @@ textarea { font: inherit; }
 .reference-photo-grid img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; background: #f3f7fc; }
 .reference-photo-grid span { display: block; padding: 6px; font-size: 12px; }
 .reference-photo-preview img { display: block; width: 100%; max-height: 70dvh; object-fit: contain; }
+.pickup-ebol-body > .packing-photos { margin-block: 16px; }
 .team-order-context, .team-contacts-card, .order-handling-summary, .order-note-summary { padding: 0 0 12px; border-bottom: 1px solid var(--cargo-line); overflow-wrap: anywhere; }
 .team-order-context > h2, .team-contacts-card > h2, .order-handling-summary > h2, .order-note-summary > h2 { margin: 0 0 8px; font-size: 16px; }
 .order-details-body > .order-name-summary { padding: 0 0 12px; background: transparent; border-radius: 0; border-bottom: 1px solid var(--cargo-line); font-size: 16px; }

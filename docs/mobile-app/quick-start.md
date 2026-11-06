@@ -49,23 +49,24 @@ For a call, select **Call** in the conversation or **Inbox → Calls → Call ba
 
 ## Complete Pickup
 
-1. Confirm the Order number and operational name.
+1. Confirm the Order number and operational name. At an assigned stop, select **Start Pickup** when work begins.
 2. Enter each dimension group's **Qty**, L/W/H and weight per place. Add a reason for unknown measurements.
 3. Add at least one cargo photo. Wait for the draft to save.
 4. Select **Continue to Pickup review**. Print/check place labels if needed.
 5. Review evidence and exceptions. Choose **Sign on device** or **SMS code**. Each party adds an optional **Your comment** on their own signing screen. With SMS code, record **Contact comment (reported)** before verification; the driver comments on their signing screen. Select **Send verification code**, enter the contact's six-digit code and select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`.
 6. Complete the contact confirmation. Select **Continue to signing** for an on-device signature or **Continue to driver signature** after OTP verification. Obtain the Zaberman driver signature and select **Confirm & lock Pickup snapshot**.
 
-The first confirmation screen means the draft is ready; the Pickup handoff is locked only after signing.
+At an assigned stop, select **Complete stop** after confirming the handoff. Use **Add packing photos** on the signed Pickup or in **Order details** to add optional packing photos later.
 
 ## Complete Delivery
 
-1. Open the Delivery stop or search its Order number.
+1. Open the Delivery stop or search its Order number. At an assigned stop, select **Start Delivery** when work begins.
 2. Compare places and Pickup photos with delivered cargo.
-3. Add at least one Delivery photo. If you find damage, select **Record damage**, add a damage photo and describe what you found.
+3. Add at least one Delivery photo, or if you find damage, select **Record damage**, add a damage photo and describe it.
 4. Select **Continue to Delivery review**, then **Open Delivery review**. If prompted, lock Pickup first.
 5. Review evidence and choose **Sign on device** or **SMS code** for the contact. For SMS code, send the code to the displayed masked number and enter the recipient's code. In the prototype, every six-digit code succeeds except `111111`, which demonstrates an invalid code.
 6. Obtain the driver signature, select **Complete Order eBOL** and open POD.
+7. At an assigned stop, select **Complete stop** after confirming the handoff.
 
 ## Scan cargo
 

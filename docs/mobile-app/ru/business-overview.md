@@ -75,7 +75,7 @@ flowchart LR
 ```mermaid
 flowchart LR
   A["Открыть Delivery и найти Order"] --> B["Сверить Pickup evidence"]
-  B --> C["Фото Delivery и состояние"]
+  B --> C["Фото Delivery или отчёт о повреждении"]
   C --> D["Continue to Delivery review"]
   D --> E["Delivery review"]
   E --> F["Подпись контакта или проверенный SMS code"]
@@ -83,7 +83,7 @@ flowchart LR
   G --> H["Order eBOL завершён; POD доступен"]
 ```
 
-Для **Continue to Delivery review** нужны сохранённый заказ и минимум одно фото Delivery. При заявленном повреждении нужны фото повреждения и описание. Неподписанный Supplemental Pickup блокирует подтверждение. Сообщение **Delivery ready for review** означает, что материалы сохранены. На Delivery review доступны подпись контакта и SMS code. При SMS code получатель должен быть проверен до подписи водителя; POD сохраняет способ подтверждения и маскированную ссылку на телефон, но не сам код. Подпись Delivery блокирует запись и завершает Order eBOL. Если Pickup ещё не заблокирован, интерфейс направляет на Pickup review. [Delivery](../../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../../wireframe/src/screens/OrderPodScreen.tsx).
+Для **Continue to Delivery review** нужны сохранённый заказ и минимум одно фото Delivery при обычной передаче. При заявленном повреждении нужны фото повреждения и описание. Неподписанный Supplemental Pickup блокирует подтверждение. Сообщение **Delivery ready for review** означает, что материалы сохранены. На Delivery review доступны подпись контакта и SMS code. При SMS code получатель должен быть проверен до подписи водителя; POD сохраняет способ подтверждения и маскированную ссылку на телефон, но не сам код. Подпись Delivery блокирует запись и завершает Order eBOL. Если Pickup ещё не заблокирован, интерфейс направляет на Pickup review. [Delivery](../../../wireframe/src/screens/DropoffVerifyScreen.tsx), [Delivery review](../../../wireframe/src/screens/DeliveryEbolScreen.tsx), [POD](../../../wireframe/src/screens/OrderPodScreen.tsx).
 
 ### Same Day
 
@@ -110,7 +110,7 @@ flowchart LR
 | --- | --- |
 | Продолжить Pickup review можно при наличии номера заказа, минимум одного места и фото, сохранённого черновика, необходимых данных заказа и отсутствии ошибок измерений. Для неизвестных измерений нужна причина. | [Форма Pickup](../../../wireframe/src/screens/PickupCaptureScreen.tsx) — локальная проверка реализована. |
 | Исходный Pickup snapshot после подтверждения водителем становится неизменяемым. Дополнительные места требуют Supplemental Pickup и новых подписей. | [Подписание Pickup](../../../wireframe/src/screens/PickupSignatureScreen.tsx) — локальное состояние реализовано. |
-| **Continue to Delivery review** требует фото Delivery. Для заявленного повреждения обязательны фото и описание. Неподписанный Supplemental Pickup блокирует переход. | [Форма Delivery](../../../wireframe/src/screens/DropoffVerifyScreen.tsx) — локальная проверка реализована. |
+| **Continue to Delivery review** требует фото Delivery при обычной передаче. Для заявленного повреждения обязательны фото повреждения и описание. Неподписанный Supplemental Pickup блокирует переход. | [Форма Delivery](../../../wireframe/src/screens/DropoffVerifyScreen.tsx) — локальная проверка реализована. |
 | Pickup и Delivery review требуют подпись контакта на устройстве либо проверенный SMS code. OTP доступен для каждой передачи и должен быть проверен до подписи водителя. Водитель подписывает всегда. Повреждение требует описания исключения. | [Pickup review](../../../wireframe/src/screens/PickupEbolScreen.tsx), [Delivery review](../../../wireframe/src/screens/DeliveryEbolScreen.tsx) — локальная проверка реализована. |
 | POD доступен после блокировки обеих записей передачи. | [Экран POD](../../../wireframe/src/screens/OrderPodScreen.tsx) — проверка реализована. |
 | Основной Scan только ищет: не добавляет и не перемещает груз. Он различает найденный, повторно считанный, номер заказа и неизвестный код. | [Scan](../../../wireframe/src/screens/ScanScreen.tsx) — симуляция реализована. |

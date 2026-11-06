@@ -8,6 +8,8 @@
 
 Дополнение **HOV-001, 2026-11-03**: [QR, заказ и местоположение при передаче](QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md) — обязательная проверка перед финальным подтверждением Pickup/Supplemental/Delivery, предупреждения, объяснённое продолжение и история версии. Это запрос на прототипирование / визуальное ТЗ; жёсткий запрет не утверждён, 100 м предварительно. Документ задаёт 15 отдельных HOV-AC и уточняет FR-014/016/021/022/030/034/048/050 без перенумерации базы. Production QR-связь и координаты точек требуют подтверждения; Android указан для этого инкремента сверх прежнего iPhone/iPad baseline.
 
+Текущая реализация описана в [Pickup и Delivery — шаги 1–7](PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md). Локальные статусы остановок, форма фото и Packing photos относятся к браузерному прототипу. Для целевой обработки недоступных фото действует BD-09.
+
 Актуализация 2026-10-27: COM-001 описывает уже принятый блок Inbox/Calls прототипа `0c948b4`; FR-001/044/045 и UC-16 уточнены, добавлены отдельные COM-AC/CALL-TC. Остальные требования draft 1.2 и отложенный scope реальной телефонии сохраняются.
 
 Синхронизация 2026-11-02: COM-002 фиксирует принятый 2026-10-30 шаблон прибытия из прототипа `a524ea0`: первым в quick texts отображается **We'll be there in 20 minutes**. Выбор подставляет редактируемый draft; отправка только по Send. Нового SMS-контракта или требования телефонии это не добавляет.
@@ -393,7 +395,7 @@
 | Предусловия | Pickup original locked; Order ещё допускает добавление по подтверждённой границе. |
 | Основной сценарий | Add places → Supplemental draft → review новой версии → contact/driver confirmation → lock. |
 | Альтернативные сценарии | Открытый Supplemental продолжается, не создаётся повторная unsigned версия. |
-| Исключения / ошибки | Без новых мест review невозможен; unsigned Supplemental блокирует Confirm Dropoff. |
+| Исключения / ошибки | Без новых мест review невозможен; unsigned Supplemental блокирует переход к Delivery review. |
 | Связанные сущности | Order, Supplemental operation/version, CargoPlace |
 | Источник | [pickupDraftDomain](../../wireframe/src/pickupDraftDomain.ts); [orderEbolDomain](../../wireframe/src/orderEbolDomain.ts); [PickupCaptureScreen](../../wireframe/src/screens/PickupCaptureScreen.tsx) |
 | Нерешённые зависимости | OQ-04, OQ-08 |
