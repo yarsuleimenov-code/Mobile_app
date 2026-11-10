@@ -139,9 +139,13 @@ export function hasStopConfirmation(task: SpokeTask, progress: StopProgress) {
   if (!progress.startedAt || progress.failure || !handoff?.lockedAt) return false
   if (handoff.stopVisit) return handoff.stopVisit.stopId === task.stopId && handoff.stopVisit.startedAt === progress.startedAt
     && Date.parse(handoff.lockedAt) >= Date.parse(progress.startedAt)
-  return Boolean(handoff.verification?.stopId === task.stopId
+  if (handoff.verification) return Boolean(handoff.verification.stopId === task.stopId
     && handoff.verification.orderNumber === task.externalId && handoff.verification.operation === task.operation
     && Date.parse(handoff.verification.checkedAt) >= Date.parse(progress.startedAt))
+  // Older manual signing links omitted the visit. Accept only a new signature for one unambiguous stop.
+  const matching = readSpokeRoute()?.tasks.filter((item) => item.externalId === task.externalId && item.operation === task.operation)
+  return matching?.length === 1 && matching[0].stopId === task.stopId
+    && Date.parse(handoff.lockedAt) >= Date.parse(progress.startedAt)
 }
 
 export async function updateStopProgress(route: SpokeRoute, task: SpokeTask, action: StopProgressAction, reason = '') {

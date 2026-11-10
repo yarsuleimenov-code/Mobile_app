@@ -73,6 +73,53 @@ it('releases the active stop only after its own new handoff and explicit complet
   expect(progress()[0]?.completedAt).toBe(completedAt)
 })
 
+it('completes a Delivery signed through an older manual link during its unique active visit', async () => {
+  const storage = mockStorage()
+  const route = mockTodaySpokeRoute
+  const delivery = route.tasks[6]
+  vi.setSystemTime(new Date('2026-11-10T12:00:00.000Z'))
+  await updateStopProgress(route, delivery, 'start')
+  const signed = JSON.stringify([{
+    orderNumber: delivery.externalId, status: 'completed', pickup: {},
+    delivery: { lockedAt: '2026-11-10T12:05:00.000Z', contact: { signerName: 'Delivery contact' } },
+  }])
+  storage.set(ORDER_EBOLS_STORAGE_KEY, signed)
+  vi.setSystemTime(new Date('2026-11-10T12:10:00.000Z'))
+  await updateStopProgress(route, delivery, 'complete')
+  const progress = parseStopProgress(storage.get(stopProgressKey(route))!)
+  expect(progressForStop(progress, delivery)?.completedAt).toBe('2026-11-10T12:10:00.000Z')
+  expect(storage.get(ORDER_EBOLS_STORAGE_KEY)).toBe(signed)
+  expect(readEvidenceQueue()).toMatchObject([{ label: `Delivery stop #${delivery.externalId}`, detail: 'Stop completed' }])
+})
+
+it('rejects older, invalid, ambiguous and explicitly mismatched Delivery confirmations', async () => {
+  const storage = mockStorage()
+  const route = mockTodaySpokeRoute
+  const delivery = route.tasks[6]
+  const startedAt = '2026-11-10T12:00:00.000Z'
+  vi.setSystemTime(new Date(startedAt))
+  await updateStopProgress(route, delivery, 'start')
+  const setDelivery = (handoff: object) => storage.set(ORDER_EBOLS_STORAGE_KEY, JSON.stringify([{
+    orderNumber: delivery.externalId, status: 'completed', pickup: {}, delivery: handoff,
+  }]))
+  for (const handoff of [
+    { lockedAt: '2026-11-10T11:00:00.000Z' },
+    { lockedAt: 'invalid' },
+    { lockedAt: '2026-11-10T12:05:00.000Z', stopVisit: { stopId: 'another-stop', startedAt } },
+    { lockedAt: '2026-11-10T12:05:00.000Z', stopVisit: { stopId: delivery.stopId, startedAt: '2026-11-10T11:00:00.000Z' } },
+    { lockedAt: '2026-11-10T12:05:00.000Z', verification: { stopId: 'another-stop', checkedAt: startedAt } },
+  ]) {
+    setDelivery(handoff)
+    await expect(updateStopProgress(route, delivery, 'complete')).rejects.toThrow('Confirm the handoff')
+  }
+  setDelivery({ lockedAt: '2026-11-10T12:05:00.000Z' })
+  storage.set(SPOKE_ROUTE_STORAGE_KEY, JSON.stringify({ ...route,
+    tasks: [...route.tasks, { ...delivery, stopId: 'second-delivery-visit' }],
+  }))
+  await expect(updateStopProgress(route, delivery, 'complete')).rejects.toThrow('Confirm the handoff')
+  expect(progressForStop(parseStopProgress(storage.get(stopProgressKey(route))!), delivery)?.completedAt).toBeUndefined()
+})
+
 it('fails an unstarted or active stop and restores it to ready without changing another active stop', async () => {
   const storage = mockStorage()
   const route = mockTodaySpokeRoute

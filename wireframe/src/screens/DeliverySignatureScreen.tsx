@@ -72,8 +72,9 @@ function DeliverySignatureContent({ orderNumber }: { orderNumber: string }) {
 
   const finishDeliverySigning = (stopVisit?: SignedStopVisit) => {
     if (!driverSigned || (startsWithContact && !contactSigned) || !changeComments(comments)) return
+    const returnPath = stopVisit ? `/orders/${orderNumber}/ebol/delivery?stop=${encodeURIComponent(stopVisit.stopId)}` : reviewPath
     const current = withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? orderEbol, 'delivery', getOrderDetails(orderNumber))!
-    if (current.delivery.lockedAt) { navigate(reviewPath, { replace: true }); return }
+    if (current.delivery.lockedAt) { navigate(returnPath, { replace: true }); return }
     const locked = lockDeliveryEbol(current, { ...confirmationInput, stopVisit, contactComment: comments.contact, driverComment: comments.driver })
     const saved = saveSignedOrderEbol(locked, 'delivery')
     if (!saved) {
@@ -81,7 +82,7 @@ function DeliverySignatureContent({ orderNumber }: { orderNumber: string }) {
       return
     }
     completeDropoff(orderNumber)
-    navigate(reviewPath, { replace: true })
+    navigate(returnPath, { replace: true })
   }
 
   const stepNumber = startsWithContact ? (step === 'contact' ? 1 : 2) : 1

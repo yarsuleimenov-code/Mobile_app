@@ -18,17 +18,19 @@ function useExecution(order: string, operation: SpokeOperation) {
   const stopId = params.get('stop') || undefined
   const stop = useOrderStopContext(order, operation, stopId)
   const entries = useRouteStopProgress(stop.route)
-  const task = stopId ? stop.task : undefined
+  const active = entries.find(isActiveStop)
+  const task = stopId ? stop.task : spokeRoute?.tasks.find((item) => item.stopId === active?.stopId
+    && item.externalId === order && item.operation === operation)
   const progress = task ? progressForStop(entries, task) : undefined
   const routeCompletion = useRouteCompletion(spokeRoute)
-  return { stopId, stop, task, progress, spokeRoute, routeCompletion, active: entries.find(isActiveStop) }
+  return { stopId, stop, task, progress, spokeRoute, routeCompletion, active }
 }
 
 export function useSignAtStop(order: string, operation: SpokeOperation) {
   const { stopId, stop: { route }, task, progress } = useExecution(order, operation)
   const [visitStartedAt] = useState(progress?.startedAt)
   return async (sign: (visit?: SignedStopVisit) => void, supplemental = false) => {
-    if (!stopId || supplemental) { sign(); return }
+    if ((!stopId && !task) || supplemental) { sign(); return }
     await withRouteStopLock(route, () => {
       assertCurrentRoute(route)
       if (readRouteCompletion(route)) throw new Error('This route has already been completed.')

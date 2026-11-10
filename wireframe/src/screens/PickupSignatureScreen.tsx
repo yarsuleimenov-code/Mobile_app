@@ -91,9 +91,10 @@ function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
 
   const finishPickupSigning = (stopVisit?: SignedStopVisit) => {
     if (!driverSigned || (startsWithContact && !contactSigned) || !changeComments(comments)) return
+    const returnPath = stopVisit ? `/orders/${orderNumber}/ebol/pickup?stop=${encodeURIComponent(stopVisit.stopId)}` : reviewPath
     const input = { ...confirmationInput, stopVisit, contactComment: comments.contact, driverComment: comments.driver, sendEmailCopy: startsWithContact && sendEmailCopy, contactEmail: contactEmail.trim() }
     const current = withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? orderEbol, supplementVersion ?? 'pickup', getOrderDetails(orderNumber))!
-    if ((supplementVersion === undefined && current.pickup.lockedAt) || current.pickupSupplements.find((item) => item.version === supplementVersion)?.lockedAt) { navigate(reviewPath, { replace: true }); return }
+    if ((supplementVersion === undefined && current.pickup.lockedAt) || current.pickupSupplements.find((item) => item.version === supplementVersion)?.lockedAt) { navigate(returnPath, { replace: true }); return }
     const locked = supplementVersion === undefined
       ? lockPickupEbol(current, input)
       : lockSupplementalPickup(current, supplementVersion, input)
@@ -120,7 +121,7 @@ function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
       orderNumber,
       supplementVersion === undefined ? 'standard' : 'supplemental',
     ))
-    navigate(reviewPath, { replace: true })
+    navigate(returnPath, { replace: true })
   }
 
   const stepNumber = startsWithContact ? (step === 'contact' ? 1 : 2) : 1
