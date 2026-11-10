@@ -144,7 +144,7 @@ textarea { font: inherit; }
 .spoke-task-search { min-height: 46px; margin-top: 11px; padding: 0 11px; display: flex; align-items: center; gap: 8px; border: 1px solid #bdc8d3; border-radius: 8px; color: var(--cargo-muted); }
 .spoke-task-search input { min-width: 0; flex: 1; height: 44px; border: 0; outline: 0; color: var(--cargo-navy); font: inherit; font-size: 14px; }
 .spoke-task-list { margin-top: 8px; }
-.home-stop-with-directions > button, .task-with-details > .task-card { width: 100%; min-height: 44px; padding: 0 0 8px; display: block; border: 0; background: #fff; color: var(--cargo-navy); text-align: left; text-decoration: none; cursor: pointer; }
+.home-stop-with-directions > button, .task-with-details > .task-card { width: 100%; min-height: 44px; padding: 0 0 8px; display: block; border: 0; background: transparent; color: var(--cargo-navy); text-align: left; text-decoration: none; cursor: pointer; }
 .stop-card-heading { display: flex; align-items: flex-start; gap: 10px; }
 .stop-card-heading > svg { flex-shrink: 0; margin-top: 3px; }
 .stop-card-title { flex: 1; min-width: 0; font-family: "Segoe UI", Arial, sans-serif; font-size: 17px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
@@ -894,6 +894,8 @@ textarea { font: inherit; }
 .team-order-context .order-detail-values { grid-template-columns: 1fr 1fr; }
 .team-context-wide { grid-column: 1 / -1; }
 .home-stop-with-directions, .task-with-details { padding: 10px; border: 1px solid var(--cargo-line); border-radius: 8px; background: #fff; }
+.home-stop-with-directions[data-status="Completed"], .task-with-details[data-status="Completed"] { background: #f1f3f5; }
+.home-stop-with-directions[data-status="In progress"], .task-with-details[data-status="In progress"] { background: #e8f7ed; }
 .home-stop-with-directions + .home-stop-with-directions, .task-with-details + .task-with-details { margin-top: 8px; }
 .stop-navigation { min-width: 0; padding: 12px; border-radius: 9px; background: #f3f7fc; }
 .stop-navigation > small { display: block; font-size: 11px; line-height: 1.5; color: var(--cargo-muted); }

@@ -120,7 +120,7 @@ If a handoff cannot go ahead, select **Fail stop** before confirming the handoff
 
 Home and Tasks display **In progress** and **Completed** for route stops. The prototype saves start and completion times locally. Handoff confirmation and stop completion are separate actions.
 
-On Home and Tasks, each stop is enclosed in a compact white card with a thin border, rounded corners and a small gap between cards. The Order number and name form one emphasized heading: **#23343775 · Dining Chair**. Below it are the purple **Pickup** or green **Delivery** label, the stop number and quantity, the scheduled time, and the full address with map/copy icons. Long names wrap without truncation. There is no internal divider, shadow or extra action panel.
+On Home and Tasks, each stop is enclosed in a compact card with a thin border, rounded corners and a small gap between cards. The entire card is light green for **In progress** and gray for **Completed**. The Order number and name form one emphasized heading: **#23343775 · Dining Chair**. Below it are the purple **Pickup** or green **Delivery** label, the stop number and quantity, the scheduled time, and the full address with map/copy icons. Long names wrap without truncation. There is no internal divider, shadow or extra action panel.
 
 For drivers, **Order details** is a reading screen, not an edit form. Handling requirements, when present, stay expanded before the contacts; orders without requirements do not show a Special Cargo: None card. Expand **Additional details** for External name and Source. **Spoke preview** and **Order change history** start collapsed. Dispatcher/Supervisor editors and their existing permissions are unchanged.
 
