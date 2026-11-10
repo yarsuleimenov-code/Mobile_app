@@ -896,6 +896,7 @@ textarea { font: inherit; }
 .home-stop-with-directions, .task-with-details { padding: 10px; border: 1px solid var(--cargo-line); border-radius: 8px; background: #fff; }
 .home-stop-with-directions[data-status="Completed"], .task-with-details[data-status="Completed"] { background: #f1f3f5; }
 .home-stop-with-directions[data-status="In progress"], .task-with-details[data-status="In progress"] { background: #e8f7ed; }
+.home-stop-with-directions[data-status="Failed"], .task-with-details[data-status="Failed"] { background: #fdecea; }
 .home-stop-with-directions + .home-stop-with-directions, .task-with-details + .task-with-details { margin-top: 8px; }
 .stop-navigation { min-width: 0; padding: 12px; border-radius: 9px; background: #f3f7fc; }
 .stop-navigation > small { display: block; font-size: 11px; line-height: 1.5; color: var(--cargo-muted); }
