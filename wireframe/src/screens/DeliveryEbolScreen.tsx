@@ -4,6 +4,7 @@ import { ContactFollowUpNotice, ContactFollowUpReason } from '../order-document-
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
+import { currentUser } from '../currentUser'
 import {
   canReviewOrderEvidence, withCurrentOrderDetails, canLockDeliveryEbol,
   type DeliveryEbolConfirmationInput, type OrderEbol, type OrderEbolEvidenceSnapshot,
@@ -59,7 +60,6 @@ function DeliveryEbolContent() {
   const [otpVerified, setOtpVerified] = useState(orderEbol?.delivery.contact.status === 'otp')
   const [otpRevision, setOtpRevision] = useState(0)
   const invalidateOtp = () => { if (otpVerified) { setOtpVerified(false); setOtpRevision((revision) => revision + 1) } }
-  const [driverName, setDriverName] = useState(orderEbol?.delivery.driver.signerName ?? '')
   const [hasDamage, setHasDamage] = useState(orderEbol?.delivery.evidence?.hasDamage ?? false)
   const [exceptionNote, setExceptionNote] = useState(orderEbol?.delivery.evidence?.exceptionNote ?? '')
   const { comments, changeComments, saveError } = useHandoffComments(orderEbol, 'delivery')
@@ -94,7 +94,7 @@ function DeliveryEbolContent() {
     contactMethod,
     contactName: contactMethod === 'otp' ? recipient.name : contactName,
     followUpReason,
-    driverName,
+    driverName: currentUser.name,
     hasDamage,
     exceptionNote,
     contactComment: comments.contact, driverComment: comments.driver,
@@ -160,7 +160,7 @@ function DeliveryEbolContent() {
           )}
         </section>
 
-        <section className="ebol-section"><div className="ebol-section-heading"><UserRound size={20} /><h2>Zaberman driver</h2></div><label className="ebol-field">Driver name<input value={driverName} onChange={(event) => setDriverName(event.target.value)} placeholder="Full name" /></label></section>
+        <section className="ebol-section"><div className="ebol-section-heading"><UserRound size={20} /><h2>Zaberman driver</h2></div><label className="ebol-field">Driver name<input value={currentUser.name} readOnly /></label></section>
 
         <HandoffCommentSaveError visible={saveError} />
         <div className="flow-action"><button type="button" className="cargo-primary" disabled={(!canLockDeliveryEbol(confirmationInput) || !canReviewOrderEvidence(evidence))} onClick={openSigning}><FileText size={19} /> {contactMethod === 'signed' ? 'Continue to signing' : 'Continue to driver signature'}</button></div>

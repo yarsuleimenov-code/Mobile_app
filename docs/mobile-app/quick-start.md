@@ -4,6 +4,8 @@ Use this as a short guide to the current Mobile App interface. The deployed buil
 
 ## Before you start
 
+The employee profile in **More** shows **John Doe**. New driver confirmations and vehicle inspections use this name automatically. **Driver name** is read-only. Enter the customer's name separately when requested.
+
 Open **Cargo operations**. Before **Load today’s route** becomes available, complete the required **Pre-trip inspection**. Pickup and Delivery can still be opened directly in the wireframe. A loaded Spoke route is a local fixture, not a live dispatch assignment.
 
 ## Complete the Pre-trip inspection
@@ -18,7 +20,7 @@ If you used a route, select **Complete route** on Home when you return to the wa
 
 ## Load the next warehouse route
 
-Open **Route Loading** on Home to preview the next route. Select **Start loading**, then scan or enter each expected Delivery **PlaceID**. Select **Complete loading** after all places are confirmed. [Route Loading instructions](user-guide.md#route-loading).
+Open **Route Loading** on Home to preview the next route. Open **Broker photos** or **Packing photos** to inspect the cargo. Select **Start loading**, then scan the QR label or enter each expected Delivery **PlaceID**. Select **Complete loading** after all places are confirmed. [Route Loading instructions](user-guide.md#route-loading).
 
 ## Sync after reconnecting
 
@@ -29,6 +31,7 @@ Select **More → Sync now** when the connection returns. Open **Queue details**
 - **Home:** compact **Manual operations → Pickup / Delivery**, Today's stops, drafts and Order documents. For additional places on a signed Pickup, use **Recent operations → Add places** or resume **Supplemental Pickup** from **Pickup drafts**.
 - **Tasks:** search by Order ID/title; filter Pickup or Delivery; open the correct stop.
 - **Scan:** look up a cargo PlaceID or Order ID.
+- **Inbox** opens Messages & Calls.
 - **More:** Help & Instructions, Cargo places, Interstate operations and local sync status.
 
 ## Open a task
@@ -75,6 +78,10 @@ At an assigned stop, select **Complete stop** after confirming the handoff. Use 
 ## Scan cargo
 
 Open **Scan** and use **Scan label** or **Enter code manually**. A found PlaceID opens its cargo record; an Order ID opens its places. Main Scan is lookup only. For Interstate movement, use the PlaceID inputs inside Loading or Unloading.
+
+## Rehearse a scenario
+
+Open **More → Administration → Owner-demo rehearsal**. **Complete route & Post-trip** starts at warehouse return, **Next-day route loading** opens tomorrow's load with broker photos, and **Partial sync & retry** opens More with sample queue records. Reopening continues saved progress. The route-completion example requires any other active vehicle cycle to be finished first. [Scenario instructions](user-guide.md#rehearsal-scenarios-in-administration).
 
 ## If something is wrong
 

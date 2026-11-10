@@ -2,7 +2,8 @@ import { AlertTriangle, Check, CheckCircle2, ChevronRight, Truck } from 'lucide-
 import { useNavigate } from 'react-router-dom'
 import { CargoFlowHeader } from '../cargo-components'
 import { InspectionCaptureForm, InspectionPhotoRecord } from '../InspectionCaptureForm'
-import { formatInspectionMiles, inspectionCanComplete, inspectionDriver, preTripPhotos } from '../preTripInspectionDomain'
+import { formatInspectionMiles, inspectionCanComplete, preTripPhotos } from '../preTripInspectionDomain'
+import { currentUser } from '../currentUser'
 import { usePreTripInspection } from '../preTripInspectionStore'
 
 export function PreTripInspectionScreen() {
@@ -35,13 +36,13 @@ export function PreTripInspectionScreen() {
       <div className="pretrip-review-state"><span><CheckCircle2 size={28} /></span><h1>Review Pre-trip</h1><p>Review the vehicle and equipment record before departure.</p></div>
       <dl className="pretrip-review-list">
         <div><dt>Vehicle</dt><dd>{vehicle}</dd></div>
-        <div><dt>Inspected by</dt><dd>{inspectionDriver}</dd></div>
+        <div><dt>Inspected by</dt><dd>{currentUser.name}</dd></div>
         <div><dt>Odometer</dt><dd>{formatInspectionMiles(inspection.odometer)}</dd></div>
         <div><dt>Required photos</dt><dd>{inspection.photos.length}/{preTripPhotos.length} captured</dd></div>
       </dl>
       <InspectionPhotoRecord photos={inspection.photos} />
       <label className="pretrip-attestation"><input type="checkbox" checked={inspection.attested} onChange={(event) => setAttested(event.target.checked)} />
-        <span><strong>I confirm this vehicle is safe to operate</strong><small>This inspection will be recorded under {inspectionDriver}.</small></span></label>
+        <span><strong>I confirm this vehicle is safe to operate</strong><small>This inspection will be recorded under {currentUser.name}.</small></span></label>
     </InspectionCaptureForm>
   </div>
 }

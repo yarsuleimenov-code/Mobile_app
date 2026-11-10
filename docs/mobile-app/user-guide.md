@@ -4,6 +4,10 @@ In **Place labels**, opening the print preview generates the label batch and rec
 
 This guide describes the **active** Mobile App interface. Buttons can change local prototype data; route loading, device actions, signatures, document sharing and sync are simulations. Use the on-screen order number and PlaceID when following an operation. Start with [Quick Start](quick-start.md) if you need the shortest route.
 
+## Account and driver name
+
+The current prototype uses **John Doe** as the signed-in employee. **More** shows this name. **Driver name** is filled automatically and read-only in Pickup, Supplemental Pickup and Delivery. Each new driver confirmation and completed Pre-trip/Post-trip inspection records John Doe. Obtain the driver's signature as usual. Enter the customer's name separately where requested. Previously signed documents and completed inspections retain their recorded names.
+
 ## Getting started and navigation
 
 ![Home with today's stops](images/home.png)
@@ -17,6 +21,7 @@ The bottom navigation contains:
 | **Home** | Open Pickup/Delivery, load today's stops, resume a draft or open an Order eBOL. |
 | **Tasks** | Find a loaded stop by Order ID or title; filter All, Pickup, Delivery; open its operation or Order details. |
 | **Scan** | Look up a PlaceID or Order ID and open the matching cargo record. This tab does not record a loading or delivery event. |
+| **Inbox** | Open Messages & Calls, unread messages and missed calls. |
 | **More** | Help & Instructions, Sync now, Cargo places, Interstate operations and Administration. Administration controls role, branch, network, operation outcomes, device availability and local scenario data for demonstrations. |
 
 ### Active screen map
@@ -27,11 +32,13 @@ All paths below are hash routes under the deployed site. A listed route is inter
 | --- | --- | --- |
 | Home | Cargo operations — `#/` | Pickup, Delivery, load route, Order documents |
 | Home | Pre-trip inspection — `#/pre-trip-inspection` | Odometer, 13 photos and driver attestation |
+| Home | Route Loading — `#/route-loading` | Preview tomorrow's warehouse route, open broker photos and confirm Delivery places |
 | Home, after Pre-trip | Post-trip inspection — `#/post-trip-inspection` | Record vehicle condition after use; view completed/archived inspections |
 | Home / bottom nav | Tasks — `#/tasks` | Open Pickup/Delivery stop; Order details |
 | Bottom nav | Scan — `#/scan` | Open place or order places |
 | Home / Inbox / Tasks / Pickup draft / Order details | Messages & Calls — `#/communications`, `#/communications?tab=calls`, `#/orders/{number}/communications` | Review messages and call history; send SMS or call the selected Order contact |
 | Bottom nav | More — `#/more` | Help & Instructions, Interstate, Cargo places, Sync now, Administration |
+| More | Administration — `#/more/demo` | Open a rehearsal scenario or adjust scenario settings |
 | Home / Tasks | Pickup draft — `#/pickup?order={number}` | Pickup review or place labels |
 | Tasks / Pickup | Order details — `#/orders/{number}/details` | Return to operation |
 | Pickup | Place labels — `#/orders/{number}/labels` | Print/preview, Scan, Pickup review |
@@ -84,11 +91,23 @@ Select **Complete loading** when every planned place is loaded. The completed lo
 2. When the connection returns, open **More → Sync now**. Expand **Queue details** to see each record and its status. The queue includes handoff and stop results, packing photos, inspections, completed loads and warehouse returns.
 3. If a record shows **Retry needed**, select **Sync now** again. The retry processes pending records and keeps the original operation times. **Synced** shows the outcome of the prototype's local sync scenario.
 
+## Rehearsal scenarios in Administration
+
+Open **More → Administration → Owner-demo rehearsal** and choose a card. The card configures the role, branch, connection and devices for that scenario and opens its starting screen. Reopening a card resumes saved progress. **Reset all mock data** clears the local records after confirmation and restores the initial examples. Use it only when a fresh rehearsal is needed.
+
+| Scenario | Steps and expected result |
+| --- | --- |
+| **Complete route & Post-trip** | Opens Home with a completed Pre-trip and two resolved stops, one completed and one failed. Select **Complete route** after returning to the warehouse, then start **Post-trip inspection**, capture 13 photos, enter an odometer of at least **12450** miles and confirm the inspection. Check the separate last-stop, return and inspection times, mileage and John Doe. |
+| **Next-day route loading** | Opens Route Loading for warehouse NJ1. Review **Broker photos** and **Packing photos**, select **Start loading**, scan the five expected Delivery places and select **Complete loading**. Reopening preserves the saved load for that plan. |
+| **Partial sync & retry** | Adds two sample queue records and opens More with a partial-failure outcome. Select **Sync now**, inspect **Queue details**, then retry with **Sync now**. With a fresh queue, one record syncs on the first attempt and the remaining record on retry. Existing queue records keep their states. |
+
+The route-completion scenario asks you to finish another active vehicle cycle before it can prepare its example. Its own saved cycle continues on reopening. The sample queue records demonstrate sync statuses independently of completing loads or inspections. **Printer unavailable** opens QR label preview with the printer disabled. Enable **Printer** in Administration to continue printing.
+
 ## Tasks and Order details
 
 In **Order details**, check **Product List** for the items and their quantities. **Places** shows the number of recorded cargo places. **Requirements** shows instructions, COI and the broker comment when available. **Copy summary** includes the transport instructions.
 
-Open a thumbnail in **Reference photos** to inspect the image. This gallery contains photos supplied with the order. Photos captured by the crew are in the Pickup and Delivery flows. To see the update, open order **#11098765** and select **Refresh order**. A second photo appears and remains available when the order is reopened. The prototype uses local order snapshots for this scenario.
+Open a thumbnail in **Reference photos** to inspect the image. This gallery contains photos supplied with the order. Photos captured by the crew are in the Pickup and Delivery flows. To see the update, open order **#11098765** and select **Refresh order**. A second photo appears and remains available when the order is reopened. The prototype uses local order snapshots for this scenario. All prototype orders have reference photos, including the next-day route. Orders without their own set use the existing table and chair images as illustrations.
 
 ![Tasks list](images/tasks.png)
 
@@ -138,7 +157,7 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 5. Wait for the draft status to say saved. The form autosaves locally and can be resumed from Home. Correct any **Order data incomplete** or measurement warnings. **Continue to Pickup review** enables only when the Order number, at least one place, at least one photo and required details are present and the draft saved.
 6. Select **Continue to Pickup review**. The confirmation page says **Pickup draft ready**. You may open **Place labels** first: choose all, selected or one label, check the preview and select **Print**. If the printer is unavailable, continue to review and use the PlaceID check path.
 7. Open **Pickup review**. Check pieces, weight, volume, photos, condition and any exception. Comments are entered during confirmation, not on Review. If evidence changed after review, return and review it again.
-8. Choose **Sign on device** or **SMS code** for the Pickup contact. For SMS code, select **Send verification code**, enter the six-digit code supplied by the contact and select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`; three invalid attempts lock verification. Supply contact or driver names as requested. Documented damage/exception requires its note.
+8. Choose **Sign on device** or **SMS code** for the Pickup contact. For SMS code, select **Send verification code**, enter the six-digit code supplied by the contact and select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`; three invalid attempts lock verification. Enter the contact name when requested. The driver name comes from the signed-in account. Documented damage/exception requires its note.
 9. Select **Continue to signing** for an on-device signature or **Continue to driver signature** after OTP verification. For on-device signing, have the contact sign, optionally request an email copy of this document version, and select **Accept contact signature**. For SMS code, the verified OTP replaces only the contact signature. Have the Zaberman driver sign and select **Confirm & lock Pickup snapshot**.
 
 **Result:** the Pickup snapshot is locked and read-only. An additional place must be entered as **Supplemental Pickup** with a new document version and fresh confirmations. A saved Pickup draft or a “Pickup draft ready” message alone is not the final handoff confirmation. [Pickup source](../../wireframe/src/screens/PickupCaptureScreen.tsx), [review](../../wireframe/src/screens/PickupEbolScreen.tsx), [signing](../../wireframe/src/screens/PickupSignatureScreen.tsx).
@@ -154,7 +173,7 @@ On Home, departure actions remain blocked before Pre-trip clearance or after Pos
 3. Compare the cargo against Pickup evidence.
 4. Add at least one **Delivery photo**, or for visible damage select **Record damage**, add at least one **Damage photo**, and enter **Damage details**.
 5. Select **Continue to Delivery review**. This saves Delivery evidence; the handoff is not completed yet. If the Pickup snapshot is not locked, use the offered **Open Pickup review** action first.
-6. Open **Delivery review**. Check evidence and exceptions, enter the driver name and choose one contact confirmation method:
+6. Open **Delivery review**. Check the evidence, exceptions and driver name shown from your account. Choose one contact confirmation method.
    - **Sign on device** — enter the contact name and obtain the contact signature;
    - **SMS code** — select **Send verification code**, ask the recipient for the code sent to the registered masked number, then select **Verify recipient**. In the prototype every six-digit code succeeds except `111111`; three invalid attempts lock verification;
 7. For SMS code, the signing action remains disabled until **Recipient verified** appears. For Offline, expired-code or delivery-error states, use the offered retry. If verification is locked, contact dispatch and do not choose a bypass method without approval.

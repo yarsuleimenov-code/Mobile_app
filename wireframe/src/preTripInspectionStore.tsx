@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import {
   inspectionCanComplete,
-  inspectionDriver,
   type PreTripInspectionState,
   type PreTripPhotoId,
 } from './preTripInspectionDomain'
-import { emptyVehicleInspection, finishPostTrip, restoreVehicleInspection, startNextVehicleCycle, type PostTripInspectionState, type VehicleInspectionState } from './postTripInspectionDomain'
+import { currentUser } from './currentUser'
+import { emptyVehicleInspection, finishPostTrip, restoreVehicleInspection, startNextVehicleCycle, VEHICLE_INSPECTIONS_STORAGE_KEY, type PostTripInspectionState, type VehicleInspectionState } from './postTripInspectionDomain'
 import { readRouteCompletion } from './routeStopProgress'
 import { readSpokeRoute, routeForVehicleCycle } from './spokeRouteStore'
 import { saveWorkflowChange } from './syncQueueStore'
@@ -28,12 +28,12 @@ interface PreTripInspectionContextValue {
   startNextCycle: () => boolean
 }
 
-const STORAGE_KEY = 'zaberman-vehicle-inspections:v1'
 const PreTripInspectionContext = createContext<PreTripInspectionContextValue | null>(null)
 
-export function readVehicleInspection(): VehicleInspectionState {
+export function readVehicleInspection(storage?: Pick<Storage, 'getItem'>): VehicleInspectionState {
   try {
-    return restoreVehicleInspection(localStorage.getItem(STORAGE_KEY), localStorage.getItem('zaberman-pre-trip-inspection:v1'))
+    const source = storage ?? localStorage
+    return restoreVehicleInspection(source.getItem(VEHICLE_INSPECTIONS_STORAGE_KEY), source.getItem('zaberman-pre-trip-inspection:v1'))
   } catch {
     return emptyVehicleInspection
   }
@@ -45,8 +45,8 @@ export function PreTripInspectionProvider({ children }: { children: ReactNode })
   const save = (next: VehicleInspectionState, change?: WorkflowChange) => {
     if (next === state) return false
     try {
-      if (change) saveWorkflowChange(STORAGE_KEY, next, change)
-      else localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      if (change) saveWorkflowChange(VEHICLE_INSPECTIONS_STORAGE_KEY, next, change)
+      else localStorage.setItem(VEHICLE_INSPECTIONS_STORAGE_KEY, JSON.stringify(next))
       setState(next); setSaveError(false); return true
     } catch { setSaveError(true); return false }
   }
@@ -74,7 +74,7 @@ export function PreTripInspectionProvider({ children }: { children: ReactNode })
     completeInspection: () => {
       if (state.inspection.completedAt || !inspectionCanComplete(state.inspection)) return false
       const completedAt = new Date().toISOString()
-      return save({ ...state, inspection: { ...state.inspection, inspectedBy: inspectionDriver, completedAt } }, {
+      return save({ ...state, inspection: { ...state.inspection, inspectedBy: currentUser.name, completedAt } }, {
         id: `pre-trip:${completedAt}`, label: 'Pre-trip', detail: 'Inspection completed', recordedAt: completedAt,
       })
     },

@@ -5,7 +5,8 @@ import { CargoFlowHeader } from '../cargo-components'
 import { useCargo } from '../cargoStore'
 import { InspectionCaptureForm, InspectionPhotoRecord } from '../InspectionCaptureForm'
 import { postTripCanComplete, postTripPhotos } from '../postTripInspectionDomain'
-import { formatInspectionMiles, inspectionDistance, inspectionDriver, legacyPreTripChecks } from '../preTripInspectionDomain'
+import { formatInspectionMiles, inspectionDistance, legacyPreTripChecks } from '../preTripInspectionDomain'
+import { currentUser } from '../currentUser'
 import { usePreTripInspection } from '../preTripInspectionStore'
 import { useRouteCompletion } from '../useRouteStopProgress'
 
@@ -89,13 +90,13 @@ export function PostTripInspectionScreen() {
       <div className="pretrip-review-state"><span><Check size={28} /></span><h1>Review Post-trip</h1><p>Confirm the vehicle condition and equipment record.</p></div>
       <dl className="pretrip-review-list">
         <div><dt>Vehicle</dt><dd>{cycle.vehicle}</dd></div>
-        <div><dt>Inspected by</dt><dd>{inspectionDriver}</dd></div>
+        <div><dt>Inspected by</dt><dd>{currentUser.name}</dd></div>
         {timingRows}
         {mileageRows}
         <div><dt>Required photos</dt><dd>{post.photos.length}/{postTripPhotos.length} captured</dd></div>
       </dl>
       <InspectionPhotoRecord photos={post.photos} />
-      <label className="pretrip-attestation"><input type="checkbox" checked={post.attested} onChange={(event) => store.updatePostTrip({ attested: event.target.checked })} /><span><strong>I confirm this inspection record is accurate</strong><small>This inspection will be recorded under {inspectionDriver}.</small></span></label>
+      <label className="pretrip-attestation"><input type="checkbox" checked={post.attested} onChange={(event) => store.updatePostTrip({ attested: event.target.checked })} /><span><strong>I confirm this inspection record is accurate</strong><small>This inspection will be recorded under {currentUser.name}.</small></span></label>
     </InspectionCaptureForm>
   </div>
 }

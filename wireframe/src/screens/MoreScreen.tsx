@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { CargoShell } from '../cargo-components'
 import { useCargo } from '../cargoStore'
 import { roleLabels } from '../data'
+import { currentUser } from '../currentUser'
 import { usePrototypeScenario } from '../prototypeScenarioStore'
 import { EvidenceQueuePanel } from '../PhotoEvidence'
 
@@ -22,7 +23,7 @@ export function MoreScreen() {
     <CargoShell>
       <div className="screen-pad more-screen cargo-nav-screen">
         <div className="screen-title"><h1>More</h1><p>Operations and devices</p></div>
-        <div className="profile-block"><span><UserRound size={25} /></span><div><strong>{roleLabels[role]}</strong><small>Branch {branch}</small></div></div>
+        <div className="profile-block"><span><UserRound size={25} /></span><div><strong>{currentUser.name}</strong><small>{roleLabels[role]} · Branch {branch}</small></div></div>
         <div className="menu-group">
           <button type="button" className="menu-row" onClick={forceSync} disabled={syncDisabled}>
             <span className="menu-icon"><CloudCog size={21} /></span><span><strong>Sync now</strong><small>{syncDescription}</small></span><RefreshCw className={syncStatus === 'syncing' ? 'is-spinning' : ''} size={19} />

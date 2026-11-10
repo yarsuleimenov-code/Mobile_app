@@ -55,7 +55,6 @@ export const equipmentInspectionPhotos = [
 ] as const satisfies ReadonlyArray<{ id: string; label: string; detail?: string }>
 
 export const preTripPhotos = [...legacyPreTripPhotos, ...equipmentInspectionPhotos] as const
-export const inspectionDriver = 'Chris Adams'
 
 export const emptyPreTripInspection: PreTripInspectionState = {
   answers: {},

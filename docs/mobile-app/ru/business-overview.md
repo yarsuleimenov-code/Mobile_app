@@ -12,6 +12,8 @@ Mobile App позволяет водителю Zaberman пройти обяза�
 
 ## Основные понятия
 
+Локальный профиль сотрудника — **John Doe**. More, новые подтверждения водителя в Pickup/Supplemental/Delivery и завершённые осмотры используют это имя автоматически. Ранее подписанные записи сохраняют своих подписантов. Прототип предполагает вход по аккаунту и представляет его одним общим значением профиля. [Источник профиля](../../../wireframe/src/currentUser.ts), [руководство](user-guide.md#аккаунт-и-имя-водителя).
+
 | Понятие | Значение в активном прототипе |
 | --- | --- |
 | Order | Заказ с номером в интерфейсе. В локальной имитации маршрута External ID остановки Spoke становится номером заказа Zaberman. |
@@ -36,7 +38,9 @@ Mobile App позволяет водителю Zaberman пройти обяза�
 
 ## Структура приложения
 
-Нижнее меню: **Home | Tasks | Scan | More**. Home содержит быстрый вход в Pickup/Delivery, обязательный Pre-trip inspection, маршрут Today’s Spoke route, документы заказа, черновики Pickup и последние операции. Tasks фильтрует остановки по All/Pickup/Delivery и ищет номер или название заказа. Scan ищет место или заказ. More содержит Help & Instructions, Sync now, Interstate operations, Cargo places, Administration и доступность устройств. [Активные маршруты](../../../wireframe/src/App.tsx). Administration — служебная панель сценариев, а не повседневный шаг операции.
+Нижнее меню — **Home | Tasks | Scan | Inbox | More**. Home содержит быстрый вход в Pickup/Delivery, Route Loading завтрашнего рейса, Pre-trip/Post-trip inspection, маршрут Today’s Spoke route с фиксацией возврата на склад, документы заказа, черновики Pickup и последние операции. Tasks фильтрует остановки по All/Pickup/Delivery и ищет номер или название заказа. Scan ищет место или заказ. Inbox открывает Messages & Calls. More содержит Help & Instructions, Sync now, Interstate operations, Cargo places, Administration и доступность устройств. [Активные маршруты](../../../wireframe/src/App.tsx).
+
+В Administration добавлены три карточки репетиции для возврата на склад с Post-trip, завтрашней загрузки с фото брокеров и частичного sync с retry. Повторное открытие сохраняет прогресс. Для подготовки примера возврата сначала требуется завершить другой активный цикл автомобиля. [Инструкция по сценариям](user-guide.md#сценарии-в-administration).
 
 ## Бизнес-процессы
 

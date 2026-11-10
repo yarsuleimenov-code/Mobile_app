@@ -10,6 +10,8 @@ The workflow is designed for the crew that records Pickup and Delivery evidence,
 
 ## Main concepts
 
+The local employee profile is **John Doe**. More, new Pickup/Supplemental/Delivery driver confirmations and completed vehicle inspections use this name automatically. Previously signed records retain their stored signers. The prototype assumes an authenticated account and represents it with one shared profile value. [Profile source](../../wireframe/src/currentUser.ts), [User Guide](user-guide.md#account-and-driver-name).
+
 | Concept | Meaning in the active prototype |
 | --- | --- |
 | Order | Shipment identified in the UI by an order number. A loaded Spoke stop's External ID becomes that number in the local route simulation. |
@@ -34,7 +36,9 @@ The target product model gives CargoPlace an opaque UUIDv7 primary ID and treats
 
 ## Application structure
 
-The active bottom navigation is **Home | Tasks | Scan | More**. Home offers Pickup, Delivery, the required Pre-trip inspection, Today's Spoke route, Order documents, Pickup drafts and Recent operations. Tasks filters the loaded route by All, Pickup or Delivery and searches Order ID/title. Scan looks up a place or an order. More contains Help & Instructions, Sync now, Interstate operations, Cargo places, Administration and device availability. The active hash routes are listed in [App.tsx](../../wireframe/src/App.tsx). Administration is a scenario control surface, not an everyday operational step.
+The active bottom navigation is **Home | Tasks | Scan | Inbox | More**. Home offers Pickup, Delivery, Route Loading for tomorrow, Pre-trip/Post-trip inspection, Today's Spoke route and its warehouse-return action, Order documents, Pickup drafts and Recent operations. Tasks filters the loaded route by All, Pickup or Delivery and searches Order ID/title. Scan looks up a place or an order. Inbox opens Messages & Calls. More contains Help & Instructions, Sync now, Interstate operations, Cargo places, Administration and device availability. The active hash routes are listed in [App.tsx](../../wireframe/src/App.tsx).
+
+Administration has three additional rehearsal cards for warehouse return with Post-trip, next-day loading with broker photos, and partial sync with retry. Reopening retains progress. Preparing the return example requires any other active vehicle cycle to be completed first. [Rehearsal instructions](user-guide.md#rehearsal-scenarios-in-administration).
 
 ## Business workflows
 

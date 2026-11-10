@@ -2,7 +2,7 @@ import { AlertTriangle, Camera, CheckCircle2, Gauge, MessageCircleMore, Printer,
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { useState } from 'react'
 import { EvidenceQueuePanel } from '../PhotoEvidence'
-import { installRehearsalPreset, rehearsalPresets, type RehearsalPresetId } from '../demoRehearsal'
+import { installRehearsalPreset, operationsRehearsalPresets, rehearsalPresets, type RehearsalPresetId } from '../demoRehearsal'
 import { roleLabels } from '../data'
 import type { Role } from '../domain'
 import { OTP_INVALID_CODE, type OtpOutcome } from '../deliveryOtpDomain'
@@ -70,11 +70,14 @@ export function PrototypeControlsScreen() {
           <h2>Owner-demo rehearsal</h2>
           <p>Reset for a fresh run, then choose a scenario. Reopening preserves existing work. Presets set role, branch, connection and device availability; they do not sign new handoffs.</p>
           <button type="button" className="ebol-secondary" onClick={confirmReset}><RotateCcw size={16} /> Reset all mock data</button>
+          {presetError ? <p role="alert">{presetError}</p> : null}
+          <div className="rehearsal-presets" role="group" aria-label="Route and warehouse rehearsals">
+            {operationsRehearsalPresets.map((preset) => <button type="button" key={preset.id} aria-label={preset.title} onClick={() => openPreset(preset.id)}><strong>{preset.title}</strong><small>{preset.detail}</small></button>)}
+          </div>
           <div className="rehearsal-presets">
             {rehearsalPresets.slice(0, 8).map((preset) => <button type="button" key={preset.id} aria-label={preset.title} onClick={() => openPreset(preset.id)}><strong>{preset.title}</strong><small>{preset.detail}</small><code>#{preset.order}</code></button>)}
           </div>
           <details className="rehearsal-extra"><summary>Optional photo volume checks</summary><div className="scenario-options scenario-options--two">{rehearsalPresets.slice(8).map((preset) => <button type="button" key={preset.id} onClick={() => openPreset(preset.id)}>{preset.title}</button>)}</div></details>
-          {presetError ? <p role="alert">{presetError}</p> : null}
         </section>
 
         <HandoffVerificationSettings />

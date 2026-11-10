@@ -32,9 +32,9 @@ describe('post-trip vehicle cycle', () => {
     state.postTrip.odometer = 12449
     expect(finishPostTrip(state, 0, false, 'now')).toBe(state)
     state.postTrip.odometer = 12450
-    expect(finishPostTrip(state, 0, false, 'now').postTrip).toMatchObject({
-      odometer: 12450, inspectedBy: 'Chris Adams', completedAt: 'now',
-    })
+    const completed = finishPostTrip(state, 0, false, 'now')
+    expect(completed.inspection.inspectedBy).toBe('Chris Adams')
+    expect(completed.postTrip).toMatchObject({ odometer: 12450, inspectedBy: 'John Doe', completedAt: 'now' })
   })
 
   it('accepts a valid ending reading after an older Pre-trip without mileage', () => {

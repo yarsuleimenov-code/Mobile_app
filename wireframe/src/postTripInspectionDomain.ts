@@ -1,4 +1,5 @@
-import { emptyPreTripInspection, inspectionCanComplete, inspectionDriver, inspectionPhotosComplete, isOdometerReading, legacyPreTripChecks, legacyPreTripPhotos, preTripChecks, preTripPhotos, type PreTripAnswer, type PreTripCheckId, type PreTripInspectionState, type PreTripPhotoId } from './preTripInspectionDomain'
+import { emptyPreTripInspection, inspectionCanComplete, inspectionPhotosComplete, isOdometerReading, legacyPreTripChecks, legacyPreTripPhotos, preTripChecks, preTripPhotos, type PreTripAnswer, type PreTripCheckId, type PreTripInspectionState, type PreTripPhotoId } from './preTripInspectionDomain'
+import { currentUser } from './currentUser'
 import { parseRouteCompletion, type RouteCompletion } from './routeStopProgress'
 
 export type PostTripCheckId = PreTripCheckId | 'equipment'
@@ -21,6 +22,7 @@ export interface VehicleCycle {
   postTrip: PostTripInspectionState
 }
 export interface VehicleInspectionState extends VehicleCycle { history: VehicleCycle[] }
+export const VEHICLE_INSPECTIONS_STORAGE_KEY = 'zaberman-vehicle-inspections:v1'
 export const postTripChecks = preTripChecks
 export const postTripPhotos = preTripPhotos
 export const emptyPostTripInspection: PostTripInspectionState = { answers: {}, issues: {}, photos: [], attested: false, completedAt: null, unfinishedStops: 0 }
@@ -31,7 +33,7 @@ export function postTripCanComplete(state: PostTripInspectionState, startOdomete
 }
 export function finishPostTrip(state: VehicleInspectionState, unfinishedStops: number, acknowledged: boolean, at: string): VehicleInspectionState {
   if (!state.inspection.completedAt || state.postTrip.completedAt || !postTripCanComplete(state.postTrip, state.inspection.odometer) || (unfinishedStops > 0 && !acknowledged)) return state
-  return { ...state, postTrip: { ...state.postTrip, inspectedBy: inspectionDriver, completedAt: at, unfinishedStops } }
+  return { ...state, postTrip: { ...state.postTrip, inspectedBy: currentUser.name, completedAt: at, unfinishedStops } }
 }
 export function startNextVehicleCycle(state: VehicleInspectionState): VehicleInspectionState {
   if (!state.postTrip.completedAt) return state

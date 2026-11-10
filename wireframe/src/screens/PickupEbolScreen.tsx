@@ -4,6 +4,7 @@ import { ContactFollowUpNotice, ContactFollowUpReason } from '../order-document-
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader, EvidenceGallery } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
+import { currentUser } from '../currentUser'
 import { useCargo } from '../cargoStore'
 import {
   canReviewOrderEvidence, withCurrentOrderDetails, canLockPickupEbol, createOrderEbol, findDraftSupplementalPickup,
@@ -69,7 +70,6 @@ function PickupEbolContent() {
   const [otpVerified, setOtpVerified] = useState(confirmationSource?.contact.status === 'otp')
   const [otpRevision, setOtpRevision] = useState(0)
   const invalidateOtp = () => { if (otpVerified) { setOtpVerified(false); setOtpRevision((revision) => revision + 1) } }
-  const [driverName, setDriverName] = useState(confirmationSource?.driver.signerName ?? '')
   const [hasDamage, setHasDamage] = useState(confirmationSource?.evidence?.hasDamage ?? false)
   const [exceptionNote, setExceptionNote] = useState(confirmationSource?.evidence?.exceptionNote ?? '')
   const { comments, changeComments, saveError } = useHandoffComments(orderEbol, supplementalDraft?.version ?? 'pickup')
@@ -95,7 +95,7 @@ function PickupEbolContent() {
   const confirmationInput: PickupEbolConfirmationInput = {
     contactMethod, contactName: contactMethod === 'otp' ? recipient.name : contactName,
     followUpReason,
-    otpVerified, otpPhoneLast4: recipient.phone.replace(/\D/g, '').slice(-4), driverName, hasDamage, exceptionNote,
+    otpVerified, otpPhoneLast4: recipient.phone.replace(/\D/g, '').slice(-4), driverName: currentUser.name, hasDamage, exceptionNote,
     contactComment: comments.contact, driverComment: comments.driver,
   }
   const needsRefresh = pickupReviewNeedsRefresh(orderEbol, readPickupDrafts())
@@ -175,7 +175,7 @@ function PickupEbolContent() {
 
         <section className="ebol-section">
           <div className="ebol-section-heading"><UserRound size={20} /><h2>Zaberman driver</h2></div>
-          <label className="ebol-field">Driver name<input value={driverName} onChange={(event) => setDriverName(event.target.value)} placeholder="Full name" /></label>
+          <label className="ebol-field">Driver name<input value={currentUser.name} readOnly /></label>
         </section>
 
         <HandoffCommentSaveError visible={saveError} />

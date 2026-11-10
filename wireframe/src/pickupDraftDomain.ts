@@ -2,6 +2,7 @@ import {
   calculateVolume, createCargoPlaceId, expandCargoPlaces,
   type CargoChangeEntry, type CargoRecord, type DimensionGroup, type Warehouse,
 } from './cargoDomain'
+import { currentUser } from './currentUser'
 import { dimensionText, measured } from './measurementDomain'
 import { evidencePhotos, type EvidencePhoto } from './photoEvidenceDomain'
 
@@ -87,7 +88,7 @@ export function createPickupDraft(
     destinationBranch: record?.destinationBranch ?? (branch === 'NJ1' ? 'CA1' : 'NJ1'),
     packaging: record?.packaging ?? 'Customer',
     orderComment: record?.orderComment ?? '',
-    responsible: record?.responsible ?? 'John Doe',
+    responsible: record?.responsible ?? currentUser.name,
     photoCount: mode === 'supplemental' ? 0 : (record?.photoCount ?? 0),
     photos: mode === 'supplemental' || !record ? [] : evidencePhotos(record, record.orderNumber, 'pickup'),
     basePlaceIds: mode === 'supplemental' ? currentPlaces.map((place) => place.placeId) : [],

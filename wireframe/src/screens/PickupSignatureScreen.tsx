@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
+import { currentUser } from '../currentUser'
 import { useCargo } from '../cargoStore'
 import {
   readDocumentEmailDeliveries, resolveDocumentEmailDelivery, upsertDocumentEmailDelivery, writeDocumentEmailDeliveries,
@@ -44,7 +45,8 @@ function PickupSignatureContent({ orderNumber }: { orderNumber: string }) {
     findOrderEbol(readOrderEbols(), orderNumber) ?? (record ? createOrderEbol(record) : null),
     (location.state as PickupSignatureLocationState | null)?.supplementVersion ?? 'pickup', getOrderDetails(orderNumber),
   ))
-  const confirmationInput = (location.state as PickupSignatureLocationState | null)?.confirmationInput
+  const pendingConfirmation = (location.state as PickupSignatureLocationState | null)?.confirmationInput
+  const confirmationInput = pendingConfirmation && { ...pendingConfirmation, driverName: currentUser.name }
   const supplementVersion = (location.state as PickupSignatureLocationState | null)?.supplementVersion
   const supplement = supplementVersion === undefined
     ? undefined

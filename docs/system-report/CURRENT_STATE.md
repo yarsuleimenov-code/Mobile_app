@@ -1,6 +1,6 @@
 # Текущее техническое состояние
 
-Актуализировано **2026-11-06**. Исторический срез от 2026-10-16 зафиксирован в commit `1abe03ce0cd54697dedf713a0657c5f41f69ece3`.
+Актуализировано **2026-11-10**. Исторический срез от 2026-10-16 зафиксирован в commit `1abe03ce0cd54697dedf713a0657c5f41f69ece3`.
 
 Текущее состояние описано в [PROJECT_BASELINE](../PROJECT_BASELINE.md) и дополнении [Pickup и Delivery — шаги 1–7](../requirements/PICKUP_DELIVERY_PROTOTYPE_INCREMENT_2026_11_06.md). Приёмка исходного среза подтверждена owner 2026-10-16.
 
@@ -19,6 +19,8 @@
 
 ## Где проверять факты
 
+- [currentUser](../../wireframe/src/currentUser.ts), Pickup/Delivery review/signature screens и inspection domain/store задают John Doe для новых операций. Исторические подписанты сохраняются. Реальный вход в аккаунт остаётся будущей интеграцией.
+- [demoRehearsal](../../wireframe/src/demoRehearsal.ts) и [PrototypeControlsScreen](../../wireframe/src/screens/PrototypeControlsScreen.tsx) добавляют быстрый вход в завершение рейса с Post-trip, загрузку завтрашнего рейса с фото брокеров и частичный sync с retry. [Инструкция ведущему](../mobile-app/ru/user-guide.md#сценарии-в-administration).
 - [App.tsx](../../wireframe/src/App.tsx), [main.tsx](../../wireframe/src/main.tsx): активные routes и providers.
 - [cargoDomain](../../wireframe/src/cargoDomain.ts), [cargoStore](../../wireframe/src/cargoStore.tsx), [spokeDomain](../../wireframe/src/spokeDomain.ts): records, группы, места, Branch и route fixtures.
 - [orderEbolDomain](../../wireframe/src/orderEbolDomain.ts), [pickupDraftDomain](../../wireframe/src/pickupDraftDomain.ts), [interstateDomain](../../wireframe/src/interstateDomain.ts): переходы и ограничения процессов.
@@ -27,9 +29,15 @@
 
 ## Отличия AS-IS и целевых правил
 
-Same Day/RouteRun не имеет активного самостоятельного flow; старые компоненты не подключены к router. Active CargoRecord не содержит Order-owned movement_type; Interstate eligibility основан на status/origin/destination. Prototype PlaceID читаемый ZB-ORDER-NN и Code 128, POC/PD-009 — UUIDv7 с versioned payload. Branch selector содержит шесть значений, а старая матрица описывала NJ1 ↔ CA1/CA2. Offline — локальная демонстрация уже загруженного приложения; server Close/sync отсутствуют. Подробная классификация — [аудит](../current/REPOSITORY_AUDIT.md).
+Same Day/RouteRun не имеет активного самостоятельного flow; старые компоненты не подключены к router. Active CargoRecord не содержит Order-owned movement_type; Interstate eligibility основан на status/origin/destination. Prototype QR кодирует читаемый PlaceID ZB-ORDER-NN, POC/PD-009 — UUIDv7 с versioned payload. Scan и Route Loading принимают также поддерживаемую ссылку с параметром cargo. Branch selector содержит шесть значений, а старая матрица описывала NJ1 ↔ CA1/CA2. Offline — локальная демонстрация уже загруженного приложения; server Close/sync отсутствуют. Подробная классификация — [аудит](../current/REPOSITORY_AUDIT.md).
 
 ## Проверки и история
+
+Браузерные прогоны 2026-11-06 покрыли Pickup → Supplemental → Delivery → POD, автоподстановку John Doe и сохранение прежнего подписанта, Pre-trip/Post-trip, QR preview/lookup и повторный scan, фото брокеров, пять мест Route Loading, возврат на склад перед Post-trip и частичный sync с повтором оставшейся записи. Проверка выполнялась отдельными сценариями в локальном Chrome при ширине 390 px. Сквозная смена с сотрудником склада, телефон и реальное оборудование остаются за границами этих прогонов.
+
+Срез включает John Doe, новые сценарии и Reference photos для всех заказов поверх `0636670` с QR-этикетками. Для заказов без собственного набора используются существующие иллюстративные фото стола и стула. Проверка 2026-11-10 в локальном Chrome при 390 × 844 px охватила 29 карточек, открытие галереи, Refresh order с сохранением результата, все девять остановок предпросмотра и четыре Delivery в Route Loading. Изображения загружаются, ошибок консоли и горизонтального переполнения не обнаружено.
+
+Проверки синхронизации 2026-11-09 прошли. `pnpm test` — 203 теста в 31 файле, `pnpm build` — приложение и VitePress, `pnpm pages:verify` — 103 файла артефакта с исключением приватных Open Questions. В собранных RU/EN руководствах проверены новые разделы, якоря и сценарные данные. Сохраняется предупреждение Vite о JS bundle больше 500 kB. Браузерные сценарии при этой правке документации заново не запускались.
 
 Актуальные команды, результаты и ограничения проверки — [REPOSITORY_AUDIT](../current/REPOSITORY_AUDIT.md). Исторические результаты не подменяют свежие проверки. [Предыдущий CURRENT_STATE](../archive/CURRENT_STATE_BEFORE_2026_10_16.md) сохранён с прежней историей коммитов, UI-итераций и подтверждений. Статус «нужен просмотр owner» в старых материалах заменён текущим подтверждением CEO, без ретроспективного изменения этапных evidence.
 

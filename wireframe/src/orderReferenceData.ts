@@ -49,7 +49,7 @@ export function hasRefreshedOrderReference(order: string) {
 
 export function getOrderReferenceData(order: string, refreshed = false) {
   const reference = references[order]
-  const photos = reference?.photos ?? []
+  const photos = reference?.photos ?? [table, chair]
   return {
     brokerComment: reference?.brokerComment,
     coi: reference?.coi,

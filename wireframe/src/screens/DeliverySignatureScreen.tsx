@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { CargoBottomNav, CargoFlowHeader } from '../cargo-components'
 import { normalizeOrderNumber } from '../cargoDomain'
+import { currentUser } from '../currentUser'
 import {
   canReviewOrderEvidence, withCurrentOrderDetails, canLockDeliveryEbol, lockDeliveryEbol,
   type DeliveryEbolConfirmationInput, type OrderEbol, type SignedStopVisit,
@@ -31,7 +32,8 @@ function DeliverySignatureContent({ orderNumber }: { orderNumber: string }) {
   const reviewPath = `/orders/${orderNumber}/ebol/delivery${location.search}`
   const { getOrderDetails, completeDropoff } = useCargo()
   const [orderEbol] = useState<OrderEbol | null>(() => withCurrentOrderDetails(findOrderEbol(readOrderEbols(), orderNumber) ?? null, 'delivery', getOrderDetails(orderNumber)))
-  const confirmationInput = (location.state as DeliverySignatureLocationState | null)?.confirmationInput
+  const pendingConfirmation = (location.state as DeliverySignatureLocationState | null)?.confirmationInput
+  const confirmationInput = pendingConfirmation && { ...pendingConfirmation, driverName: currentUser.name }
   const startsWithContact = confirmationInput?.contactMethod === 'signed'
   const [step, setStep] = useState<'contact' | 'driver'>(startsWithContact ? 'contact' : 'driver')
   const [contactSigned, setContactSigned] = useState(!startsWithContact)

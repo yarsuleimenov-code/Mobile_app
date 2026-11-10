@@ -7,6 +7,11 @@ import { ORDER_EBOLS_STORAGE_KEY, readOrderEbols } from './orderEbolStore'
 import { canReviewOrderEvidence, createOrderEbol, prepareDeliveryEbol, prepareSupplementalPickup, syncPickupOrderEbolDraft } from './orderEbolDomain'
 import { updatePickupDraftGroup } from './pickupDraftDomain'
 import { pickupReviewNeedsRefresh } from './pickupReviewState'
+import { readVehicleInspection } from './preTripInspectionStore'
+import { emptyVehicleInspection, VEHICLE_INSPECTIONS_STORAGE_KEY } from './postTripInspectionDomain'
+import { parseStopProgress, stopProgressKey, summarizeRouteStops } from './routeStopProgress'
+import { routeForVehicleCycle, SPOKE_ROUTE_STORAGE_KEY } from './spokeRouteStore'
+import { beginEvidenceSync, EVIDENCE_QUEUE_KEY, finishEvidenceSync, readEvidenceQueue } from './photoEvidenceDomain'
 
 function memoryStorage() {
   const data = new Map<string, string>()
@@ -76,6 +81,53 @@ describe('Owner rehearsal presets', () => {
     } }
     expect(() => installRehearsalPreset('normal', failed)).toThrow('Could not prepare')
     expect([...storage.data]).toEqual(before)
+  })
+})
+
+describe('Route and warehouse rehearsals', () => {
+  it('opens a route ready for warehouse return without starting Post-trip or signing orders', () => {
+    const storage = memoryStorage()
+    expect(installRehearsalPreset('route-close', storage)).toBe('/')
+    const route = JSON.parse(storage.getItem(SPOKE_ROUTE_STORAGE_KEY)!)
+    const cycle = readVehicleInspection(storage)
+    const entries = parseStopProgress(storage.getItem(stopProgressKey(route))!)
+    expect(routeForVehicleCycle(route, cycle.inspection.completedAt)).toEqual(route)
+    expect(cycle.inspection).toMatchObject({ inspectedBy: 'John Doe', odometer: 12450, attested: true })
+    expect(cycle.postTrip.startedAt).toBeUndefined()
+    expect(summarizeRouteStops(route, entries)).toMatchObject({ completed: 1, failed: [{ reason: 'Recipient unavailable' }], remaining: [] })
+    expect(readOrderEbols(storage)).toEqual([])
+    installRehearsalPreset('normal', storage)
+    installRehearsalPreset('route-close', storage)
+    expect(JSON.parse(storage.getItem(SPOKE_ROUTE_STORAGE_KEY)!)).toEqual(route)
+    expect(readVehicleInspection(storage)).toEqual(cycle)
+  })
+
+  it('keeps an unfinished vehicle inspection when warehouse return is selected', () => {
+    const storage = memoryStorage()
+    const active = JSON.stringify({ ...emptyVehicleInspection, inspection: { ...emptyVehicleInspection.inspection, odometer: 900 } })
+    storage.setItem(VEHICLE_INSPECTIONS_STORAGE_KEY, active)
+    expect(() => installRehearsalPreset('route-close', storage)).toThrow('Finish the current vehicle cycle')
+    expect([...storage.data]).toEqual([[VEHICLE_INSPECTIONS_STORAGE_KEY, active]])
+  })
+
+  it('opens the loading screen directly without creating a driver route', () => {
+    const storage = memoryStorage()
+    expect(installRehearsalPreset('next-day-load', storage)).toBe('/route-loading')
+    expect(storage.getItem(SPOKE_ROUTE_STORAGE_KEY)).toBeNull()
+    expect(JSON.parse(storage.getItem('zaberman-prototype-scenarios:v1')!)).toMatchObject({ role: 'warehouse', branch: 'NJ1' })
+  })
+
+  it('seeds a partial sync and preserves the retry state when reopened', () => {
+    const storage = memoryStorage()
+    expect(installRehearsalPreset('partial-sync', storage)).toBe('/more')
+    const queue = readEvidenceQueue(storage)
+    expect(queue.map((item) => item.status)).toEqual(['pending', 'pending'])
+    const after = finishEvidenceSync(queue, beginEvidenceSync(queue), 'partial')
+    expect(after.map((item) => item.status)).toEqual(['synced', 'retry'])
+    storage.setItem(EVIDENCE_QUEUE_KEY, JSON.stringify(after))
+    installRehearsalPreset('partial-sync', storage)
+    expect(readEvidenceQueue(storage)).toEqual(after)
+    expect(JSON.parse(storage.getItem('zaberman-prototype-scenarios:v1')!)).toMatchObject({ network: 'online', syncOutcome: 'partial' })
   })
 })
 

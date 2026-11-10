@@ -1,6 +1,6 @@
 # Project baseline
 
-Исходный срез принят **2026-10-16**. Текущее состояние обновлено **2026-11-06**. Пользователи документа: аналитик, Product, разработчики и QA. Назначение: однозначно определить исходную базу для подготовки ТЗ, архитектуры и плана разработки без изменения продукта.
+Исходный срез принят **2026-10-16**. Текущее состояние обновлено **2026-11-10**. Пользователи документа: аналитик, Product, разработчики и QA. Назначение: однозначно определить исходную базу для подготовки ТЗ, архитектуры и плана разработки без изменения продукта.
 
 ## Project status
 
@@ -18,10 +18,13 @@ Owner согласовал 12 BD и отложил 3; актуальные от�
 
 ## Current application scope
 
+Срез включает автоподстановку John Doe, три новых сценария Administration и Reference photos для всех заказов поверх ревизии `0636670` с QR-этикетками. Заказы без собственного набора используют иллюстративные фото стола и стула. Пользовательское поведение описано в [руководстве](mobile-app/ru/user-guide.md#сценарии-в-administration).
+
 [HOV-001](requirements/QR_LOCATION_VERIFICATION_INCREMENT_2026_11_03.md) актуализирован. Местоположение фиксируется при создании этикеток. Check label проверяет PlaceID и адрес выбранной точки, а результат хранится отдельно от eBOL. Complete stop опирается на подпись с привязкой к визиту. GPS использует один успешный сценарий с тестовыми координатами. В Administration можно выбрать ответ сканера. Источники координат для production открыты.
 
 | Контур | Текущее поведение | Источник |
 |---|---|---|
+| Пользователь приложения | Единый локальный профиль John Doe. More показывает имя, новые подтверждения Pickup/Supplemental/Delivery и осмотры используют его автоматически. Имя водителя в review доступно только для чтения. Ранее подписанные документы и завершённые осмотры сохраняют своих ответственных. | `currentUser`, Pickup/Delivery review/signature screens, `preTripInspectionStore`, `postTripInspectionDomain` |
 | Home / Tasks | Маршрут Spoke из fixtures, поиск и фильтры Pickup/Delivery, черновики, ручные операции и документы. Для назначенных точек видны статусы, Start, Complete stop и возврат к активной точке. | `CargoHomeScreen`, `TasksScreen`, `cargoStore`, `spokeDomain` |
 | Route Loading | Завтрашний рейс склада открывается отдельно от текущего маршрута и осмотров. Доступны фото брокера и упаковки. После старта фиксируется манифест Delivery, каждое место отмечается по PlaceID, завершение доступно после полной загрузки. | `RouteLoadingScreen`, `routeLoadingDomain`, `routeLoadingStore` |
 | Завершение маршрута | После обработки всех точек Home показывает Return to warehouse. Complete route фиксирует время подтверждённого возврата, отдельно от последней точки и Post-trip. | `RouteCompletionCard`, `routeStopProgress` |
@@ -38,7 +41,7 @@ Owner согласовал 12 BD и отложил 3; актуальные от�
 | Cargo / labels / Scan | Проекция отдельного места и событий. QR содержит `ZB-{ORDER}-{NN}`, доступна печать всех, выбранных и отдельных этикеток с историей повторов. Общий Scan — lookup, а Loading/Unloading отмечают места внутри операции; duplicate/unknown и ручной ввод | `cargoDomain`, `cargoPlaceTracking`, `placeLabelsDomain`, `placeScanDomain` |
 | Interstate | Выбор origin/destination и truck → подходящие Pickup records → выбор/ввод PlaceID → review loaded manifest → Create Trip & BOL; отдельные incoming fixtures → receive → review missing → Confirm unloading; поиск/архив BOL | `interstateDomain`, `interstateStore`, активные Interstate screens |
 | Communications | Inbox → Messages / Calls, индикаторы unread/new missed, поиск и Missed, дата маршрута отдельно от звонка, order thread/quick texts/offline queue/retry, Call back и локальная история исходящих, Mute/Speaker. [Инкремент 2026-10-27](requirements/INBOX_CALLS_INCREMENT_2026_10_27.md). Настоящих SMS, звонков и аудио нет | `communicationDomain`, `callDomain`, `communicationStore` |
-| Administration | Роль, филиал, сеть, устройства, outcomes, presets/reset; отдельный служебный маршрут и вход из More | `PrototypeControlsScreen`, AGENTS.md |
+| Administration | Роль, филиал, сеть, устройства, outcomes, presets/reset. Добавлены Complete route & Post-trip, Next-day route loading и Partial sync & retry. Повторное открытие сохраняет прогресс. Завершение рейса защищает другой активный цикл от замены. | `PrototypeControlsScreen`, `demoRehearsal`, AGENTS.md |
 
 Все указанные модули находятся в `wireframe/src/`. Подробные пользовательские правила: [RU guide](mobile-app/ru/user-guide.md), [EN guide](mobile-app/user-guide.md). Старые `HomeScreen`, `PickupScreen`, `DropoffScreen`, `OperationsScreen`, `SameDayScreen` не подключены к активному router; их наличие не расширяет утверждённый пользовательский сценарий.
 
